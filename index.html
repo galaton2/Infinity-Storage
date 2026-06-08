@@ -1,34 +1,82 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Второй Мозг</title>
+    <title>Infinity Storage</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
 </head>
 <body>
-    <header class="glass-header">
-        <div class="search-wrapper">
-            <i class="ph ph-magnifying-glass"></i>
-            <input type="text" id="searchInput" placeholder="Найти в памяти...">
-        </div>
-        <div class="filter-scroll">
-            <button class="chip active" data-filter="all">Всё</button>
-            <button class="chip" data-filter="photo">📸 Фото</button>
-            <button class="chip" data-filter="document">📄 Документы</button>
-            <button class="chip" data-filter="note">📝 Заметки</button>
-        </div>
-    </header>
+    <div id="homeView" class="view active">
+        <header class="glass-header">
+            <div class="search-wrapper">
+                <i class="ph ph-magnifying-glass"></i>
+                <input type="text" id="searchInput" placeholder="Search memory...">
+            </div>
+            <div class="filter-scroll" id="filters">
+                <button class="chip active" data-filter="all">All</button>
+                <button class="chip" data-filter="photo">📸 Photos</button>
+                <button class="chip" data-filter="document">📄 Docs</button>
+                <button class="chip" data-filter="note">📝 Notes</button>
+            </div>
+        </header>
 
-    <main class="content" id="filesGrid">
-        <div class="skeleton-card"></div>
-        <div class="skeleton-card"></div>
-        <div class="skeleton-card"></div>
-    </main>
+        <main class="content" id="filesGrid">
+            </main>
+        <div id="loadMoreTrigger">Loading...</div>
+    </div>
 
-    <div id="toast" class="toast">Успешно!</div>
+    <div id="profileView" class="view">
+        <div class="profile-header">
+            <img id="profileAvatar" src="https://via.placeholder.com/100" alt="Avatar" class="profile-avatar">
+            <h2 id="profileName">User Name</h2>
+            <p id="profileUsername" class="profile-username">@username</p>
+        </div>
+        
+        <div class="profile-stats">
+            <div class="stat-box">
+                <h3 id="statFilesCount">0</h3>
+                <p>Total Files</p>
+            </div>
+            <div class="stat-box">
+                <h3>Pro</h3>
+                <p>Status</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="settingsView" class="view">
+        <h2 style="padding: 24px;">Settings</h2>
+        <div class="settings-list">
+            <div class="settings-item">
+                <span>Dark Mode</span>
+                <i class="ph ph-moon"></i>
+            </div>
+            <div class="settings-item">
+                <span>Clear Cache</span>
+                <i class="ph ph-trash"></i>
+            </div>
+        </div>
+    </div>
+
+    <nav class="bottom-nav">
+        <button class="nav-btn active" data-target="homeView">
+            <i class="ph ph-house"></i>
+            <span>Home</span>
+        </button>
+        <button class="nav-btn" data-target="profileView">
+            <i class="ph ph-user"></i>
+            <span>Profile</span>
+        </button>
+        <button class="nav-btn" data-target="settingsView">
+            <i class="ph ph-gear"></i>
+            <span>Settings</span>
+        </button>
+    </nav>
+
+    <div id="toast" class="toast">Success!</div>
 
     <script type="module" src="app.js"></script>
 </body>
