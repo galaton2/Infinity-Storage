@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Второй Мозг</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+</head>
+<body>
+    <header class="glass-header">
+        <div class="search-wrapper">
+            <i class="ph ph-magnifying-glass"></i>
+            <input type="text" id="searchInput" placeholder="Найти в памяти...">
+        </div>
+        <div class="filter-scroll">
+            <button class="chip active" data-filter="all">Всё</button>
+            <button class="chip" data-filter="photo">📸 Фото</button>
+            <button class="chip" data-filter="document">📄 Документы</button>
+            <button class="chip" data-filter="note">📝 Заметки</button>
+        </div>
+    </header>
+
+    <main class="content" id="filesGrid">
+        <div class="skeleton-card"></div>
+        <div class="skeleton-card"></div>
+        <div class="skeleton-card"></div>
+    </main>
+
+    <div id="toast" class="toast">Успешно!</div>
+
+    <script type="module" src="app.js"></script>
+</body>
+</html>
