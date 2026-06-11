@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Premium Storage</title>
+    <title>Aura Storage</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
@@ -16,31 +16,29 @@
         
         <div class="header-top">
             <h1 class="app-title">Aura</h1>
-            <button class="icon-btn" onclick="switchTab('profile')">
+            <button class="icon-btn" onclick="switchTab('profile', document.getElementById('nav-profile'))">
                 <svg class="svg-icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
             </button>
         </div>
 
         <div id="tab-home" class="tab-content active">
             
-            <div class="section-header" style="margin-top: 0;">
-                <h2 class="section-title">Featured Asset</h2>
-            </div>
-            
-            <div class="hero-card" id="heroCard">
-                <div class="hero-content">
-                    <div class="hero-label">
-                        <svg class="svg-icon" style="width: 14px; height: 14px;" viewBox="0 0 24 24"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-                        Latest Upload
+            <div class="cd-card">
+                <div class="cd-card-header">System Sync Status</div>
+                
+                <div class="cd-wrapper">
+                    <div class="cd-hole"></div>
+                </div>
+
+                <div class="cd-progress-container">
+                    <div class="cd-labels">
+                        <span class="cd-data-used" id="dataUsedLabel">0.0 MB</span>
+                        <span class="cd-infinity">∞</span>
+                    </div>
+                    <div class="progress-track">
+                        <div class="progress-fill" id="dataUsedBar" style="width: 5%;"></div>
                     </div>
                 </div>
-                <div class="hero-content" style="margin-top: auto;">
-                    <h1 class="hero-title heading" id="heroTitle">Retrieving...</h1>
-                    <p class="hero-subtitle" id="heroSubtitle">Syncing with server</p>
-                </div>
-                <button class="hero-play-btn" onclick="triggerHeroAction()">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M5 3l14 9-14 9V3z"/></svg>
-                </button>
             </div>
 
             <div class="section-header">
@@ -48,8 +46,7 @@
                 <button class="section-action" onclick="createWorkspace()">Create New</button>
             </div>
             
-            <div class="workspace-scroll" id="foldersContainer">
-                </div>
+            <div class="workspace-scroll" id="foldersContainer"></div>
 
             <div class="section-header">
                 <h2 class="section-title">Workspace Activity</h2>
@@ -59,7 +56,6 @@
             <div class="grid-gallery" id="homeRecentGallery">
                 </div>
         </div>
-
 
         <div id="tab-files" class="tab-content">
             <h1 class="heading" style="font-size: 32px; margin-bottom: 24px;">All Assets</h1>
@@ -73,14 +69,11 @@
                 </div>
         </div>
 
-
         <div id="tab-profile" class="tab-content">
             <h1 class="heading" style="font-size: 32px; margin-bottom: 24px;">Account</h1>
             
             <div class="profile-card">
-                <div class="avatar-ring">
-                    <div class="avatar-inner" id="userAvatar">B</div>
-                </div>
+                <div class="avatar-ring"><div class="avatar-inner" id="userAvatar">B</div></div>
                 <h2 class="heading" id="userName" style="font-size: 24px; margin-bottom: 4px;">Bekhruz</h2>
                 <p style="color: var(--text-muted); font-size: 14px;">Administrator</p>
             </div>
@@ -88,12 +81,12 @@
             <div class="storage-box">
                 <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 8px;">
                     <div>
-                        <h3 class="heading" style="font-size: 18px; color: #fff;">Synology Server</h3>
+                        <h3 class="heading" style="font-size: 18px; color: #fff;">Synology NAS</h3>
                         <p style="color: var(--text-muted); font-size: 13px; margin-top: 2px;">Dynamic Network Storage</p>
                     </div>
                     <span class="svg-icon" style="color: var(--accent-primary);"><svg viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"/><rect x="2" y="14" width="20" height="8" rx="2" ry="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg></span>
                 </div>
-                <div class="progress-track"><div class="progress-fill"></div></div>
+                <div class="progress-track"><div class="progress-fill" style="width: 12%;"></div></div>
                 <p style="font-size: 12px; color: var(--text-muted);">Unlimited secure cloud space active.</p>
             </div>
         </div>
@@ -113,6 +106,10 @@
             <button class="nav-item" onclick="tg.showAlert('Send assets directly via Telegram bot to sync.', () => tg.close())">
                 <svg class="svg-icon" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
                 Sync
+            </button>
+            <button class="nav-item" id="nav-profile" onclick="switchTab('profile', this)">
+                <svg class="svg-icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                Profile
             </button>
         </div>
     </div>
@@ -146,11 +143,12 @@
 
         let globalFiles = [];
         
-        // Встроенные SVG-иконки для папок вместо эмодзи
+        // Pure SVG Icons for Premium feel
         const iconShield = `<svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`;
         const iconBriefcase = `<svg class="svg-icon" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>`;
         const iconFolder = `<svg class="svg-icon" viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>`;
         const iconImage = `<svg class="svg-icon" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>`;
+        const iconDoc = `<svg class="svg-icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>`;
 
         let workspaces = [
             { id: 'work', name: 'Workplace', icon: iconBriefcase },
@@ -183,31 +181,24 @@
                     { type: 'photo', url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=400', text: 'Abstract Art 2', folder: 'work' }
                 ];
             }
-            updateHero(globalFiles[0]);
+            
+            updateCdStatus();
             renderWorkspaces();
             renderContent();
         }
 
-        function updateHero(file) {
-            if(!file) return;
-            const title = file.type === 'document' ? file.text.split('.')[0] : "Visual Asset";
-            document.getElementById('heroTitle').innerText = title;
-            document.getElementById('heroSubtitle').innerText = file.type === 'document' ? 'Document Type' : 'Image Format';
+        // ================= CD LOGIC =================
+        function updateCdStatus() {
+            // Mock: each file is roughly 2.4 MB for visual effect
+            const totalMb = (globalFiles.length * 2.4).toFixed(1);
+            document.getElementById('dataUsedLabel').innerText = `${totalMb} MB`;
             
-            if (file.type === 'photo') {
-                document.getElementById('heroCard').style.background = `linear-gradient(rgba(0,0,0,0.1), rgba(0,0,0,0.9)), url('${file.url}') center/cover`;
-            } else {
-                document.getElementById('heroCard').style.background = `linear-gradient(135deg, #1e1e1e 0%, #0a0a0a 100%)`;
-            }
+            // Visual progress up to 20% max (since it's infinite, the bar just shows activity)
+            const visualPercent = Math.min(20, Math.max(5, globalFiles.length * 2));
+            document.getElementById('dataUsedBar').style.width = `${visualPercent}%`;
         }
 
-        function triggerHeroAction() {
-            tg.HapticFeedback.impactOccurred('medium');
-            if(globalFiles.length > 0 && globalFiles[0].type === 'photo') openModal(globalFiles[0].url);
-            else tg.showAlert("Preview not supported for this format.");
-        }
-
-        // ================= WORKSPACES (FOLDERS) =================
+        // ================= WORKSPACES =================
         function renderWorkspaces() {
             const container = document.getElementById('foldersContainer');
             container.innerHTML = '';
@@ -216,17 +207,10 @@
                 const count = globalFiles.filter(f => f.folder === ws.id).length;
                 const card = document.createElement('div');
                 card.className = `workspace-card ${activeWorkspace === ws.id ? 'active' : ''}`;
-                card.innerHTML = `
-                    <div class="workspace-icon">${ws.icon}</div>
-                    <div style="margin-top: auto;">
-                        <div class="workspace-title">${ws.name}</div>
-                        <div class="workspace-count">${count} assets</div>
-                    </div>`;
+                card.innerHTML = `<div class="workspace-icon">${ws.icon}</div><div style="margin-top: auto;"><div class="workspace-title">${ws.name}</div><div class="workspace-count">${count} assets</div></div>`;
 
-                // Logic to separate tap vs long press
                 card.onclick = () => {
-                    activeWorkspace = ws.id;
-                    renderWorkspaces(); renderContent();
+                    activeWorkspace = ws.id; renderWorkspaces(); renderContent();
                     tg.HapticFeedback.selectionChanged();
                 };
                 
@@ -251,24 +235,23 @@
             renderWorkspaces(); showToast("Workspace created");
         }
 
-        // ================= RENDER ARCHIVE (FIXED SECTIONS) =================
+        // ================= RENDER ARCHIVE =================
         function renderContent() {
             const homeGrid = document.getElementById('homeRecentGallery');
             const fullGrid = document.getElementById('fullGallery');
             
             homeGrid.innerHTML = ''; fullGrid.innerHTML = '';
 
-            // Фильтруем файлы для Главной страницы (только выбранная папка, макс 4 штуки!)
+            // Home Tab: Max 4 items from active workspace
             const folderFiles = globalFiles.filter(f => f.folder === activeWorkspace);
-            const recentFolderFiles = folderFiles.slice(0, 4); // <--- Это убивает бесконечный скролл на главной!
+            const recentFolderFiles = folderFiles.slice(0, 4); 
 
             if(recentFolderFiles.length === 0) {
                 homeGrid.innerHTML = `<div class="empty-state">${iconFolder}<div>No assets in this workspace</div></div>`;
             }
-
             recentFolderFiles.forEach(file => homeGrid.appendChild(createCard(file)));
 
-            // Полный рендер для вкладки "Files"
+            // Files Tab: All items with search filter
             const filteredAll = globalFiles.filter(f => (f.text || '').toLowerCase().includes(searchQuery.toLowerCase()));
             if(filteredAll.length === 0) {
                 fullGrid.innerHTML = `<div class="empty-state">${iconFolder}<div>No matches found</div></div>`;
@@ -283,9 +266,7 @@
                 card.innerHTML = `<img src="${file.url}" alt="Img" loading="lazy">`;
                 card.onclick = () => openModal(file.url);
             } else {
-                // Документ без эмодзи, только SVG иконка
-                const docSvg = `<svg class="svg-icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>`;
-                card.innerHTML = `${docSvg}<div class="item-title">${file.text}</div><div class="item-meta">Document</div>`;
+                card.innerHTML = `${iconDoc}<div class="item-title">${file.text}</div><div class="item-meta">Document</div>`;
                 card.onclick = () => tg.showAlert("Secure documents are streamed via Telegram bot.");
             }
             return card;
@@ -308,7 +289,7 @@
             renderContent();
         }
 
-        // ================= MODALS & SHEETS =================
+        // ================= SHEETS & MODALS =================
         function openSheet(ws) {
             targetedWorkspace = ws;
             document.getElementById('sheetTitle').innerText = ws.name;
@@ -335,6 +316,7 @@
             workspaces = workspaces.filter(w => w.id !== targetedWorkspace.id);
             if(activeWorkspace === targetedWorkspace.id) activeWorkspace = 'work';
             renderWorkspaces(); renderContent(); closeSheet(); showToast("Workspace Removed");
+            updateCdStatus();
         }
 
         function openModal(url) {
