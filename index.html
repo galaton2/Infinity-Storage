@@ -14,6 +14,7 @@
 
     <div class="container">
         
+        <!-- Header -->
         <div class="header-top">
             <h1 class="app-title">Aura</h1>
             <button class="icon-btn" onclick="switchTab('profile')">
@@ -21,66 +22,72 @@
             </button>
         </div>
 
+        <!-- ================= TAB 1: HOME (RECENT ACTIVITY ONLY) ================= -->
         <div id="tab-home" class="tab-content active">
-            
-            <div class="cd-hero">
-                <div class="cd-hero-info">
-                    <h2 class="cd-hero-title heading">Aura Core</h2>
-                    <div class="storage-labels">
-                        <span class="storage-used" id="dataUsedText">0.0 MB</span>
-                        <span class="storage-infinity">∞</span>
-                    </div>
-                    <div class="hero-progress-track">
-                        <div class="hero-progress-fill" id="dataUsedFill"></div>
-                    </div>
-                </div>
-                <div class="cd-wrapper">
-                    <div class="cd-disc"></div>
-                    <div class="cd-hole"></div>
-                </div>
+            <!-- Диск и прогресс убраны, Home служит дашбордом активности -->
+            <div class="section-header" style="margin-top: 0;">
+                <h2 class="section-title">Workspace Activity</h2>
+                <button class="section-action" onclick="switchTab('files', document.getElementById('nav-files'))">View All Assets</button>
             </div>
+            
+            <div class="grid-gallery" id="homeRecentGallery">
+                <!-- Тут будут ТОЛЬКО 4 последних файла из активной папки -->
+            </div>
+        </div>
 
-            <div class="section-header">
+        <!-- ================= TAB 2: FILES (WORKSPACES MOVED HERE) ================= -->
+        <div id="tab-files" class="tab-content">
+            <h1 class="heading" style="font-size: 32px; margin-bottom: 24px;">Vault Assets</h1>
+
+            <!-- Workspaces Section (Перенесено сюда, наверх) -->
+            <div class="section-header" style="margin-top: 0;">
                 <h2 class="section-title">Workspaces</h2>
                 <button class="section-action" onclick="createWorkspace()">Create New</button>
             </div>
             
             <div class="workspace-scroll" id="foldersContainer">
-                </div>
-
-            <div class="section-header">
-                <h2 class="section-title">Workspace Activity</h2>
-                <button class="section-action" onclick="switchTab('files', document.getElementById('nav-files'))">View All</button>
+                <!-- Папки рендерятся тут -->
             </div>
             
-            <div class="grid-gallery" id="homeRecentGallery">
-                </div>
-        </div>
-
-        <div id="tab-files" class="tab-content">
-            <h1 class="heading" style="font-size: 32px; margin-bottom: 24px;">Vault Assets</h1>
-            
+            <!-- Поиск -->
             <div class="search-box">
                 <svg class="svg-icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
                 <input type="text" class="search-input" id="searchInput" placeholder="Search by name..." oninput="handleSearch()">
             </div>
 
+            <!-- Сетка всех файлов -->
             <div class="grid-gallery" id="fullGallery">
-                </div>
+                <!-- Все файлы -->
+            </div>
         </div>
 
+        <!-- ================= TAB 3: PROFILE (PROGRESS BAR HERE) ================= -->
         <div id="tab-profile" class="tab-content">
             <h1 class="heading" style="font-size: 32px; margin-bottom: 24px;">Account</h1>
             
-            <div class="cd-hero" style="flex-direction: column; align-items: center; text-align: center; padding: 32px 24px;">
+            <!-- Карточка профиля -->
+            <div class="grid-item document" style="aspect-ratio: auto; width: 100%; padding: 32px 24px; margin-bottom: 24px;">
                 <div style="width: 80px; height: 80px; border-radius: 50%; background: var(--accent-primary); display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: 600; color: #fff; margin-bottom: 16px;" id="userAvatar">B</div>
                 <h2 class="heading" id="userName" style="font-size: 24px; margin-bottom: 4px; color: #fff;">Bekhruz</h2>
                 <p style="color: var(--text-muted); font-size: 14px;">Master Admin</p>
+            </div>
+
+            <!-- Прогресс-бар (Сдвинут влево, исправлено положение) -->
+            <div class="profile-progress-box">
+                <div class="progress-labels">
+                    <span class="progress-used" id="dataUsedText">0.0 MB</span>
+                    <span class="progress-infinity">∞</span>
+                </div>
+                <div class="progress-track">
+                    <div class="progress-fill" id="dataUsedFill" style="width: 0%;"></div>
+                </div>
+                <p style="font-size: 12px; color: var(--text-muted); margin-top: 12px;">Unlimited safe space active on Synology Server.</p>
             </div>
         </div>
 
     </div>
 
+    <!-- FLOATING NAV -->
     <div class="nav-container">
         <div class="nav-bar">
             <button class="nav-item active" id="nav-home" onclick="switchTab('home', this)">
@@ -98,6 +105,7 @@
         </div>
     </div>
 
+    <!-- ACTION SHEET -->
     <div class="sheet-overlay" id="sheetOverlay" onclick="closeSheet()"></div>
     <div class="action-sheet" id="actionSheet">
         <div class="sheet-handle"></div>
@@ -112,6 +120,7 @@
         </button>
     </div>
 
+    <!-- LIGHTBOX -->
     <div class="modal" id="imageModal">
         <button class="icon-btn modal-close" onclick="closeModal()">
             <svg class="svg-icon" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -162,25 +171,8 @@
                     { type: 'photo', url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=400', text: 'Abstract Art 2', folder: 'work' }
                 ];
             }
-            updateStorageData();
             renderWorkspaces();
             renderContent();
-        }
-
-        // ================= DYNAMIC CD PROGRESS LOGIC =================
-        function updateStorageData() {
-            // Эмуляция веса (каждый файл ~3.4 MB для красоты)
-            const mbCount = (globalFiles.length * 3.4).toFixed(1);
-            document.getElementById('dataUsedText').innerText = `${mbCount} MB`;
-            
-            // Заполнение полоски прогресса (от 0% до 100%)
-            // Для наглядности, каждые 5 файлов заполняют ее на 15%
-            const fillPercent = Math.min((globalFiles.length * 5), 100);
-            
-            // Небольшая задержка анимации для красивого старта
-            setTimeout(() => {
-                document.getElementById('dataUsedFill').style.width = fillPercent + '%';
-            }, 300);
         }
 
         // ================= WORKSPACES (FOLDERS) =================
@@ -242,7 +234,7 @@
             if(filteredAll.length === 0) fullGrid.innerHTML = `<div class="empty-state">${iconFolder}<div>No matches found</div></div>`;
             filteredAll.forEach(file => fullGrid.appendChild(createCard(file)));
             
-            updateStorageData(); // Обновляем размер при рендере
+            updateProfileStorage(); // Обновляем прогресс в профиле
         }
 
         function createCard(file) {
@@ -257,6 +249,22 @@
                 card.onclick = () => tg.showAlert("Secure documents are streamed via Telegram bot.");
             }
             return card;
+        }
+
+        // ================= PROFILE PROGRESS LOGIC =================
+        function updateProfileStorage() {
+            // Эмуляция веса (каждый файл ~3.4 MB)
+            const mbCount = (globalFiles.length * 3.4).toFixed(1);
+            document.getElementById('dataUsedText').innerText = `${mbCount} MB`;
+            
+            // Заполнение (каждый файл 5%, макс 100%)
+            const fillPercent = Math.min((globalFiles.length * 5), 100);
+            
+            // Плавное заполнение в профиле при переключении табов
+            setTimeout(() => {
+                const fillEl = document.getElementById('dataUsedFill');
+                if(fillEl) fillEl.style.width = fillPercent + '%';
+            }, 100);
         }
 
         // ================= TABS & SEARCH =================
