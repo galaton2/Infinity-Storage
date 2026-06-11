@@ -3,82 +3,80 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Infinity Core</title>
+    <title>Premium Storage</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
 <body>
-
     <div class="ambient-glow"></div>
     <div class="ambient-glow right"></div>
 
-    <div class="search-overlay" id="searchOverlay">
-        <div class="search-input-wrapper">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-            <input type="text" class="search-bar-input" id="searchBarInput" placeholder="Find files..." oninput="executeSearch()">
-        </div>
-        <button class="icon-btn" onclick="toggleSearchPanel()" style="width: auto; padding: 0 16px; font-size: 14px; font-weight:600; border-radius: 20px;">Close</button>
-    </div>
-
     <div class="container">
-        <div class="header-top">
-            <button class="icon-btn" onclick="toggleSearchPanel()">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-            </button>
-            <h2 style="font-size: 20px;">Overview</h2>
-            <button class="icon-btn" onclick="switchTab('profile')">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-            </button>
-        </div>
-
+        
         <div id="tab-home" class="tab-content active">
-            <div class="section-title" style="margin-bottom: 16px;">Recently Added</div>
             
-            <div class="hero-card" id="heroCard">
-                <div class="hero-content">
-                    <h1 class="hero-title" id="heroTitle">No Data</h1>
-                    <p class="hero-subtitle" id="heroSubtitle">Upload via bot</p>
-                </div>
-                <button class="play-btn" onclick="triggerHeroAction()">
-                    <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+            <div class="header-top">
+                <h1 style="font-size: 26px;">Overview</h1>
+                <button class="icon-btn" onclick="switchTab('profile')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                 </button>
             </div>
 
-            <div class="section-title-row">
-                <div class="section-title">Spaces</div>
-                <button class="section-action-btn" onclick="createNewFolder()">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                    New
-                </button>
-            </div>
-            
-            <div class="scroll-section" id="foldersContainer">
+            <section class="dashboard-section">
+                <div class="section-header">
+                    <div class="section-title">Just Added</div>
                 </div>
+                
+                <div class="hero-card" id="heroCard">
+                    <div class="hero-bg-overlay"></div>
+                    <button class="action-arrow" onclick="triggerHeroAction()">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M7 17L17 7"/><path d="M7 7h10v10"/></svg>
+                    </button>
+                    <div class="hero-content">
+                        <h1 class="hero-title" id="heroTitle">No files</h1>
+                        <p class="hero-subtitle" id="heroSubtitle">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                            Waiting for sync...
+                        </p>
+                    </div>
+                </div>
+            </section>
 
-            <div class="section-title-row" style="margin-bottom: 16px;">
-                <div class="section-title" id="currentFolderName">Content</div>
-            </div>
-            <div class="gallery-grid" id="homeFolderGallery">
+            <section class="dashboard-section">
+                <div class="section-header">
+                    <div class="section-title">Collections</div>
+                    <button class="section-action" onclick="createNewFolder()">+ Add New</button>
                 </div>
+                <div class="scroll-section" id="foldersContainer">
+                    </div>
+            </section>
+
+            <section class="dashboard-section">
+                <div class="section-header">
+                    <div class="section-title" id="folderContentTitle">Folder Content</div>
+                </div>
+                <div class="gallery-grid" id="homeFolderGallery">
+                    </div>
+            </section>
+
         </div>
 
         <div id="tab-files" class="tab-content">
             <h1 style="font-size: 32px; margin-bottom: 24px;">All Items</h1>
-            <div class="gallery-grid" id="fullGallery">
-                </div>
+            <div class="gallery-grid" id="fullGallery"></div>
         </div>
 
         <div id="tab-profile" class="tab-content" style="text-align: center;">
             <div class="profile-avatar" id="userAvatar">B</div>
-            <h1 id="userName" style="font-size: 28px; margin-bottom: 8px;">Bekhruz</h1>
-            <p class="section-title">System Admin</p>
+            <h1 id="userName" style="font-size: 28px; margin-bottom: 4px;">Bekhruz</h1>
+            <p style="color: var(--text-muted); font-size: 15px; margin-bottom: 32px;">Infinity Cloud Plan</p>
             
-            <div style="background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: var(--radius-lg); padding: 24px; text-align: left; margin-top: 32px;">
-                <h3 style="font-size: 18px; margin-bottom: 16px;">NAS Integration</h3>
-                <div style="height: 8px; background: rgba(255,255,255,0.05); border-radius: 4px; overflow: hidden; margin-bottom: 16px;">
-                    <div style="width: 12%; height: 100%; background: var(--accent-green); border-radius: 4px;"></div>
+            <div style="background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: var(--radius-md); padding: 24px; text-align: left;">
+                <h3 style="font-size: 18px; margin-bottom: 16px;">Storage Health</h3>
+                <div style="height: 6px; background: rgba(255,255,255,0.05); border-radius: 3px; margin-bottom: 12px;">
+                    <div style="width: 12%; height: 100%; background: var(--accent-primary); border-radius: 3px;"></div>
                 </div>
-                <p style="font-size: 14px; color: var(--text-muted); line-height: 1.5;">End-to-end encryption active. Storage limits bypassed via custom Synology node.</p>
+                <p style="font-size: 13px; color: var(--text-muted);">Synced perfectly with local Synology Server.</p>
             </div>
         </div>
     </div>
@@ -86,16 +84,12 @@
     <div class="bottom-nav-container">
         <nav class="bottom-nav">
             <button class="nav-item active" onclick="switchTab('home', this)">
-                <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
                 Home
             </button>
             <button class="nav-item" onclick="switchTab('files', this)">
-                <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                 Files
-            </button>
-            <button class="nav-item" onclick="tg.showAlert('Send items to the Telegram Bot. They will instantly sync to this hub.', () => tg.close())">
-                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-                Info
             </button>
             <button class="nav-item" onclick="switchTab('profile', this)">
                 <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
@@ -104,70 +98,61 @@
         </nav>
     </div>
 
-    <div class="modal" id="imageModal">
-        <button class="modal-close" onclick="closeModal()">✕</button>
-        <img id="modalImage" src="" alt="View">
-    </div>
-
     <div class="sheet-overlay" id="sheetOverlay" onclick="closeContextSheet()"></div>
     <div class="action-sheet" id="contextSheet">
-        <div class="sheet-header"><div class="sheet-drag"></div><div class="sheet-title" id="sheetFolderTitle">Space Settings</div></div>
+        <div class="sheet-drag"></div>
+        <p style="text-align: center; font-weight: 600; font-size: 16px; margin-bottom: 20px; color: #fff;" id="sheetTitle">Folder Menu</p>
+        
         <button class="sheet-btn" onclick="renameFolderAction()">
-            <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-            Rename Space
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+            Rename Collection
         </button>
         <button class="sheet-btn danger" onclick="deleteFolderAction()">
-            <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-            Delete Space
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+            Delete Collection
         </button>
     </div>
 
-    <div id="toast-container"></div>
+    <div class="modal" id="imageModal" onclick="closeModal()">
+        <img id="modalImage" src="" alt="View" onclick="event.stopPropagation()">
+    </div>
 
     <script>
         const tg = window.Telegram.WebApp;
         tg.expand();
         tg.ready();
 
-        const API_URL = "https://galaxylab.i234.me:8443/api/files";
-        
-        // Векторные SVG иконки вместо эмодзи
-        const SVGS = {
-            work: `<svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>`,
-            personal: `<svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>`,
-            media: `<svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>`,
-            box: `<svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>`,
-            layer: `<svg viewBox="0 0 24 24"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>`
-        };
+        // Premium SVG Icons
+        const ICON_FOLDER = `<svg class="folder-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"/></svg>`;
+        const ICON_LOCK = `<svg class="folder-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>`;
+        const ICON_DOC = `<svg class="doc-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>`;
 
         let globalFiles = [];
         let folders = [
-            { id: 'work', name: 'Work', icon: SVGS.work },
-            { id: 'personal', name: 'Personal', icon: SVGS.personal }
+            { id: 'work', name: 'Projects', icon: ICON_FOLDER },
+            { id: 'personal', name: 'Private', icon: ICON_LOCK }
         ];
         let activeFolderId = 'work';
         let targetedFolderId = null;
-        let searchString = '';
 
+        const API_URL = "https://galaxylab.i234.me:8443/api/files";
+        
         const user = tg.initDataUnsafe?.user;
-        const firstName = user?.first_name || 'Bekhruz';
-        document.getElementById('userName').innerText = firstName;
-        document.getElementById('userAvatar').innerText = firstName.charAt(0);
+        document.getElementById('userName').innerText = user?.first_name || 'Bekhruz';
+        document.getElementById('userAvatar').innerText = (user?.first_name || 'B').charAt(0);
 
         async function fetchFiles() {
-            const userId = user?.id || '123456789';
             try {
-                const response = await fetch(`${API_URL}?user_id=${userId}`);
+                const response = await fetch(`${API_URL}?user_id=${user?.id || '123456789'}`);
                 const data = await response.json();
                 if (data.status === "success" && data.files.length > 0) {
                     globalFiles = data.files;
-                } else throw new Error("empty");
-            } catch (error) {
+                } else throw new Error();
+            } catch (e) {
                 globalFiles = [
-                    { type: 'photo', url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=400', text: 'Abstract_Art', folder: 'work' },
-                    { type: 'photo', url: 'https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=400', text: 'Neon_Vibes', folder: 'personal' },
-                    { type: 'document', text: 'Bot_Architecture.pdf', folder: 'work' },
-                    { type: 'document', text: 'Tor_Vergata_Form.docx', folder: 'personal' }
+                    { type: 'photo', url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=400', folder: 'work' },
+                    { type: 'document', text: 'Financial_Data.pdf', folder: 'work' },
+                    { type: 'photo', url: 'https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=400', folder: 'personal' }
                 ];
             }
             if(globalFiles.length > 0) updateHeroHighlight(globalFiles[0]);
@@ -176,170 +161,118 @@
         }
 
         function updateHeroHighlight(file) {
-            if(!file) return;
-            document.getElementById('heroTitle').innerHTML = file.type === 'document' ? file.text.split('.')[0].substring(0,12) + '...' : "Visual<br>Asset";
-            document.getElementById('heroSubtitle').innerText = file.type === 'document' ? 'Document Stream' : 'Image Stream';
+            document.getElementById('heroTitle').innerText = file.type === 'document' ? file.text.split('.')[0] : "Visual Asset";
             if (file.type === 'photo') {
-                document.getElementById('heroCard').style.background = `linear-gradient(rgba(0,0,0,0.1), rgba(0,0,0,0.8)), url('${file.url}') center/cover`;
+                document.getElementById('heroCard').style.background = `url('${file.url}') center/cover`;
+            } else {
+                document.getElementById('heroCard').style.background = `linear-gradient(145deg, #1e1b4b 0%, #312e81 100%)`;
             }
         }
 
         function triggerHeroAction() {
             tg.HapticFeedback.impactOccurred('medium');
-            if(globalFiles.length > 0 && globalFiles[0].type === 'photo') openModal(globalFiles[0].url);
+            if(globalFiles[0]?.type === 'photo') openModal(globalFiles[0].url);
         }
 
-        // ================= FOLDERS =================
         function renderFolders() {
             const container = document.getElementById('foldersContainer');
             container.innerHTML = '';
-
             folders.forEach(folder => {
                 const count = globalFiles.filter(f => f.folder === folder.id).length;
                 const card = document.createElement('div');
-                card.className = `glass-card ${activeFolderId === folder.id ? 'active' : ''}`;
-                card.innerHTML = `
-                    <div class="folder-icon-box">${folder.icon}</div>
-                    <div>
-                        <h2 class="glass-title">${folder.name}</h2>
-                        <p class="glass-subtitle">${count} items</p>
-                    </div>`;
-
+                card.className = `folder-card ${activeFolderId === folder.id ? 'active' : ''}`;
+                card.innerHTML = `<div>${folder.icon}</div><div><div class="folder-title">${folder.name}</div><div class="folder-subtitle">${count} files</div></div>`;
+                
                 card.onclick = () => {
                     activeFolderId = folder.id;
-                    document.getElementById('currentFolderName').innerText = folder.name + " Content";
+                    document.getElementById('folderContentTitle').innerText = folder.name;
                     renderFolders();
                     renderGalleries();
                     tg.HapticFeedback.selectionChanged();
                 };
 
-                let pressTimer;
-                const start = () => pressTimer = setTimeout(() => openContextSheet(folder.id, folder.name), 600);
-                const cancel = () => clearTimeout(pressTimer);
+                let timer;
+                const start = () => timer = setTimeout(() => openContextSheet(folder.id, folder.name), 500);
+                const cancel = () => clearTimeout(timer);
                 card.addEventListener('touchstart', start); card.addEventListener('touchend', cancel);
                 card.addEventListener('mousedown', start); card.addEventListener('mouseup', cancel);
-                card.addEventListener('mouseleave', cancel);
-
+                
                 container.appendChild(card);
             });
-            
-            // Sync title on first load
-            const activeFolder = folders.find(f => f.id === activeFolderId);
-            if(activeFolder) document.getElementById('currentFolderName').innerText = activeFolder.name + " Content";
         }
 
         function createNewFolder() {
             tg.HapticFeedback.impactOccurred('light');
-            const name = prompt("Name the new space:");
-            if (!name) return;
-            const id = 'f_' + Date.now();
-            const iconKeys = ['media', 'box', 'layer'];
-            const randomIconKey = iconKeys[Math.floor(Math.random() * iconKeys.length)];
-            folders.push({ id: id, name: name, icon: SVGS[randomIconKey] });
-            activeFolderId = id;
-            renderFolders(); renderGalleries();
-            showToast("Space initialized");
-        }
-
-        function openContextSheet(id, name) {
-            targetedFolderId = id;
-            document.getElementById('sheetFolderTitle').innerText = name + ' Settings';
-            document.getElementById('contextSheet').classList.add('active');
-            document.getElementById('sheetOverlay').style.display = 'block';
-            tg.HapticFeedback.impactOccurred('medium');
-        }
-
-        function closeContextSheet() {
-            document.getElementById('contextSheet').classList.remove('active');
-            document.getElementById('sheetOverlay').style.display = 'none';
-        }
-
-        function renameFolderAction() {
-            const newName = prompt("Enter new name:");
-            if(newName && targetedFolderId) {
-                folders.find(f => f.id === targetedFolderId).name = newName;
-                renderFolders(); showToast("Name updated");
+            const name = prompt("Collection Name:");
+            if (name) {
+                const id = 'f_' + Date.now();
+                folders.push({ id, name, icon: ICON_FOLDER });
+                activeFolderId = id;
+                document.getElementById('folderContentTitle').innerText = name;
+                renderFolders(); renderGalleries();
             }
-            closeContextSheet();
         }
-
-        function deleteFolderAction() {
-            if(!targetedFolderId) return;
-            globalFiles.forEach(f => { if(f.folder === targetedFolderId) f.folder = null; });
-            folders = folders.filter(f => f.id !== targetedFolderId);
-            if(activeFolderId === targetedFolderId) activeFolderId = folders[0]?.id || null;
-            renderFolders(); renderGalleries();
-            showToast("Space deleted");
-            closeContextSheet();
-        }
-
-        // ================= SEARCH & RENDER =================
-        function toggleSearchPanel() {
-            const overlay = document.getElementById('searchOverlay');
-            overlay.classList.toggle('active');
-            if(overlay.classList.contains('active')) document.getElementById('searchBarInput').focus();
-            else { document.getElementById('searchBarInput').value = ''; searchString = ''; renderGalleries(); }
-            tg.HapticFeedback.impactOccurred('light');
-        }
-        function executeSearch() { searchString = document.getElementById('searchBarInput').value.toLowerCase(); renderGalleries(); }
 
         function renderGalleries() {
             const homeGrid = document.getElementById('homeFolderGallery');
             const fullGrid = document.getElementById('fullGallery');
             homeGrid.innerHTML = fullGrid.innerHTML = '';
 
-            // SVG для документов
-            const docIcon = `<svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>`;
-
-            globalFiles.forEach((file) => {
-                if (file.text && !file.text.toLowerCase().includes(searchString)) return;
-
-                const card = document.createElement('div');
-                card.className = `grid-item ${file.type}`;
+            globalFiles.forEach(file => {
+                const item = document.createElement('div');
+                item.className = `grid-item ${file.type}`;
                 
                 if (file.type === 'photo') {
-                    card.innerHTML = `<img src="${file.url}" alt="Asset" loading="lazy">`;
-                    card.onclick = () => openModal(file.url);
+                    item.innerHTML = `<img src="${file.url}" loading="lazy">`;
+                    item.onclick = () => openModal(file.url);
                 } else {
-                    card.innerHTML = `${docIcon}<div class="item-title">${file.text || 'Secure Document'}</div>`;
-                    card.onclick = () => tg.showAlert("Secure documents are streamed via Telegram native interface.");
+                    item.innerHTML = `${ICON_DOC}<div class="item-title">${file.text}</div>`;
                 }
 
-                // 1. Вставляем ВСЕ файлы во вкладку "All Items" (Files Tab)
-                fullGrid.appendChild(card.cloneNode(true));
-
-                // 2. Вставляем ТОЛЬКО нужные файлы на Главную вкладку (Home Tab)
-                if (file.folder === activeFolderId) {
-                    homeGrid.appendChild(card);
-                }
+                fullGrid.appendChild(item.cloneNode(true));
+                if (file.folder === activeFolderId) homeGrid.appendChild(item);
             });
 
             if (homeGrid.children.length === 0) {
-                homeGrid.innerHTML = '<div style="color:var(--text-muted); font-size:14px; padding:32px 20px; grid-column:1/-1; text-align:center; font-weight: 500;">No assets in this space</div>';
+                homeGrid.innerHTML = '<div style="color:var(--text-muted); font-size:14px; grid-column:1/-1; padding:20px 0;">Collection is empty.</div>';
             }
         }
 
-        // ================= TABS & UTILS =================
-        function switchTab(tabId, navElement = null) {
-            // Строгое CSS скрытие (display: none)
+        function switchTab(tabId, navBtn) {
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
             document.getElementById('tab-' + tabId).classList.add('active');
-            
-            if(navElement) {
-                document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
-                navElement.classList.add('active');
-                tg.HapticFeedback.selectionChanged();
-            }
+            document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+            navBtn.classList.add('active');
+            tg.HapticFeedback.selectionChanged();
             window.scrollTo(0, 0);
+        }
+
+        // Action Sheet
+        function openContextSheet(id, name) {
+            targetedFolderId = id;
+            document.getElementById('sheetTitle').innerText = name;
+            document.getElementById('contextSheet').classList.add('active');
+            document.getElementById('sheetOverlay').style.display = 'block';
+            tg.HapticFeedback.impactOccurred('medium');
+        }
+        function closeContextSheet() {
+            document.getElementById('contextSheet').classList.remove('active');
+            document.getElementById('sheetOverlay').style.display = 'none';
+        }
+        function renameFolderAction() {
+            const newName = prompt("New name:");
+            if(newName) { folders.find(f => f.id === targetedFolderId).name = newName; renderFolders(); }
+            closeContextSheet();
+        }
+        function deleteFolderAction() {
+            globalFiles.forEach(f => { if(f.folder === targetedFolderId) f.folder = null; });
+            folders = folders.filter(f => f.id !== targetedFolderId);
+            if(activeFolderId === targetedFolderId) activeFolderId = folders[0]?.id || null;
+            renderFolders(); renderGalleries(); closeContextSheet();
         }
 
         function openModal(url) { document.getElementById('modalImage').src = url; document.getElementById('imageModal').classList.add('active'); tg.HapticFeedback.impactOccurred('light'); }
         function closeModal() { document.getElementById('imageModal').classList.remove('active'); }
-        function showToast(msg) {
-            const c = document.getElementById('toast-container');
-            const t = document.createElement('div'); t.className = 'toast'; t.innerText = msg;
-            c.appendChild(t); setTimeout(() => t.remove(), 3000);
-        }
 
         window.onload = fetchFiles;
     </script>
