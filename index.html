@@ -13,12 +13,14 @@
         <div class="header">
             <h1>Storage</h1>
             <div class="header-actions">
-                <button class="icon-btn" onclick="toggleSelectionMode()" id="selectBtn">☑️</button>
-                <button class="icon-btn" onclick="toggleView()" id="viewBtn">🔲</button>
+                <button onclick="toggleViewMode()" id="viewToggleBtn">
+                    <svg width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M3 4h18v2H3V4zm0 7h18v2H3v-2zm0 7h18v2H3v-2z"/></svg>
+                </button>
             </div>
         </div>
 
         <div class="search-container">
+            <span class="search-icon">🔍</span>
             <input type="text" class="search-input" id="searchInput" placeholder="Search files..." oninput="handleSearch()">
         </div>
 
@@ -28,87 +30,104 @@
             <button class="filter-btn" onclick="applyFilter('document')">Documents</button>
         </div>
 
-        <div class="gallery" id="gallery"></div>
+        <div class="gallery view-grid" id="gallery">
+            </div>
     </div>
 
     <div id="tab-profile" class="tab-content">
-        <div class="profile-header">
+        <div class="profile-section">
             <div class="avatar" id="userAvatar">U</div>
-            <h2 id="userName">User</h2>
-            <p>Admin</p>
+            <h2 id="userName" style="font-size: 24px; font-weight: 600;">Loading...</h2>
         </div>
         
-        <div class="storage-section">
+        <div class="storage-card">
             <div class="storage-header">
-                <span>Storage Used</span>
-                <span id="storageText">0 MB</span>
+                <span>Storage Usage</span>
+                <span id="storageAmount">0 MB of ∞</span>
             </div>
-            <div class="storage-bar-bg">
-                <div class="storage-bar-fill" id="storageFill"></div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="storageProgress"></div>
             </div>
-            <p style="font-size: 12px; color: var(--hint-color); margin-top: 12px;">Unlimited Telegram Cloud</p>
+            <p style="margin-top: 12px; font-size: 13px; color: var(--text-secondary);">Unlimited cloud space provided by Synology.</p>
+        </div>
+
+        <div class="settings-group">
+            <div class="setting-item">
+                <span>Haptic Feedback</span>
+                <label class="switch"><input type="checkbox" id="hapticToggle" checked><span class="slider"></span></label>
+            </div>
+            <div class="setting-item">
+                <span>High Quality Photos</span>
+                <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
+            </div>
         </div>
     </div>
 
-    <button class="fab" onclick="onFabClick()">+</button>
+    <button class="fab" onclick="handleFabClick()">+</button>
 
-    <nav class="bottom-nav">
+    <nav class="bottom-nav" id="bottomNav">
         <button class="nav-item active" onclick="switchTab('gallery', this)">
-            <div class="icon">📁</div><span>Home</span>
+            <svg viewBox="0 0 24 24"><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>
+            Files
         </button>
         <button class="nav-item" onclick="switchTab('profile', this)">
-            <div class="icon">👤</div><span>Profile</span>
+            <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+            Profile
         </button>
     </nav>
 
-    <div class="selection-bar" id="selectionBar">
-        <button class="btn-primary" onclick="downloadSelected()">📥 Download</button>
-        <button class="btn-danger-solid" onclick="deleteSelected()">🗑 Delete</button>
-    </div>
+    <nav class="selection-toolbar" id="selectionToolbar">
+        <button class="toolbar-btn" onclick="cancelSelection()">✕ Cancel</button>
+        <span id="selectionCount" style="font-weight: 600; font-size: 14px;">1 selected</span>
+        <button class="toolbar-btn danger" onclick="deleteSelected()">🗑 Delete</button>
+    </nav>
 
     <div class="modal" id="imageModal">
-        <div class="modal-header">
-            <button class="modal-btn-icon" onclick="closeModal()">✕</button>
-            <button class="modal-btn-icon" onclick="openActionSheet()">⋮</button>
-        </div>
+        <button class="action-btn close-btn" onclick="closeModal()">✕</button>
+        <button class="action-btn" onclick="toggleActionSheet()">⋮</button>
+        
+        <div class="swipe-hint swipe-left">‹</div>
         <img id="modalImage" src="" alt="Full size">
-    </div>
+        <div class="swipe-hint swipe-right">›</div>
 
-    <div class="action-sheet-overlay" id="sheetOverlay" onclick="closeActionSheet()"></div>
-    <div class="action-sheet" id="actionSheet">
-        <div class="sheet-drag"></div>
-        <button class="sheet-btn" onclick="downloadActiveItem()">📥 Save to Device</button>
-        <button class="sheet-btn danger" onclick="deleteActiveItem()">🗑 Delete File</button>
+        <div class="action-sheet" id="actionSheet">
+            <button class="sheet-btn" onclick="downloadCurrentItem()">📥 Save to Device</button>
+            <button class="sheet-btn" onclick="shareCurrentItem()">↗️ Share File</button>
+            <button class="sheet-btn danger" onclick="deleteCurrentItem()">🗑 Delete File</button>
+        </div>
     </div>
 
     <div id="toast-container"></div>
 
     <script>
+        // ================= STATE =================
         const tg = window.Telegram.WebApp;
         tg.expand();
         tg.ready();
 
-        const API_URL = "https://galaxylab.i234.me:8443/api/files";
-        
-        // State Management
         let globalFiles = [];
-        let displayFiles = []; // For search/filter state
         let currentFilter = 'all';
         let searchQuery = '';
+        let viewMode = 'grid'; // 'grid' or 'list'
         
-        let isListView = false;
-        let isSelectionMode = false;
-        let selectedItems = new Set();
-        
-        let activeItemIndex = -1; // For Swipes
+        // Modal / Swipe State
+        let currentPhotoIndex = 0;
+        let photoOnlyList = [];
+        let touchStartX = 0;
 
-        // User Data
+        // Selection State
+        let isSelectionMode = false;
+        let selectedIds = new Set();
+        let pressTimer;
+
+        const API_URL = "https://galaxylab.i234.me:8443/api/files";
+
+        // ================= INIT & FETCH =================
         const user = tg.initDataUnsafe?.user;
         const firstName = user?.first_name || 'Bekhruz';
         document.getElementById('userName').innerText = firstName;
         document.getElementById('userAvatar').innerText = firstName.charAt(0).toUpperCase();
 
-        // ================= FETCH & RENDER =================
         async function fetchFiles() {
             renderSkeletons();
             const userId = user?.id || '123456789';
@@ -116,220 +135,246 @@
             try {
                 const response = await fetch(`${API_URL}?user_id=${userId}`);
                 const data = await response.json();
-                globalFiles = (data.status === "success") ? data.files : [];
+                if (data.status === "success") {
+                    globalFiles = data.files.map((f, index) => ({...f, internalId: index})); // Add internal ID for selection
+                }
             } catch (error) {
-                // Mock Data for testing Offline
+                // Mock for offline
                 globalFiles = [
-                    { id: 1, type: 'photo', url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=400', text: 'Wallpaper 1', date: 'Today' },
-                    { id: 2, type: 'photo', url: 'https://images.unsplash.com/photo-1550684848-fac1c5b4e853?w=400', text: 'Wallpaper 2', date: 'Yesterday' },
-                    { id: 3, type: 'document', text: 'Economics_Report.pdf', url: '#', date: '10 Jun' }
+                    { internalId: 0, type: 'photo', url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=400', text: '' },
+                    { internalId: 1, type: 'photo', url: 'https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=400', text: '' },
+                    { internalId: 2, type: 'document', text: 'Important_Report.pdf', url: '#' }
                 ];
-                showToast("Offline Demo Mode");
             }
             
-            updateStorageStats();
-            applyFiltersAndSearch();
+            updateStorageMock();
+            renderGallery();
         }
 
-        function applyFiltersAndSearch() {
-            displayFiles = globalFiles.filter(f => {
+        // ================= RENDERING =================
+        function renderSkeletons() {
+            const gallery = document.getElementById('gallery');
+            gallery.innerHTML = '';
+            for (let i = 0; i < 12; i++) gallery.innerHTML += `<div class="skeleton" style="height: ${viewMode === 'grid' ? '110px' : '80px'};"></div>`;
+        }
+
+        function getFilteredFiles() {
+            return globalFiles.filter(f => {
                 const matchType = currentFilter === 'all' || f.type === currentFilter;
-                const matchSearch = (f.text || '').toLowerCase().includes(searchQuery);
+                const matchSearch = f.text.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                                   (f.type === 'document' && 'document'.includes(searchQuery.toLowerCase()));
                 return matchType && matchSearch;
             });
-            renderGallery();
         }
 
         function renderGallery() {
             const gallery = document.getElementById('gallery');
             gallery.innerHTML = '';
+            const filtered = getFilteredFiles();
+            
+            photoOnlyList = filtered.filter(f => f.type === 'photo');
 
-            if (displayFiles.length === 0) {
-                gallery.innerHTML = `<div class="empty-state"><h2 style="font-size: 40px;">📭</h2><p>No files found</p></div>`;
+            if (filtered.length === 0) {
+                gallery.innerHTML = `<div style="text-align:center; padding:40px 20px; color:var(--text-secondary); grid-column:1/-1;">📭 No files found</div>`;
                 return;
             }
 
-            displayFiles.forEach((file, index) => {
+            filtered.forEach((file) => {
                 const itemDiv = document.createElement('div');
-                itemDiv.className = `item ${file.type}`;
-                if (selectedItems.has(file.url)) itemDiv.classList.add('selected');
+                itemDiv.className = `item ${file.type} ${selectedIds.has(file.internalId) ? 'selected' : ''}`;
                 
-                // Content based on type
+                // Content based on view mode
                 let contentHTML = '';
+                const dateMock = "Today, 14:30"; // In real app, format file.timestamp
+
                 if (file.type === 'photo') {
-                    contentHTML = `<img src="${file.url}" loading="lazy">`;
+                    contentHTML = `
+                        <img src="${file.url}" alt="Photo" loading="lazy">
+                        <div class="item-info">
+                            <div class="item-title">Photo</div>
+                            <div class="item-date">${dateMock}</div>
+                        </div>
+                    `;
                 } else {
-                    contentHTML = `<div class="doc-icon">📄</div>`;
+                    contentHTML = `
+                        <div class="doc-icon">📄</div>
+                        <div class="item-info">
+                            <div class="item-title">${file.text || 'Document'}</div>
+                            <div class="item-date">${dateMock}</div>
+                        </div>
+                    `;
                 }
 
-                // Layout structure
-                itemDiv.innerHTML = `
-                    <div class="checkbox"></div>
-                    ${contentHTML}
-                    <div class="item-info">
-                        <div class="title">${file.text || (file.type === 'photo' ? 'Photo' : 'Document')}</div>
-                        <div class="subtitle">${file.date || 'Saved locally'}</div>
-                    </div>
-                `;
+                // Checkbox for selection
+                contentHTML += `<div class="checkbox"></div>`;
+                itemDiv.innerHTML = contentHTML;
 
-                // Logic on click
-                itemDiv.onclick = () => handleItemClick(file.url, index, itemDiv);
+                // Event Listeners (Long Press vs Click)
+                itemDiv.addEventListener('touchstart', () => startPress(file.internalId));
+                itemDiv.addEventListener('mousedown', () => startPress(file.internalId));
+                
+                itemDiv.addEventListener('touchend', () => endPress(file));
+                itemDiv.addEventListener('mouseup', () => endPress(file));
+                
+                itemDiv.addEventListener('touchmove', cancelPress);
+                itemDiv.addEventListener('mouseleave', cancelPress);
+
                 gallery.appendChild(itemDiv);
             });
         }
 
-        // ================= INTERACTION LOGIC =================
-        function handleItemClick(url, index, element) {
-            if (isSelectionMode) {
-                tg.HapticFeedback.selectionChanged();
-                if (selectedItems.has(url)) {
-                    selectedItems.delete(url);
-                    element.classList.remove('selected');
-                } else {
-                    selectedItems.add(url);
-                    element.classList.add('selected');
-                }
-                updateSelectionBar();
-            } else {
-                if (displayFiles[index].type === 'photo') {
-                    openModal(index);
-                } else {
-                    showToast("Docs download via Bot only");
-                }
-            }
+        // ================= SEARCH & VIEW MODE =================
+        function handleSearch() {
+            searchQuery = document.getElementById('searchInput').value;
+            renderGallery();
         }
 
-        // Search & Filters
-        function handleSearch() {
-            searchQuery = document.getElementById('searchInput').value.toLowerCase();
-            applyFiltersAndSearch();
+        function toggleViewMode() {
+            const gallery = document.getElementById('gallery');
+            const btn = document.getElementById('viewToggleBtn');
+            if (viewMode === 'grid') {
+                viewMode = 'list';
+                gallery.classList.replace('view-grid', 'view-list');
+                btn.innerHTML = `<svg width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M4 11h5V5H4v6zm0 7h5v-6H4v6zm6 0h5v-6h-5v6zm6 0h5v-6h-5v6zm-6-7h5V5h-5v6zm6-6v6h5V5h-5z"/></svg>`; // Grid icon
+            } else {
+                viewMode = 'grid';
+                gallery.classList.replace('view-list', 'view-grid');
+                btn.innerHTML = `<svg width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M3 4h18v2H3V4zm0 7h18v2H3v-2zm0 7h18v2H3v-2z"/></svg>`; // List icon
+            }
+            if (document.getElementById('hapticToggle').checked) tg.HapticFeedback.impactOccurred('light');
         }
 
         function applyFilter(type) {
             currentFilter = type;
             document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
             event.target.classList.add('active');
-            tg.HapticFeedback.impactOccurred('light');
-            applyFiltersAndSearch();
+            renderGallery();
         }
 
-        // View & Selection Toggles
-        function toggleView() {
-            isListView = !isListView;
-            const gallery = document.getElementById('gallery');
-            const btn = document.getElementById('viewBtn');
-            if (isListView) {
-                gallery.classList.add('list-view');
-                btn.innerText = '🔳';
+        // ================= MULTI-SELECT LOGIC =================
+        function startPress(id) {
+            pressTimer = setTimeout(() => {
+                if (!isSelectionMode) {
+                    isSelectionMode = true;
+                    if (document.getElementById('hapticToggle').checked) tg.HapticFeedback.impactOccurred('heavy');
+                    document.getElementById('bottomNav').classList.add('hidden');
+                    document.getElementById('selectionToolbar').classList.add('active');
+                }
+                toggleSelection(id);
+            }, 500); // 500ms long press
+        }
+
+        function cancelPress() { clearTimeout(pressTimer); }
+
+        function endPress(file) {
+            clearTimeout(pressTimer);
+            if (isSelectionMode) {
+                toggleSelection(file.internalId);
             } else {
-                gallery.classList.remove('list-view');
-                btn.innerText = '🔲';
+                // Normal click
+                if (file.type === 'photo') {
+                    currentPhotoIndex = photoOnlyList.findIndex(f => f.url === file.url);
+                    openModal();
+                } else {
+                    showToast("Docs open via Telegram Chat only");
+                }
             }
-            tg.HapticFeedback.impactOccurred('light');
         }
 
-        function toggleSelectionMode() {
-            isSelectionMode = !isSelectionMode;
-            document.getElementById('gallery').classList.toggle('selection-mode');
-            document.getElementById('selectBtn').style.background = isSelectionMode ? 'var(--button-color)' : 'var(--secondary-bg)';
+        function toggleSelection(id) {
+            if (selectedIds.has(id)) selectedIds.delete(id);
+            else selectedIds.add(id);
             
-            if (!isSelectionMode) {
-                selectedItems.clear();
-                renderGallery(); // Reset visual states
-            }
-            updateSelectionBar();
-            tg.HapticFeedback.impactOccurred('medium');
+            if (selectedIds.size === 0) return cancelSelection();
+            
+            document.getElementById('selectionCount').innerText = `${selectedIds.size} selected`;
+            renderGallery();
+            if (document.getElementById('hapticToggle').checked) tg.HapticFeedback.selectionChanged();
         }
 
-        function updateSelectionBar() {
-            const bar = document.getElementById('selectionBar');
-            if (isSelectionMode && selectedItems.size > 0) {
-                bar.classList.add('visible');
-            } else {
-                bar.classList.remove('visible');
-            }
+        function cancelSelection() {
+            isSelectionMode = false;
+            selectedIds.clear();
+            document.getElementById('bottomNav').classList.remove('hidden');
+            document.getElementById('selectionToolbar').classList.remove('active');
+            renderGallery();
         }
 
-        // ================= MODAL & SWIPES =================
-        const modal = document.getElementById('imageModal');
-        const modalImg = document.getElementById('modalImage');
-        let touchStartX = 0;
+        function deleteSelected() {
+            globalFiles = globalFiles.filter(f => !selectedIds.has(f.internalId));
+            cancelSelection();
+            updateStorageMock();
+            showToast("Selected files deleted");
+            if (document.getElementById('hapticToggle').checked) tg.HapticFeedback.notificationOccurred('success');
+        }
 
-        function openModal(index) {
-            activeItemIndex = index;
-            modalImg.src = displayFiles[index].url;
-            modal.classList.add('active');
-            tg.HapticFeedback.impactOccurred('medium');
+        // ================= SWIPE MODAL =================
+        function openModal() {
+            const file = photoOnlyList[currentPhotoIndex];
+            if (!file) return;
+            document.getElementById('modalImage').src = file.url;
+            document.getElementById('imageModal').classList.add('active');
+            document.getElementById('actionSheet').classList.remove('active'); // hide sheet
         }
 
         function closeModal() {
-            modal.classList.remove('active');
-        }
-
-        // Swipe Logic
-        modal.addEventListener('touchstart', e => touchStartX = e.changedTouches[0].screenX);
-        modal.addEventListener('touchend', e => {
-            let touchEndX = e.changedTouches[0].screenX;
-            handleSwipe(touchStartX - touchEndX);
-        });
-
-        function handleSwipe(diff) {
-            if (Math.abs(diff) < 50) return; // Ignore small moves
-            if (diff > 0 && activeItemIndex < displayFiles.length - 1) {
-                // Swipe Left -> Next Image
-                findNextPhoto(1);
-            } else if (diff < 0 && activeItemIndex > 0) {
-                // Swipe Right -> Prev Image
-                findNextPhoto(-1);
-            }
-        }
-
-        function findNextPhoto(direction) {
-            let nextIndex = activeItemIndex + direction;
-            while (nextIndex >= 0 && nextIndex < displayFiles.length) {
-                if (displayFiles[nextIndex].type === 'photo') {
-                    openModal(nextIndex);
-                    return;
-                }
-                nextIndex += direction;
-            }
-        }
-
-        // ================= ACTION SHEET (iOS Menu) =================
-        function openActionSheet() {
-            document.getElementById('sheetOverlay').classList.add('active');
-            document.getElementById('actionSheet').classList.add('active');
-            tg.HapticFeedback.impactOccurred('light');
-        }
-
-        function closeActionSheet() {
-            document.getElementById('sheetOverlay').classList.remove('active');
+            document.getElementById('imageModal').classList.remove('active');
             document.getElementById('actionSheet').classList.remove('active');
         }
 
-        function downloadActiveItem() {
-            closeActionSheet();
-            const a = document.createElement('a');
-            a.href = displayFiles[activeItemIndex].url;
-            a.download = 'Photo.jpg';
-            a.click();
-            showToast("Download started!");
+        // Swipe Detection
+        const modalEl = document.getElementById('imageModal');
+        modalEl.addEventListener('touchstart', e => touchStartX = e.changedTouches[0].screenX);
+        modalEl.addEventListener('touchend', e => {
+            let touchEndX = e.changedTouches[0].screenX;
+            if (touchStartX - touchEndX > 50) { // Swipe Left (Next)
+                if (currentPhotoIndex < photoOnlyList.length - 1) {
+                    currentPhotoIndex++;
+                    openModal();
+                    if (document.getElementById('hapticToggle').checked) tg.HapticFeedback.selectionChanged();
+                }
+            }
+            if (touchEndX - touchStartX > 50) { // Swipe Right (Prev)
+                if (currentPhotoIndex > 0) {
+                    currentPhotoIndex--;
+                    openModal();
+                    if (document.getElementById('hapticToggle').checked) tg.HapticFeedback.selectionChanged();
+                }
+            }
+        });
+
+        // ================= ACTION SHEET =================
+        function toggleActionSheet() {
+            document.getElementById('actionSheet').classList.toggle('active');
+            if (document.getElementById('hapticToggle').checked) tg.HapticFeedback.impactOccurred('light');
         }
 
-        function deleteActiveItem() {
-            closeActionSheet();
+        function downloadCurrentItem() {
+            showToast("Downloading...");
+            toggleActionSheet();
+        }
+        
+        function shareCurrentItem() {
+            showToast("Link copied to clipboard");
+            toggleActionSheet();
+        }
+
+        function deleteCurrentItem() {
+            const file = photoOnlyList[currentPhotoIndex];
+            globalFiles = globalFiles.filter(f => f.internalId !== file.internalId);
             closeModal();
-            globalFiles = globalFiles.filter(f => f.url !== displayFiles[activeItemIndex].url);
-            applyFiltersAndSearch();
-            updateStorageStats();
+            renderGallery();
+            updateStorageMock();
             showToast("File deleted");
-            tg.HapticFeedback.notificationOccurred('warning');
         }
 
-        // ================= UTILS & FAB =================
-        function onFabClick() {
-            tg.HapticFeedback.impactOccurred('heavy');
-            tg.showAlert("Отправьте любой файл или фото прямо в чат боту, и он автоматически появится здесь!", () => {
+        // ================= FAB & MISC =================
+        function handleFabClick() {
+            if (document.getElementById('hapticToggle').checked) tg.HapticFeedback.notificationOccurred('success');
+            
+            // Нативное Alert-окно Телеграма
+            tg.showAlert("Отправьте любой файл в чат с ботом, и он моментально появится в вашем облаке.", function() {
+                // Закрывает WebApp и возвращает пользователя в чат с ботом
                 tg.close();
             });
         }
@@ -339,39 +384,27 @@
             document.getElementById('tab-' + tabId).classList.add('active');
             document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
             element.classList.add('active');
-            tg.HapticFeedback.selectionChanged();
+            if (document.getElementById('hapticToggle').checked) tg.HapticFeedback.selectionChanged();
         }
 
-        function updateStorageStats() {
-            // Rough estimation: 1 file = ~2MB.
-            let estimatedMB = globalFiles.length * 2.4;
-            document.getElementById('storageText').innerText = `${estimatedMB.toFixed(1)} MB`;
-            
-            // Visual fill (max 1000MB for progress bar visual)
-            let percent = Math.min((estimatedMB / 1000) * 100, 100);
-            document.getElementById('storageFill').style.width = `${percent > 0 ? percent : 2}%`;
+        function updateStorageMock() {
+            // Фейковый подсчет места (в реальности нужно брать размеры из базы)
+            const mb = (globalFiles.length * 2.4).toFixed(1);
+            document.getElementById('storageAmount').innerText = `${mb} MB of ∞`;
+            // Анимация бара (до 10% для вида)
+            setTimeout(() => {
+                document.getElementById('storageProgress').style.width = globalFiles.length > 0 ? '5%' : '0%';
+            }, 100);
         }
 
         function showToast(msg) {
-            const c = document.getElementById('toast-container');
-            const t = document.createElement('div');
-            t.className = 'toast'; t.innerText = msg;
-            c.appendChild(t);
-            setTimeout(() => { if (c.contains(t)) c.removeChild(t); }, 3000);
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.innerText = msg;
+            container.appendChild(toast);
+            setTimeout(() => { if (container.contains(toast)) toast.remove(); }, 3000);
         }
-
-        function renderSkeletons() {
-            const gallery = document.getElementById('gallery');
-            gallery.innerHTML = '';
-            for (let i = 0; i < 12; i++) gallery.innerHTML += `<div class="skeleton" style="aspect-ratio: 1/1;"></div>`;
-        }
-
-        // Infinite Scroll Mock Listener (Ready for backend update)
-        window.addEventListener('scroll', () => {
-            if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 100) {
-                // Here we will call fetchFiles(offset) when Python API supports it
-            }
-        });
 
         window.onload = fetchFiles;
     </script>
