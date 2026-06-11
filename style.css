@@ -10,7 +10,7 @@
     --text-main: #ffffff;
     --text-muted: #888888;
     
-    /* Neon Aura Accents */
+    /* Neon Infinity Accents */
     --accent-primary: #3b82f6; 
     --accent-purple: #8b5cf6;
     --accent-emerald: #10b981;
@@ -88,7 +88,7 @@ h1, h2, h3, .heading {
     border-radius: var(--radius-lg);
     padding: 32px 24px;
     display: flex; flex-direction: column;
-    margin-bottom: 24px; position: relative; overflow: hidden;
+    margin-bottom: 16px; position: relative; overflow: hidden;
     box-shadow: 0 20px 40px rgba(0,0,0,0.4);
 }
 .storage-hero::after {
@@ -99,7 +99,6 @@ h1, h2, h3, .heading {
 
 .cd-hero-title { font-size: 26px; color: #fff; margin-bottom: 24px; line-height: 1.1; }
 
-/* Progress Bar & Storage Texts */
 .storage-labels {
     display: flex; justify-content: space-between; align-items: flex-end;
     margin-bottom: 12px; font-family: 'Plus Jakarta Sans', sans-serif;
@@ -119,6 +118,53 @@ h1, h2, h3, .heading {
     transition: width 1.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .storage-subtext { font-size: 12px; color: var(--text-muted); }
+
+/* ================= INFO ACCORDION (NEW) ================= */
+.info-accordion {
+    background: var(--bg-card);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-md);
+    margin-bottom: 24px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+.info-accordion:active { background: var(--bg-elevated); }
+.accordion-header {
+    padding: 16px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.accordion-title-wrap {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.accordion-icon {
+    width: 20px; height: 20px; color: var(--accent-emerald);
+}
+.accordion-title {
+    font-size: 14px; font-weight: 600; color: var(--text-main);
+}
+.accordion-chevron {
+    width: 20px; height: 20px; color: var(--text-muted);
+    transition: transform 0.3s ease;
+}
+.info-accordion.open .accordion-chevron {
+    transform: rotate(180deg);
+}
+.accordion-body {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.accordion-content {
+    padding: 0 20px 20px 52px;
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.5;
+}
 
 /* Status Cards on Home */
 .status-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
