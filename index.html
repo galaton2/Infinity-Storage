@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Aura Storage</title>
+    <title>Infinity Aura Storage</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
@@ -14,63 +14,53 @@
 
     <div class="container">
         <div class="header-top">
-            <button class="icon-btn">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-            </button>
-            <button class="icon-btn" onclick="switchTab('profile')">
+            <span class="brand-title serif">Infinity Node</span>
+            <button class="icon-btn" onclick="switchTab('profile')" style="background:none; border:none; color:white;">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
             </button>
         </div>
 
         <div id="tab-home" class="tab-content active">
-            <div class="section-title">Latest Upload</div>
+            <div class="section-title">Overview</div>
             
-            <div class="hero-card" id="heroCard">
+            <div class="hero-card">
                 <div class="hero-content">
-                    <h1 class="hero-title serif" id="heroTitle">Economics<br>Summary</h1>
-                    <p class="hero-subtitle" id="heroSubtitle">12 MB PDF Document</p>
+                    <h2 class="hero-title serif">Private Safe<br>System Architecture</h2>
+                    <p class="hero-text">Отправляйте любые файлы, изображения или текстовые заметки вашему персональному Telegram-боту. Они мгновенно обрабатываются и структурировано сохраняются в базу данных на защищенном сервере Synology, минуя внешние трекеры.</p>
                 </div>
-                <button class="play-btn" onclick="openHeroFile()">
-                    <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-                </button>
             </div>
 
-            <div class="section-title">Recent Folders</div>
+            <div class="section-title">Directory Management</div>
             
-            <div class="scroll-section">
-                <div class="glass-card gradient-bg">
-                    <div class="glass-content">
-                        <h2 class="glass-title serif">Tor Vergata<br>Docs</h2>
-                        <p class="glass-subtitle">8 items</p>
-                    </div>
+            <div class="scroll-section" id="foldersContainer">
                 </div>
-                <div class="glass-card">
-                    <img src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=400" alt="bg">
-                    <div class="glass-content">
-                        <h2 class="glass-title serif">Design<br>Moods</h2>
-                        <p class="glass-subtitle">24 items</p>
-                    </div>
-                </div>
-            </div>
         </div>
 
         <div id="tab-files" class="tab-content">
-            <h1 class="serif" style="font-size: 36px; margin-bottom: 24px;">All Files</h1>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                <h1 class="serif" style="font-size:32px;">Cloud Vault</h1>
+            </div>
+
+            <div class="search-wrapper">
+                <span class="search-icon-inside">🔍</span>
+                <input type="text" class="search-input" id="vaultSearch" placeholder="Search parameters or filenames..." oninput="executeSearch()">
+            </div>
+
             <div class="gallery-grid" id="gallery">
                 </div>
         </div>
 
         <div id="tab-profile" class="tab-content" style="text-align: center;">
             <div class="profile-avatar" id="userAvatar">B</div>
-            <h1 class="serif" id="userName" style="font-size: 32px; margin-bottom: 8px;">Bekhruz</h1>
-            <p class="section-title">Infinity Cloud Owner</p>
+            <h1 class="serif" id="userName" style="font-size:32px; margin-bottom:8px;">Bekhruz</h1>
+            <p class="section-title" style="margin-bottom:32px;">Node Root Developer</p>
             
-            <div class="glass-card" style="margin-top: 32px; height: auto; text-align: left; padding: 20px;">
-                <h3 class="serif" style="font-size: 20px; margin-bottom: 16px;">Storage Health</h3>
-                <div style="height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden; margin-bottom: 12px;">
-                    <div style="width: 15%; height: 100%; background: var(--accent-green); border-radius: 3px;"></div>
+            <div class="glass-card" style="background:var(--glass-bg); border:1px solid var(--glass-border); backdrop-filter:var(--glass-blur); border-radius:var(--radius-lg); text-align:left; padding:24px; max-width:400px; margin:0 auto;">
+                <h3 class="serif" style="font-size:22px; margin-bottom:16px;">Server Allocation</h3>
+                <div style="height:6px; background:rgba(255,255,255,0.08); border-radius:3px; overflow:hidden; margin-bottom:14px;">
+                    <div style="width:12%; height:100%; background:var(--accent-green); border-radius:3px;"></div>
                 </div>
-                <p style="font-size: 14px; color: var(--text-muted);">Unlimited space available on Synology NAS</p>
+                <p style="font-size:13px; color:var(--text-muted); line-height:1.4;">Все системы функционируют в штатном режиме. Контейнеры изолированы на Synology VirtualDSM.</p>
             </div>
         </div>
     </div>
@@ -85,7 +75,7 @@
                 <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                 Files
             </button>
-            <button class="nav-item" onclick="tg.showAlert('Upload files via Telegram Bot.')">
+            <button class="nav-item" onclick="tg.showAlert('Для загрузки новых объектов просто перешлите их боту в чат.')">
                 <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
                 Upload
             </button>
@@ -98,8 +88,10 @@
 
     <div class="modal" id="imageModal">
         <button class="modal-close" onclick="closeModal()">✕</button>
-        <img id="modalImage" src="" alt="Full size">
+        <img id="modalImage" src="" alt="Viewer">
     </div>
+
+    <div id="toast-container"></div>
 
     <script>
         const tg = window.Telegram.WebApp;
@@ -107,81 +99,175 @@
         tg.ready();
 
         let globalFiles = [];
+        let searchString = '';
+        
+        // Anti-scroll logic setup
+        let traceStartX = 0;
+        let traceStartY = 0;
+        let blockClick = false;
+
+        // Custom Dynamic Directory Repositories state
+        let folderCatalog = [
+            { id: 'work', name: 'Work', icon: '💼', total: '0 items' },
+            { id: 'personal', name: 'Personal', icon: '👤', total: '0 items' }
+        ];
+
         const API_URL = "https://galaxylab.i234.me:8443/api/files";
         
-        // Установка имени пользователя
-        const user = tg.initDataUnsafe?.user;
-        const firstName = user?.first_name || 'Bekhruz';
-        document.getElementById('userName').innerText = firstName;
-        document.getElementById('userAvatar').innerText = firstName.charAt(0);
+        const telegramUser = tg.initDataUnsafe?.user;
+        const resolvedName = telegramUser?.first_name || 'Bekhruz';
+        document.getElementById('userName').innerText = resolvedName;
+        document.getElementById('userAvatar').innerText = resolvedName.charAt(0).toUpperCase();
 
-        async function fetchFiles() {
-            const userId = user?.id || '123456789';
+        async function synchronizeVault() {
+            const userId = telegramUser?.id || '123456789';
             try {
                 const response = await fetch(`${API_URL}?user_id=${userId}`);
                 const data = await response.json();
                 if (data.status === "success" && data.files.length > 0) {
                     globalFiles = data.files;
-                    updateHeroCard(globalFiles[0]);
-                } else { throw new Error("No files"); }
-            } catch (error) {
-                // Премиум Mock-данные
+                } else { throw new Error(); }
+            } catch (e) {
+                // Production Safe Sample Data
                 globalFiles = [
-                    { type: 'photo', url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=400' },
-                    { type: 'photo', url: 'https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=400' },
-                    { type: 'document', text: 'Python_Bot_Code.py' },
-                    { type: 'document', text: 'Economics_Summary.pdf' }
+                    { type: 'photo', url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=400', text: 'Design Matrix Layout' },
+                    { type: 'photo', url: 'https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=400', text: 'Abstract Dark Aura render' },
+                    { type: 'document', text: 'Economics_Research_Tor_Vergata.pdf' },
+                    { type: 'document', text: 'Telegram_Moderation_Bot_Logic.py' }
                 ];
-                updateHeroCard(globalFiles[3]);
             }
-            renderGallery();
+            updateFolderCounts();
+            renderFolderStructure();
+            renderGalleryGrid();
         }
 
-        function updateHeroCard(file) {
-            if(!file) return;
-            document.getElementById('heroTitle').innerHTML = file.type === 'document' ? file.text.split('.')[0] : "Recent<br>Photo";
-            document.getElementById('heroSubtitle').innerText = file.type === 'document' ? 'Document File' : 'Image File';
-            
-            if (file.type === 'photo') {
-                document.getElementById('heroCard').style.background = `linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.8)), url('${file.url}') center/cover`;
-            }
+        // Folders UI Core Renderer
+        function renderFolderStructure() {
+            const node = document.getElementById('foldersContainer');
+            node.innerHTML = '';
+
+            folderCatalog.forEach(dir => {
+                const card = document.createElement('div');
+                card.className = 'folder-card folder-node';
+                card.innerHTML = `
+                    <div class="folder-top">
+                        <span class="folder-meta-icon">${dir.icon}</span>
+                        <button class="folder-delete-trigger" onclick="eraseFolder('${dir.id}', event)">✕</button>
+                    </div>
+                    <div>
+                        <div class="folder-name folder-headline">${dir.name}</div>
+                        <div class="folder-count">${dir.total}</div>
+                    </div>
+                `;
+                card.onclick = () => {
+                    document.getElementById('vaultSearch').value = dir.name;
+                    executeSearch();
+                    switchTab('files', document.querySelectorAll('.nav-item')[1]);
+                };
+                node.appendChild(card);
+            });
+
+            // The persistent static Plus button card at the end
+            const appendCard = document.createElement('div');
+            appendCard.className = 'folder-node add-action';
+            appendCard.innerHTML = `<span class="add-inner-icon">+</span>`;
+            appendCard.onclick = createNewFolder;
+            node.appendChild(appendCard);
         }
 
-        function openHeroFile() {
+        function updateFolderCounts() {
+            folderCatalog.forEach(f => {
+                const itemsCount = globalFiles.filter(file => 
+                    (file.text && file.text.toLowerCase().includes(f.name.toLowerCase()))
+                ).length;
+                f.total = `${itemsCount} items`;
+            });
+            const rootDir = document.getElementById('allCount');
+            if(rootDir) rootDir.innerText = `${globalFiles.length} items`;
+        }
+
+        function createNewFolder() {
             tg.HapticFeedback.impactOccurred('medium');
-            if (globalFiles.length > 0 && globalFiles[0].type === 'photo') {
-                openModal(globalFiles[0].url);
-            } else {
-                tg.showAlert("This file type is best viewed directly in the Telegram chat.");
-            }
+            // Ask user for customized catalog naming parameters
+            const title = prompt("Enter directory name:");
+            if (!title || title.trim() === '') return;
+            
+            const icons = ['📁', '💼', '👤', '🌌', '🎓', '🔥', '🧠', '⚡️'];
+            const randomIcon = icons[Math.floor(Math.random() * icons.length)];
+            
+            const newId = 'dir_' + Date.now();
+            folderCatalog.push({ id: newId, name: title.trim(), icon: randomIcon, total: '0 items' });
+            
+            updateFolderCounts();
+            renderFolderStructure();
+            showToast(`Directory "${title}" registered`);
         }
 
-        function renderGallery() {
-            const gallery = document.getElementById('gallery');
-            gallery.innerHTML = '';
-            
-            globalFiles.forEach((file) => {
-                const item = document.createElement('div');
-                item.className = `grid-item ${file.type}`;
+        function eraseFolder(id, event) {
+            event.stopPropagation(); // Avoid triggering folder click transition
+            tg.HapticFeedback.notificationOccurred('warning');
+            folderCatalog = folderCatalog.filter(f => f.id !== id);
+            renderFolderStructure();
+            showToast("Directory removed");
+        }
+
+        // Fully Operating Live Search Algorithm
+        function executeSearch() {
+            searchString = document.getElementById('vaultSearch').value.trim().toLowerCase();
+            renderGalleryGrid();
+        }
+
+        function renderGalleryGrid() {
+            const targetNode = document.getElementById('gallery');
+            targetNode.innerHTML = '';
+
+            const contentPool = globalFiles.filter(item => {
+                const descriptor = item.text ? item.text.toLowerCase() : '';
+                return descriptor.includes(searchString);
+            });
+
+            if (contentPool.length === 0) {
+                targetNode.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--text-muted); font-size: 14px;">No files found matching request.</div>`;
+                return;
+            }
+
+            contentPool.forEach(file => {
+                const block = document.createElement('div');
+                block.className = `grid-item ${file.type}`;
                 
                 if (file.type === 'photo') {
-                    item.innerHTML = `<img src="${file.url}" alt="Photo" loading="lazy">`;
-                    item.onclick = () => openModal(file.url);
+                    block.innerHTML = `<img src="${file.url}" alt="Cloud preview" loading="lazy">`;
+                    
+                    // ANTI-SCROLL JESTURE SYSTEM OVERRIDE
+                    block.addEventListener('touchstart', e => {
+                        traceStartX = e.touches[0].clientX;
+                        traceStartY = e.touches[0].clientY;
+                        blockClick = false;
+                    });
+                    block.addEventListener('touchmove', e => {
+                        if (Math.abs(e.touches[0].clientX - traceStartX) > 8 || Math.abs(e.touches[0].clientY - traceStartY) > 8) {
+                            blockClick = true; // User is scrolling list, cancel window instantiation
+                        }
+                    });
+                    block.addEventListener('touchend', () => {
+                        if (!blockClick) openModal(file.url);
+                    });
+                    block.onclick = (e) => { if(!blockClick && !window.TouchEvent) openModal(file.url); };
                 } else {
-                    item.innerHTML = `<div style="font-size: 32px; margin-bottom: 8px;">📄</div><div style="font-size: 12px; font-weight: 500; word-break: break-all;">${file.text || 'File'}</div>`;
-                    item.onclick = () => tg.showAlert("Documents are downloaded via bot.");
+                    block.innerHTML = `<div style="font-size:36px;">📄</div><div class="doc-name">${file.text || 'Document'}</div>`;
+                    block.onclick = () => tg.showAlert("Служебные файлы и скрипты скачиваются напрямую через интерфейс бота.");
                 }
-                gallery.appendChild(item);
+                targetNode.appendChild(block);
             });
         }
 
-        function switchTab(tabId, navElement = null) {
+        function switchTab(tabId, navButton = null) {
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
             document.getElementById('tab-' + tabId).classList.add('active');
             
-            if(navElement) {
+            if (navButton) {
                 document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
-                navElement.classList.add('active');
+                navButton.classList.add('active');
                 tg.HapticFeedback.selectionChanged();
             }
             window.scrollTo(0, 0);
@@ -197,7 +283,16 @@
             document.getElementById('imageModal').classList.remove('active');
         }
 
-        window.onload = fetchFiles;
+        function showToast(text) {
+            const box = document.getElementById('toast-container');
+            const alert = document.createElement('div');
+            alert.className = 'toast';
+            alert.innerText = text;
+            box.appendChild(alert);
+            setTimeout(() => { if (box.contains(alert)) alert.remove(); }, 3000);
+        }
+
+        window.onload = synchronizeVault;
     </script>
 </body>
 </html>
