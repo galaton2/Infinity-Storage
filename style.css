@@ -81,74 +81,6 @@ h1, h2, h3, .heading {
 }
 .app-title { font-size: 24px; font-weight: 600; background: linear-gradient(to right, #fff, #888); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 
-/* ================= THE CD HERO SECTION ================= */
-.cd-hero {
-    background: linear-gradient(135deg, #18181b 0%, #09090b 100%);
-    border: 1px solid var(--glass-border);
-    border-radius: var(--radius-lg);
-    padding: 24px;
-    display: flex; align-items: center; justify-content: space-between;
-    margin-bottom: 32px; position: relative; overflow: hidden;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.4);
-}
-
-.cd-hero-info { flex: 1; z-index: 2; padding-right: 16px; }
-.cd-hero-title { font-size: 22px; color: #fff; margin-bottom: 16px; line-height: 1.1; }
-
-/* Progress Bar & Storage Texts */
-.storage-labels {
-    display: flex; justify-content: space-between; align-items: flex-end;
-    margin-bottom: 8px; font-family: 'Plus Jakarta Sans', sans-serif;
-}
-.storage-used { font-size: 13px; font-weight: 600; color: var(--text-muted); }
-.storage-infinity { font-size: 22px; font-weight: 400; color: var(--accent-primary); line-height: 0.8; }
-
-.hero-progress-track {
-    height: 6px; background: rgba(255,255,255,0.05);
-    border-radius: 3px; overflow: hidden;
-    box-shadow: inset 0 1px 2px rgba(0,0,0,0.5);
-}
-.hero-progress-fill {
-    height: 100%; border-radius: 3px; width: 0%;
-    background: linear-gradient(90deg, var(--accent-primary), var(--accent-purple));
-    transition: width 1.5s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-/* The Spinning Disc */
-.cd-wrapper {
-    position: relative; width: 100px; height: 100px; flex-shrink: 0;
-    z-index: 2; display: flex; align-items: center; justify-content: center;
-}
-.cd-disc {
-    width: 100%; height: 100%; border-radius: 50%;
-    background: conic-gradient(from 0deg, var(--accent-primary), var(--accent-purple), var(--accent-pink), var(--accent-primary));
-    animation: spin 8s linear infinite; position: relative;
-    box-shadow: 0 0 30px rgba(139, 92, 246, 0.2), inset 0 0 20px rgba(0,0,0,0.9);
-}
-/* Виниловые кольца */
-.cd-disc::before {
-    content: ''; position: absolute; top: 1px; left: 1px; right: 1px; bottom: 1px;
-    border-radius: 50%;
-    background: repeating-radial-gradient(circle at center, rgba(10,10,10,0.85) 0, rgba(10,10,10,0.95) 2px, rgba(10,10,10,0.85) 4px);
-}
-/* Дырка посередине */
-.cd-hole {
-    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-    width: 26px; height: 26px; background: #09090b; border-radius: 50%;
-    border: 1px solid rgba(255,255,255,0.05);
-    box-shadow: inset 0 4px 8px rgba(0,0,0,0.8), 0 0 0 2px rgba(255,255,255,0.1);
-    z-index: 3;
-}
-/* Блик света на диске */
-.cd-wrapper::after {
-    content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-    border-radius: 50%;
-    background: linear-gradient(135deg, rgba(255,255,255,0.3) 0%, transparent 40%, transparent 60%, rgba(255,255,255,0.05) 100%);
-    pointer-events: none; z-index: 4; mix-blend-mode: overlay;
-}
-
-@keyframes spin { 100% { transform: rotate(360deg); } }
-
 /* ================= SECTIONS & GRIDS ================= */
 .section-header {
     display: flex; justify-content: space-between; align-items: flex-end;
@@ -285,6 +217,29 @@ h1, h2, h3, .heading {
 
 #toast-box { position: fixed; top: 30px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; gap: 10px; z-index: 9999; }
 .toast { background: var(--text-main); color: var(--bg-base); padding: 14px 24px; border-radius: 30px; font-size: 14px; font-weight: 600; box-shadow: 0 12px 30px rgba(0,0,0,0.5); opacity: 0; transform: translateY(-20px); animation: fadeDown 0.3s forwards, fadeUp 0.3s forwards 2.7s; }
+
+/* Profile Progress Bar (Исправлено положение, не в центре) */
+.profile-progress-box {
+    background: var(--bg-card); border: 1px solid var(--glass-border);
+    border-radius: var(--radius-md); padding: 20px; text-align: left;
+    margin-top: 24px; width: 100%;
+}
+.progress-labels {
+    display: flex; justify-content: space-between; align-items: flex-end;
+    margin-bottom: 10px; font-family: 'Plus Jakarta Sans', sans-serif;
+}
+.progress-used { font-size: 14px; font-weight: 600; color: var(--text-muted); }
+.progress-infinity { font-size: 24px; font-weight: 400; color: var(--accent-primary); line-height: 0.8; }
+
+.progress-track {
+    height: 6px; background: rgba(255,255,255,0.05);
+    border-radius: 3px; overflow: hidden;
+}
+.progress-fill {
+    height: 100%; border-radius: 3px;
+    background: linear-gradient(90deg, var(--accent-primary), var(--accent-purple));
+    transition: width 1s ease;
+}
 
 @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
 @keyframes fadeDown { to { opacity: 1; transform: translateY(0); } }
