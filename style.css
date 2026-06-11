@@ -19,6 +19,7 @@
     /* Glassmorphism */
     --glass-bg: rgba(255, 255, 255, 0.02);
     --glass-border: rgba(255, 255, 255, 0.05);
+    --glass-blur: blur(20px);
     
     --radius-xl: 32px;
     --radius-lg: 24px;
@@ -36,7 +37,8 @@ body {
     color: var(--text-main);
     font-family: 'Plus Jakarta Sans', sans-serif;
     padding: 0; margin: 0;
-    overscroll-behavior-y: none;
+    /* КЛЮЧЕВОЕ ИСПРАВЛЕНИЕ: Предотвращает закрытие Mini App при свайпе вниз */
+    overscroll-behavior-y: contain; 
     min-height: 100vh; overflow-x: hidden;
     line-height: 1.4;
 }
@@ -47,15 +49,15 @@ h1, h2, h3, .heading {
     font-weight: 500; letter-spacing: -0.02em;
 }
 
-/* Ambient Glow */
+/* Subtle Ambient Glow */
 .ambient-glow {
     position: fixed; top: -20%; left: -10%; width: 70vw; height: 70vw;
-    background: radial-gradient(circle, rgba(59,130,246,0.08) 0%, rgba(0,0,0,0) 70%);
+    background: radial-gradient(circle, rgba(59,130,246,0.06) 0%, rgba(0,0,0,0) 70%);
     border-radius: 50%; z-index: -1; pointer-events: none;
 }
 .ambient-glow.secondary {
     top: 50%; left: auto; right: -20%;
-    background: radial-gradient(circle, rgba(139,92,246,0.06) 0%, rgba(0,0,0,0) 70%);
+    background: radial-gradient(circle, rgba(139,92,246,0.04) 0%, rgba(0,0,0,0) 70%);
 }
 
 .container { padding: 24px 20px 140px 20px; }
@@ -81,7 +83,21 @@ h1, h2, h3, .heading {
 }
 .app-title { font-size: 24px; font-weight: 600; background: linear-gradient(to right, #fff, #888); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 
-/* ================= SECTIONS & GRIDS ================= */
+/* Home Tab New Structure */
+.greeting-card {
+    background: linear-gradient(135deg, #121212 0%, #050505 100%);
+    border-radius: var(--radius-lg); border: 1px solid var(--glass-border);
+    padding: 32px 24px; margin-bottom: 32px;
+    position: relative; overflow: hidden;
+}
+.greeting-card::after {
+    content:''; position: absolute; top: -50px; right: -50px; width: 150px; height: 150px;
+    background: radial-gradient(circle, rgba(59,130,246,0.1) 0%, transparent 70%); border-radius: 50%;
+}
+.greeting-text { font-size: 36px; line-height: 1.1; color: #fff; margin-bottom: 8px; }
+.greeting-sub { color: var(--text-muted); font-size: 15px; font-weight: 400; }
+
+/* Sections */
 .section-header {
     display: flex; justify-content: space-between; align-items: flex-end;
     margin-bottom: 16px; margin-top: 12px;
@@ -95,7 +111,7 @@ h1, h2, h3, .heading {
     font-size: 13px; font-weight: 600; cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif;
 }
 
-/* Horizontal Workspaces (Folders) */
+/* Horizontal Workspaces (Folders) - Now on Files Tab */
 .workspace-scroll {
     display: flex; gap: 12px; overflow-x: auto;
     padding-bottom: 8px; scrollbar-width: none;
@@ -124,10 +140,16 @@ h1, h2, h3, .heading {
 
 /* File Grid */
 .grid-gallery { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+.grid-gallery:empty::after {
+    content: 'This workspace is currently empty'; grid-column: 1/-1; text-align: center;
+    padding: 40px; color: var(--text-muted); font-size: 14px; border: 1px dashed var(--glass-border); border-radius: var(--radius-md);
+}
+
 .grid-item {
     border-radius: var(--radius-md); background: var(--bg-card);
     border: 1px solid var(--glass-border); aspect-ratio: 1;
     position: relative; overflow: hidden; transition: 0.3s;
+    animation: fadeUpItem 0.4s ease forwards; opacity: 0; transform: translateY(10px);
 }
 .grid-item:active { transform: scale(0.97); }
 .grid-item img { width: 100%; height: 100%; object-fit: cover; }
@@ -136,9 +158,7 @@ h1, h2, h3, .heading {
 .grid-item .item-title { font-size: 13px; font-weight: 500; color: var(--text-main); word-break: break-all; line-height: 1.3; }
 .grid-item .item-meta { font-size: 11px; color: var(--text-muted); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.05em; }
 
-/* Empty State */
-.empty-state { text-align: center; padding: 40px 20px; color: var(--text-muted); grid-column: 1/-1; border: 1px dashed var(--glass-border); border-radius: var(--radius-md); }
-.empty-state .svg-icon { margin: 0 auto 12px auto; width: 32px; height: 32px; opacity: 0.5; }
+@keyframes fadeUpItem { to { opacity: 1; transform: translateY(0); } }
 
 /* Search Bar */
 .search-box { position: relative; margin-bottom: 24px; }
@@ -154,7 +174,7 @@ h1, h2, h3, .heading {
 /* Floating Nav */
 .nav-container {
     position: fixed; bottom: 32px; left: 20px; right: 20px; z-index: 100;
-    display: flex; justify-content: center; pointer-events: none;
+    display: flex; justify(center; pointer-events: none;
 }
 .nav-bar {
     background: rgba(10, 10, 10, 0.75); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
@@ -177,7 +197,7 @@ h1, h2, h3, .heading {
 .tab-content { display: none; animation: fadeUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; transform: translateY(10px); }
 .tab-content.active { display: block; }
 
-/* Action Sheet (Folder Management) */
+/* Action Sheet */
 .sheet-overlay {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
     background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 1000;
@@ -201,10 +221,9 @@ h1, h2, h3, .heading {
     border-radius: var(--radius-sm); margin-bottom: 12px; font-size: 15px; font-weight: 500;
     color: var(--text-main); display: flex; align-items: center; gap: 12px; cursor: pointer;
 }
-.sheet-btn:active { background: var(--glass-bg); }
 .sheet-btn.danger { color: #ef4444; border-color: rgba(239, 68, 68, 0.2); background: rgba(239, 68, 68, 0.05); }
 
-/* Modals & Toasts */
+/* Modals */
 .modal {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
     background: rgba(0,0,0,0.98); backdrop-filter: blur(20px); z-index: 1002;
@@ -217,29 +236,6 @@ h1, h2, h3, .heading {
 
 #toast-box { position: fixed; top: 30px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; gap: 10px; z-index: 9999; }
 .toast { background: var(--text-main); color: var(--bg-base); padding: 14px 24px; border-radius: 30px; font-size: 14px; font-weight: 600; box-shadow: 0 12px 30px rgba(0,0,0,0.5); opacity: 0; transform: translateY(-20px); animation: fadeDown 0.3s forwards, fadeUp 0.3s forwards 2.7s; }
-
-/* Profile Progress Bar (Исправлено положение, не в центре) */
-.profile-progress-box {
-    background: var(--bg-card); border: 1px solid var(--glass-border);
-    border-radius: var(--radius-md); padding: 20px; text-align: left;
-    margin-top: 24px; width: 100%;
-}
-.progress-labels {
-    display: flex; justify-content: space-between; align-items: flex-end;
-    margin-bottom: 10px; font-family: 'Plus Jakarta Sans', sans-serif;
-}
-.progress-used { font-size: 14px; font-weight: 600; color: var(--text-muted); }
-.progress-infinity { font-size: 24px; font-weight: 400; color: var(--accent-primary); line-height: 0.8; }
-
-.progress-track {
-    height: 6px; background: rgba(255,255,255,0.05);
-    border-radius: 3px; overflow: hidden;
-}
-.progress-fill {
-    height: 100%; border-radius: 3px;
-    background: linear-gradient(90deg, var(--accent-primary), var(--accent-purple));
-    transition: width 1s ease;
-}
 
 @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
 @keyframes fadeDown { to { opacity: 1; transform: translateY(0); } }
