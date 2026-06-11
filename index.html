@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -8,30 +8,127 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
 <body>
-    <header class="header">
-        <h1>🧠 Твой Архив</h1>
-        <p id="status-text">Загрузка файлов...</p>
-    </header>
 
-    <div id="loader" class="gallery">
-        <div class="skeleton"></div>
-        <div class="skeleton" style="height: 200px;"></div>
-        <div class="skeleton"></div>
-        <div class="skeleton" style="height: 150px;"></div>
+    <div class="header">
+        <h2 id="welcome-text">My Archive</h2>
     </div>
 
-    <main id="gallery-container" class="gallery" style="display: none;"></main>
+    <div class="loader" id="loader"></div>
+    <div class="gallery" id="gallery"></div>
 
-    <div id="photo-modal" class="modal">
-        <div class="modal-content">
-            <span class="close-btn" onclick="closeModal()">&times;</span>
-            <img id="modal-image" src="" alt="Full photo">
-            <div class="modal-actions">
-                <button id="delete-btn" class="btn btn-danger">🗑 Удалить из базы</button>
-            </div>
+    <div class="modal" id="imageModal">
+        <img class="modal-img" id="modalImage" src="" alt="View">
+        <p class="modal-text" id="modalCaption"></p>
+        
+        <div class="modal-actions">
+            <button class="btn btn-copy" onclick="copyContent()">Copy</button>
+            <button class="btn btn-delete" onclick="deleteItem()">Delete</button>
+        </div>
+        <div class="modal-actions" style="margin-top: 15px;">
+            <button class="btn btn-close" onclick="closeModal()">Close</button>
         </div>
     </div>
 
-    <script src="script.js"></script>
+    <script>
+        // Initialize Telegram WebApp API
+        const tg = window.Telegram.WebApp;
+        tg.expand(); // Open in full screen mode
+
+        const gallery = document.getElementById('gallery');
+        const loader = document.getElementById('loader');
+        const modal = document.getElementById('imageModal');
+        let currentFileUrl = "";
+        let currentCaption = "";
+
+        // API URL (Your Synology Server)
+        const API_BASE = "https://galaxylab.i234.me:8443/api/files";
+
+        // Get User ID (Fallback to a test ID if opened in a regular browser)
+        const userId = tg.initDataUnsafe?.user?.id || 123456789;
+
+        // Fetch data from backend
+        async function fetchFiles() {
+            loader.style.display = "block";
+            try {
+                const response = await fetch(`${API_BASE}?user_id=${userId}`);
+                const data = await response.json();
+                
+                loader.style.display = "none";
+
+                if (data.status === "success") {
+                    renderGallery(data.files);
+                } else {
+                    alert("Error loading files.");
+                }
+            } catch (error) {
+                loader.style.display = "none";
+                console.error("Fetch error:", error);
+            }
+        }
+
+        // Render images in the grid
+        function renderGallery(files) {
+            gallery.innerHTML = '';
+            files.forEach(file => {
+                if (file.type === 'photo') {
+                    const imgContainer = document.createElement('div');
+                    
+                    const img = document.createElement('img');
+                    img.src = file.url;
+                    img.className = 'gallery-item';
+                    
+                    // Click event to open Modal
+                    img.onclick = () => openModal(file.url, file.text);
+
+                    gallery.appendChild(img);
+                }
+            });
+        }
+
+        // Feature 1 & 2: Open Modal and trigger Haptics
+        function openModal(url, text) {
+            tg.HapticFeedback.impactOccurred('light'); // Slight vibration
+            currentFileUrl = url;
+            currentCaption = text || "No caption";
+            
+            document.getElementById('modalImage').src = url;
+            document.getElementById('modalCaption').innerText = currentCaption;
+            
+            modal.classList.add('show');
+        }
+
+        function closeModal() {
+            modal.classList.remove('show');
+        }
+
+        // Feature 4: Copy to clipboard
+        function copyContent() {
+            tg.HapticFeedback.impactOccurred('medium');
+            navigator.clipboard.writeText(currentCaption !== "No caption" ? currentCaption : currentFileUrl);
+            tg.showAlert("Copied to clipboard!");
+        }
+
+        // Delete Logic
+        function deleteItem() {
+            tg.HapticFeedback.notificationOccurred('warning');
+            
+            tg.showConfirm("Are you sure you want to delete this file from your archive?", function(confirmed) {
+                if (confirmed) {
+                    // NOTE: To make this actually delete from the database, 
+                    // we will need to add a new /api/delete route in your Python code later.
+                    // For now, it just closes the modal and shows a success message.
+                    
+                    tg.showAlert("File deleted! (UI only until backend route is added)");
+                    closeModal();
+                    
+                    // Re-fetch files to update UI
+                    fetchFiles();
+                }
+            });
+        }
+
+        // Run fetch on load
+        fetchFiles();
+    </script>
 </body>
 </html>
