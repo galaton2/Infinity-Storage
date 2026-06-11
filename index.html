@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, overscroll-behavior-y=none">
     <title>Infinity Storage</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -10,122 +10,142 @@
 <body>
 
     <div id="tab-gallery" class="tab-content active">
-        <div class="header">
-            <h1>Storage</h1>
-            <div class="header-actions">
-                <button onclick="toggleViewMode()" id="viewToggleBtn">
-                    <svg width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M3 4h18v2H3V4zm0 7h18v2H3v-2zm0 7h18v2H3v-2z"/></svg>
-                </button>
+        <div class="profile-header">
+            <div class="profile-info">
+                <div class="avatar-small" id="userAvatar">U</div>
+                <div class="welcome-text">
+                    <h2 id="welcomeText">Loading...</h2>
+                    <h1 id="userName">Sarah's Storage</h1>
+                </div>
             </div>
+            <button class="header-icon" id="notificationBtn">🔔</button>
         </div>
 
         <div class="search-container">
-            <span class="search-icon">🔍</span>
-            <input type="text" class="search-input" id="searchInput" placeholder="Search files..." oninput="handleSearch()">
+            <input type="text" class="search-input" id="searchInput" placeholder="Search Files & Tags..." oninput="handleSearch()">
+            <button class="search-icon-btn">🔍</button>
         </div>
 
-        <div class="filters">
+        <div class="section-header">
+            <h2>Recent Folders</h2>
+            <a class="see-all">See all</a>
+        </div>
+        
+        <div style="display: flex; gap: 12px; overflow-x: auto; margin-bottom: 24px; padding-bottom: 4px; scrollbar-width: none;">
+            <div style="flex: 0 0 140px; background: linear-gradient(135deg, rgba(120, 0, 255, 0.2), #1c1c1e); border-radius: 16px; padding: 16px; border: 1px solid rgba(120, 0, 255, 0.3);">
+                <div style="font-size: 24px; color: #7800ff; margin-bottom: 12px;">📂</div>
+                <div style="font-weight: 600; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Work</div>
+                <div style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">15 files</div>
+            </div>
+            <div style="flex: 0 0 140px; background: linear-gradient(135deg, rgba(10, 132, 255, 0.2), #1c1c1e); border-radius: 16px; padding: 16px; border: 1px solid rgba(10, 132, 255, 0.3);">
+                <div style="font-size: 24px; color: var(--accent-color); margin-bottom: 12px;">📂</div>
+                <div style="font-weight: 600; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Design</div>
+                <div style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">8 files</div>
+            </div>
+            <div style="flex: 0 0 140px; background: var(--bg-surface); border-radius: 16px; padding: 16px; border: 1px solid var(--border-color);">
+                <div style="font-size: 24px; color: var(--text-secondary); margin-bottom: 12px;">📂</div>
+                <div style="font-weight: 600; font-size: 15px;">Memos</div>
+                <div style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">4 files</div>
+            </div>
+        </div>
+
+        <div class="section-header">
+            <h2>Recent Files</h2>
+        </div>
+
+        <div class="filters" id="filterTabs">
             <button class="filter-btn active" onclick="applyFilter('all')">All</button>
             <button class="filter-btn" onclick="applyFilter('photo')">Photos</button>
             <button class="filter-btn" onclick="applyFilter('document')">Documents</button>
         </div>
 
-        <div class="gallery view-grid" id="gallery">
+        <div class="recent-list gallery selection-mode" id="galleryList">
             </div>
     </div>
 
-    <div id="tab-profile" class="tab-content">
-        <div class="profile-section">
-            <div class="avatar" id="userAvatar">U</div>
-            <h2 id="userName" style="font-size: 24px; font-weight: 600;">Loading...</h2>
-        </div>
+    <div id="tab-settings" class="tab-content" style="padding-bottom: 40px;">
+        <div class="header" style="margin-bottom: 24px;"><h1>Settings</h1></div>
         
-        <div class="storage-card">
-            <div class="storage-header">
-                <span>Storage Usage</span>
-                <span id="storageAmount">0 MB of ∞</span>
+        <div class="stats-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px;">
+            <div class="stat-card" style="background:var(--bg-surface); border-radius:16px; padding:16px; text-align:center;">
+                <h3 id="statTotal" style="font-size:28px; color:var(--accent-color); font-weight:700;">0</h3>
+                <p style="font-size:12px; color:var(--text-secondary); text-transform:uppercase;">Files Saved</p>
             </div>
-            <div class="progress-bar">
-                <div class="progress-fill" id="storageProgress"></div>
+            <div class="stat-card" style="background:var(--bg-surface); border-radius:16px; padding:16px; text-align:center;">
+                <h3 style="font-size:28px; color:var(--text-secondary);">∞</h3>
+                <p style="font-size:12px; color:var(--text-secondary); text-transform:uppercase;">Space</p>
             </div>
-            <p style="margin-top: 12px; font-size: 13px; color: var(--text-secondary);">Unlimited cloud space provided by Synology.</p>
         </div>
 
-        <div class="settings-group">
+        <div class="settings-group" style="background:var(--bg-surface); border-radius:16px; overflow:hidden;">
             <div class="setting-item">
                 <span>Haptic Feedback</span>
                 <label class="switch"><input type="checkbox" id="hapticToggle" checked><span class="slider"></span></label>
             </div>
             <div class="setting-item">
-                <span>High Quality Photos</span>
-                <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
+                <span>Dark Mode Only (force)</span>
+                <label class="switch"><input type="checkbox" id="darkModeToggle" checked><span class="slider"></span></label>
             </div>
         </div>
+        
+        <button onclick="showToast('Offline Mode - Link not copied')" style="width:100%; padding:16px; border-radius:12px; border:none; background-color:var(--bg-surface); color:var(--text-primary); font-size:16px; font-weight:600; margin-top:20px; cursor:pointer;">
+            Get Link for Sarah
+        </button>
     </div>
 
-    <button class="fab" onclick="handleFabClick()">+</button>
+    <button class="fab" id="fabBtn" onclick="handleFabClick()">+</button>
 
-    <nav class="bottom-nav" id="bottomNav">
-        <button class="nav-item active" onclick="switchTab('gallery', this)">
+    <nav class="floating-nav" id="floatingNav">
+        <button class="nav-item active" id="navGallery" onclick="switchTab('gallery', this)">
             <svg viewBox="0 0 24 24"><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>
-            Files
+            <span>Home</span>
         </button>
-        <button class="nav-item" onclick="switchTab('profile', this)">
-            <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
-            Profile
+        <button class="nav-item" id="navFiles" onclick="showToast('Files browser - not implemented')">
+            <svg viewBox="0 0 24 24"><path d="M20 6h-8l-2-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-6 10H8v-2h6v2zm3-4H8v-2h9v2z"/></svg>
+            <span>Files</span>
+        </button>
+        <button class="nav-item" id="navSettings" onclick="switchTab('settings', this)">
+            <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.06.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+            <span>Settings</span>
         </button>
     </nav>
 
     <nav class="selection-toolbar" id="selectionToolbar">
+        <button class="toolbar-btn danger" onclick="showToast('DELETE requires backend method')">🗑 Delete</button>
+        <button class="toolbar-btn" onclick="showToast('TAGS requires backend method')"># Tags</button>
         <button class="toolbar-btn" onclick="cancelSelection()">✕ Cancel</button>
-        <span id="selectionCount" style="font-weight: 600; font-size: 14px;">1 selected</span>
-        <button class="toolbar-btn danger" onclick="deleteSelected()">🗑 Delete</button>
     </nav>
-
-    <div class="modal" id="imageModal">
-        <button class="action-btn close-btn" onclick="closeModal()">✕</button>
-        <button class="action-btn" onclick="toggleActionSheet()">⋮</button>
-        
-        <div class="swipe-hint swipe-left">‹</div>
-        <img id="modalImage" src="" alt="Full size">
-        <div class="swipe-hint swipe-right">›</div>
-
-        <div class="action-sheet" id="actionSheet">
-            <button class="sheet-btn" onclick="downloadCurrentItem()">📥 Save to Device</button>
-            <button class="sheet-btn" onclick="shareCurrentItem()">↗️ Share File</button>
-            <button class="sheet-btn danger" onclick="deleteCurrentItem()">🗑 Delete File</button>
-        </div>
-    </div>
 
     <div id="toast-container"></div>
 
     <script>
-        // ================= STATE =================
+        // ================= STATE & INIT =================
         const tg = window.Telegram.WebApp;
+        // Apply Telegram settings and theme immediately
         tg.expand();
         tg.ready();
+        
+        // Setup Dark Mode toggle based on theme
+        const isDarkMode = tg.colorScheme === 'dark';
+        document.getElementById('darkModeToggle').checked = isDarkMode;
 
         let globalFiles = [];
         let currentFilter = 'all';
         let searchQuery = '';
-        let viewMode = 'grid'; // 'grid' or 'list'
         
-        // Modal / Swipe State
-        let currentPhotoIndex = 0;
-        let photoOnlyList = [];
-        let touchStartX = 0;
-
-        // Selection State
+        // Multi-select state
         let isSelectionMode = false;
         let selectedIds = new Set();
         let pressTimer;
 
+        // URL твоего Synology
         const API_URL = "https://galaxylab.i234.me:8443/api/files";
 
-        // ================= INIT & FETCH =================
+        // Подгружаем данные пользователя
         const user = tg.initDataUnsafe?.user;
-        const firstName = user?.first_name || 'Bekhruz';
-        document.getElementById('userName').innerText = firstName;
+        const firstName = user?.first_name || 'Sarah';
+        document.getElementById('welcomeText').innerText = `Welcome, ${firstName}!`;
+        document.getElementById('userName').innerText = `${firstName}'s Storage`;
         document.getElementById('userAvatar').innerText = firstName.charAt(0).toUpperCase();
 
         async function fetchFiles() {
@@ -136,158 +156,160 @@
                 const response = await fetch(`${API_URL}?user_id=${userId}`);
                 const data = await response.json();
                 if (data.status === "success") {
-                    globalFiles = data.files.map((f, index) => ({...f, internalId: index})); // Add internal ID for selection
+                    // Добавляем internalId и mock теги/даты для дизайна
+                    globalFiles = data.files.map((f, index) => ({
+                        ...f, 
+                        internalId: index,
+                        // MOCK ДАННЫЕ ДЛЯ ТЕГОВ И ДАТЫ (берем последние 2 слова текста как теги)
+                        tags: f.text ? f.text.split(' ').slice(-2).map(w => '#' + w) : ['#memo'],
+                        dateMock: 'Today, 15:42'
+                    }));
                 }
             } catch (error) {
-                // Mock for offline
+                // Mock for offline mode in Sarah design
                 globalFiles = [
-                    { internalId: 0, type: 'photo', url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=400', text: '' },
-                    { internalId: 1, type: 'photo', url: 'https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=400', text: '' },
-                    { internalId: 2, type: 'document', text: 'Important_Report.pdf', url: '#' }
+                    { internalId: 0, type: 'photo', url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=200', text: 'Sarah UI Design Screen', tags: ['#design', '#work'], dateMock: 'Yesterday, 10:11' },
+                    { internalId: 1, type: 'photo', url: 'https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=200', text: 'Profile picture backup', tags: ['#profile'], dateMock: 'Oct 2, 09:12' },
+                    { internalId: 2, type: 'document', text: 'Important_Sarah_Report.pdf', tags: ['#work', '#pdf'], dateMock: 'Oct 1, 14:30' }
                 ];
+                showToast("Demo Mode");
             }
             
-            updateStorageMock();
+            document.getElementById('statTotal').innerText = globalFiles.length;
             renderGallery();
         }
 
-        // ================= RENDERING =================
+        // ================= RENDERING LOGIC (Photo 1 design) =================
         function renderSkeletons() {
-            const gallery = document.getElementById('gallery');
-            gallery.innerHTML = '';
-            for (let i = 0; i < 12; i++) gallery.innerHTML += `<div class="skeleton" style="height: ${viewMode === 'grid' ? '110px' : '80px'};"></div>`;
+            const list = document.getElementById('galleryList');
+            list.innerHTML = '';
+            for (let i = 0; i < 6; i++) {
+                list.innerHTML += `
+                    <div class="skeleton" style="height: 80px; display:flex; align-items:center; padding:16px; gap:16px; margin-bottom:12px;">
+                        <div style="width:44px; height:44px; border-radius:12px; background:rgba(255,255,255,0.02);"></div>
+                        <div style="flex:1;">
+                            <div style="height:14px; width:70%; background:rgba(255,255,255,0.02); border-radius:4px; margin-bottom:8px;"></div>
+                            <div style="height:10px; width:40%; background:rgba(255,255,255,0.01); border-radius:4px;"></div>
+                        </div>
+                    </div>`;
+            }
         }
 
         function getFilteredFiles() {
             return globalFiles.filter(f => {
                 const matchType = currentFilter === 'all' || f.type === currentFilter;
-                const matchSearch = f.text.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                                   (f.type === 'document' && 'document'.includes(searchQuery.toLowerCase()));
+                // Ищем и в названии, и в тегах
+                const matchSearch = searchQuery === '' || 
+                                   f.text?.toLowerCase().includes(searchQuery) ||
+                                   f.tags?.some(t => t.toLowerCase().includes(searchQuery));
                 return matchType && matchSearch;
             });
         }
 
         function renderGallery() {
-            const gallery = document.getElementById('gallery');
-            gallery.innerHTML = '';
+            const list = document.getElementById('galleryList');
+            list.innerHTML = '';
             const filtered = getFilteredFiles();
             
-            photoOnlyList = filtered.filter(f => f.type === 'photo');
-
             if (filtered.length === 0) {
-                gallery.innerHTML = `<div style="text-align:center; padding:40px 20px; color:var(--text-secondary); grid-column:1/-1;">📭 No files found</div>`;
+                list.innerHTML = `<div style="text-align:center; padding:40px 20px; color:var(--text-secondary);">Archive is empty or nothing found</div>`;
                 return;
             }
 
             filtered.forEach((file) => {
-                const itemDiv = document.createElement('div');
-                itemDiv.className = `item ${file.type} ${selectedIds.has(file.internalId) ? 'selected' : ''}`;
+                const isSelected = selectedIds.has(file.internalId);
+                const fileCard = document.createElement('div');
+                fileCard.className = `file-card ${isSelected ? 'selected' : ''}`;
                 
-                // Content based on view mode
-                let contentHTML = '';
-                const dateMock = "Today, 14:30"; // In real app, format file.timestamp
+                const iconHTML = file.type === 'photo' 
+                    ? `<img src="${file.url}" alt="Foto" style="width:100%; height:100%; object-fit:cover; border-radius:12px;">`
+                    : `📄`; // Doc icon
 
-                if (file.type === 'photo') {
-                    contentHTML = `
-                        <img src="${file.url}" alt="Photo" loading="lazy">
-                        <div class="item-info">
-                            <div class="item-title">Photo</div>
-                            <div class="item-date">${dateMock}</div>
+                // Render tags as pills
+                const tagsHTML = file.tags?.map(t => `<span class="tag-pill-sm">${t}</span>`).join('') || '';
+
+                fileCard.innerHTML = `
+                    <div class="file-icon">${iconHTML}</div>
+                    <div class="file-details">
+                        <div class="file-name">${file.text || 'Sarah_File_Backup'}</div>
+                        <div class="file-meta">
+                            <span>1 Files</span> ${tagsHTML} <span>${file.dateMock}</span>
                         </div>
-                    `;
-                } else {
-                    contentHTML = `
-                        <div class="doc-icon">📄</div>
-                        <div class="item-info">
-                            <div class="item-title">${file.text || 'Document'}</div>
-                            <div class="item-date">${dateMock}</div>
-                        </div>
-                    `;
-                }
+                    </div>
+                    <button class="file-card-menu">⋮</button>
+                    <div class="file-card-select"></div>
+                `;
 
-                // Checkbox for selection
-                contentHTML += `<div class="checkbox"></div>`;
-                itemDiv.innerHTML = contentHTML;
-
-                // Event Listeners (Long Press vs Click)
-                itemDiv.addEventListener('touchstart', () => startPress(file.internalId));
-                itemDiv.addEventListener('mousedown', () => startPress(file.internalId));
+                // ================= FIX SCROLL VS CLICK (Touch detection logic) =================
+                let touchStartPos = 0;
                 
-                itemDiv.addEventListener('touchend', () => endPress(file));
-                itemDiv.addEventListener('mouseup', () => endPress(file));
-                
-                itemDiv.addEventListener('touchmove', cancelPress);
-                itemDiv.addEventListener('mouseleave', cancelPress);
+                // Track start position
+                fileCard.addEventListener('touchstart', (e) => {
+                    touchStartPos = e.changedTouches[0].screenX;
+                    
+                    // START Long Press timer
+                    if (!isSelectionMode) {
+                        pressTimer = setTimeout(() => {
+                            isSelectionMode = true;
+                            if (document.getElementById('hapticToggle').checked) tg.HapticFeedback.impactOccurred('medium');
+                            // Replace Bottom Nav with selection toolbar
+                            document.getElementById('floatingNav').style.display = 'none';
+                            document.getElementById('selectionToolbar').classList.add('active');
+                            toggleSelection(file.internalId);
+                        }, 600); // 600ms hold
+                    }
+                });
 
-                gallery.appendChild(itemDiv);
+                fileCard.addEventListener('touchend', (e) => {
+                    let touchEndPos = e.changedTouches[0].screenX;
+                    let distance = Math.abs(touchStartPos - touchEndPos);
+                    
+                    // CANCEL Long Press timer
+                    clearTimeout(pressTimer);
+                    
+                    // If finger moved > 10px, assume SCROLL, don't trigger click/modal
+                    if (distance > 10) {
+                        return;
+                    }
+
+                    // NORMAL CLICK (No scroll detected)
+                    if (isSelectionMode) {
+                        toggleSelection(file.internalId);
+                    } else {
+                        // Open file download/reaction
+                        showToast(`Offiline: download ${file.text}`);
+                    }
+                });
+                
+                // Cancel timer if finger moves (even a little) or is lifted before timer ends
+                fileCard.addEventListener('touchmove', () => {
+                    clearTimeout(pressTimer);
+                });
+
+                list.appendChild(fileCard);
             });
         }
 
-        // ================= SEARCH & VIEW MODE =================
+        // ================= SEARCH & VIEW LOGIC =================
         function handleSearch() {
-            searchQuery = document.getElementById('searchInput').value;
+            searchQuery = document.getElementById('searchInput').value.trim().toLowerCase();
             renderGallery();
-        }
-
-        function toggleViewMode() {
-            const gallery = document.getElementById('gallery');
-            const btn = document.getElementById('viewToggleBtn');
-            if (viewMode === 'grid') {
-                viewMode = 'list';
-                gallery.classList.replace('view-grid', 'view-list');
-                btn.innerHTML = `<svg width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M4 11h5V5H4v6zm0 7h5v-6H4v6zm6 0h5v-6h-5v6zm6 0h5v-6h-5v6zm-6-7h5V5h-5v6zm6-6v6h5V5h-5z"/></svg>`; // Grid icon
-            } else {
-                viewMode = 'grid';
-                gallery.classList.replace('view-list', 'view-grid');
-                btn.innerHTML = `<svg width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M3 4h18v2H3V4zm0 7h18v2H3v-2zm0 7h18v2H3v-2z"/></svg>`; // List icon
-            }
-            if (document.getElementById('hapticToggle').checked) tg.HapticFeedback.impactOccurred('light');
         }
 
         function applyFilter(type) {
             currentFilter = type;
-            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('#filterTabs .filter-btn').forEach(btn => btn.classList.remove('active'));
             event.target.classList.add('active');
             renderGallery();
         }
 
-        // ================= MULTI-SELECT LOGIC =================
-        function startPress(id) {
-            pressTimer = setTimeout(() => {
-                if (!isSelectionMode) {
-                    isSelectionMode = true;
-                    if (document.getElementById('hapticToggle').checked) tg.HapticFeedback.impactOccurred('heavy');
-                    document.getElementById('bottomNav').classList.add('hidden');
-                    document.getElementById('selectionToolbar').classList.add('active');
-                }
-                toggleSelection(id);
-            }, 500); // 500ms long press
-        }
-
-        function cancelPress() { clearTimeout(pressTimer); }
-
-        function endPress(file) {
-            clearTimeout(pressTimer);
-            if (isSelectionMode) {
-                toggleSelection(file.internalId);
-            } else {
-                // Normal click
-                if (file.type === 'photo') {
-                    currentPhotoIndex = photoOnlyList.findIndex(f => f.url === file.url);
-                    openModal();
-                } else {
-                    showToast("Docs open via Telegram Chat only");
-                }
-            }
-        }
-
+        // ================= MULTI-SELECT LOGIC darkly styled =================
         function toggleSelection(id) {
             if (selectedIds.has(id)) selectedIds.delete(id);
             else selectedIds.add(id);
             
             if (selectedIds.size === 0) return cancelSelection();
             
-            document.getElementById('selectionCount').innerText = `${selectedIds.size} selected`;
             renderGallery();
             if (document.getElementById('hapticToggle').checked) tg.HapticFeedback.selectionChanged();
         }
@@ -295,106 +317,33 @@
         function cancelSelection() {
             isSelectionMode = false;
             selectedIds.clear();
-            document.getElementById('bottomNav').classList.remove('hidden');
+            document.getElementById('floatingNav').style.display = 'flex';
             document.getElementById('selectionToolbar').classList.remove('active');
             renderGallery();
         }
 
-        function deleteSelected() {
-            globalFiles = globalFiles.filter(f => !selectedIds.has(f.internalId));
-            cancelSelection();
-            updateStorageMock();
-            showToast("Selected files deleted");
-            if (document.getElementById('hapticToggle').checked) tg.HapticFeedback.notificationOccurred('success');
-        }
-
-        // ================= SWIPE MODAL =================
-        function openModal() {
-            const file = photoOnlyList[currentPhotoIndex];
-            if (!file) return;
-            document.getElementById('modalImage').src = file.url;
-            document.getElementById('imageModal').classList.add('active');
-            document.getElementById('actionSheet').classList.remove('active'); // hide sheet
-        }
-
-        function closeModal() {
-            document.getElementById('imageModal').classList.remove('active');
-            document.getElementById('actionSheet').classList.remove('active');
-        }
-
-        // Swipe Detection
-        const modalEl = document.getElementById('imageModal');
-        modalEl.addEventListener('touchstart', e => touchStartX = e.changedTouches[0].screenX);
-        modalEl.addEventListener('touchend', e => {
-            let touchEndX = e.changedTouches[0].screenX;
-            if (touchStartX - touchEndX > 50) { // Swipe Left (Next)
-                if (currentPhotoIndex < photoOnlyList.length - 1) {
-                    currentPhotoIndex++;
-                    openModal();
-                    if (document.getElementById('hapticToggle').checked) tg.HapticFeedback.selectionChanged();
-                }
-            }
-            if (touchEndX - touchStartX > 50) { // Swipe Right (Prev)
-                if (currentPhotoIndex > 0) {
-                    currentPhotoIndex--;
-                    openModal();
-                    if (document.getElementById('hapticToggle').checked) tg.HapticFeedback.selectionChanged();
-                }
-            }
-        });
-
-        // ================= ACTION SHEET =================
-        function toggleActionSheet() {
-            document.getElementById('actionSheet').classList.toggle('active');
-            if (document.getElementById('hapticToggle').checked) tg.HapticFeedback.impactOccurred('light');
-        }
-
-        function downloadCurrentItem() {
-            showToast("Downloading...");
-            toggleActionSheet();
-        }
-        
-        function shareCurrentItem() {
-            showToast("Link copied to clipboard");
-            toggleActionSheet();
-        }
-
-        function deleteCurrentItem() {
-            const file = photoOnlyList[currentPhotoIndex];
-            globalFiles = globalFiles.filter(f => f.internalId !== file.internalId);
-            closeModal();
-            renderGallery();
-            updateStorageMock();
-            showToast("File deleted");
-        }
-
-        // ================= FAB & MISC =================
-        function handleFabClick() {
-            if (document.getElementById('hapticToggle').checked) tg.HapticFeedback.notificationOccurred('success');
+        // ================= TAB NAVIGATION LOGIC (Floating Nav) =================
+        function switchTab(tabId, element) {
+            // Прячем все вкладки
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.getElementById('tab-' + tabId).classList.add('active');
             
+            // Обновляем активную иконку в плавающем меню
+            document.querySelectorAll('#floatingNav .nav-item').forEach(b => b.classList.remove('active'));
+            element.classList.add('active');
+
+            if (document.getElementById('hapticToggle').checked) {
+                tg.HapticFeedback.selectionChanged();
+            }
+        }
+
+        // ================= FAB & MISC LOGIC =================
+        function handleFabClick() {
             // Нативное Alert-окно Телеграма
-            tg.showAlert("Отправьте любой файл в чат с ботом, и он моментально появится в вашем облаке.", function() {
+            tg.showAlert("Отправьте любой файл в чат с ботом, и он моментально появится в вашем облаке Sarah Storage.", function() {
                 // Закрывает WebApp и возвращает пользователя в чат с ботом
                 tg.close();
             });
-        }
-
-        function switchTab(tabId, element) {
-            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-            document.getElementById('tab-' + tabId).classList.add('active');
-            document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
-            element.classList.add('active');
-            if (document.getElementById('hapticToggle').checked) tg.HapticFeedback.selectionChanged();
-        }
-
-        function updateStorageMock() {
-            // Фейковый подсчет места (в реальности нужно брать размеры из базы)
-            const mb = (globalFiles.length * 2.4).toFixed(1);
-            document.getElementById('storageAmount').innerText = `${mb} MB of ∞`;
-            // Анимация бара (до 10% для вида)
-            setTimeout(() => {
-                document.getElementById('storageProgress').style.width = globalFiles.length > 0 ? '5%' : '0%';
-            }, 100);
         }
 
         function showToast(msg) {
@@ -404,6 +353,11 @@
             toast.innerText = msg;
             container.appendChild(toast);
             setTimeout(() => { if (container.contains(toast)) toast.remove(); }, 3000);
+        }
+
+        // Устанавливаем тему (форсируем темную для Сара дизайна если включен переключатель)
+        if (!document.body.classList.contains('light-theme')) {
+            // ... apply strict dark styles ...
         }
 
         window.onload = fetchFiles;
