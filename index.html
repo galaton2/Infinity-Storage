@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Aura Storage</title>
+    <title>Infinity Core</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
@@ -14,30 +14,30 @@
 
     <div class="search-overlay" id="searchOverlay">
         <div class="search-input-wrapper">
-            <span>🔍</span>
-            <input type="text" class="search-bar-input" id="searchBarInput" placeholder="Type filename to filter..." oninput="executeSearch()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" class="search-bar-input" id="searchBarInput" placeholder="Find files..." oninput="executeSearch()">
         </div>
-        <button class="icon-btn" onclick="toggleSearchPanel()" style="font-size: 14px; font-weight:600;">Close</button>
+        <button class="icon-btn" onclick="toggleSearchPanel()" style="width: auto; padding: 0 16px; font-size: 14px; font-weight:600; border-radius: 20px;">Close</button>
     </div>
 
     <div class="container">
         <div class="header-top">
             <button class="icon-btn" onclick="toggleSearchPanel()">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
             </button>
-            <h2 class="serif" style="font-size: 22px; letter-spacing: -0.5px;">Aura Storage</h2>
+            <h2 style="font-size: 20px;">Overview</h2>
             <button class="icon-btn" onclick="switchTab('profile')">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
             </button>
         </div>
 
         <div id="tab-home" class="tab-content active">
-            <div class="section-title" style="margin-bottom: 16px;">Latest Upload</div>
+            <div class="section-title" style="margin-bottom: 16px;">Recently Added</div>
             
             <div class="hero-card" id="heroCard">
                 <div class="hero-content">
-                    <h1 class="hero-title serif" id="heroTitle">No files</h1>
-                    <p class="hero-subtitle" id="heroSubtitle">Send data to bot</p>
+                    <h1 class="hero-title" id="heroTitle">No Data</h1>
+                    <p class="hero-subtitle" id="heroSubtitle">Upload via bot</p>
                 </div>
                 <button class="play-btn" onclick="triggerHeroAction()">
                     <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
@@ -45,35 +45,40 @@
             </div>
 
             <div class="section-title-row">
-                <div class="section-title">Recent Folders</div>
-                <button class="section-action-btn" onclick="createNewFolder()">+ Add Folder</button>
+                <div class="section-title">Spaces</div>
+                <button class="section-action-btn" onclick="createNewFolder()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    New
+                </button>
             </div>
             
             <div class="scroll-section" id="foldersContainer">
                 </div>
 
-            <div class="section-title" style="margin-bottom: 16px;">Folder Content</div>
+            <div class="section-title-row" style="margin-bottom: 16px;">
+                <div class="section-title" id="currentFolderName">Content</div>
+            </div>
             <div class="gallery-grid" id="homeFolderGallery">
                 </div>
         </div>
 
         <div id="tab-files" class="tab-content">
-            <h1 class="serif" style="font-size: 36px; margin-bottom: 24px;">All Items</h1>
+            <h1 style="font-size: 32px; margin-bottom: 24px;">All Items</h1>
             <div class="gallery-grid" id="fullGallery">
                 </div>
         </div>
 
         <div id="tab-profile" class="tab-content" style="text-align: center;">
             <div class="profile-avatar" id="userAvatar">B</div>
-            <h1 class="serif" id="userName" style="font-size: 32px; margin-bottom: 8px;">Bekhruz</h1>
-            <p class="section-title">Infinity Storage Owner</p>
+            <h1 id="userName" style="font-size: 28px; margin-bottom: 8px;">Bekhruz</h1>
+            <p class="section-title">System Admin</p>
             
-            <div class="glass-card" style="margin-top: 32px; height: auto; text-align: left; padding: 20px; width: 100%;">
-                <h3 class="serif" style="font-size: 20px; margin-bottom: 16px;">Cloud Capacity</h3>
-                <div style="height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden; margin-bottom: 12px;">
-                    <div style="width: 8%; height: 100%; background: var(--accent-green); border-radius: 3px;"></div>
+            <div style="background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: var(--radius-lg); padding: 24px; text-align: left; margin-top: 32px;">
+                <h3 style="font-size: 18px; margin-bottom: 16px;">NAS Integration</h3>
+                <div style="height: 8px; background: rgba(255,255,255,0.05); border-radius: 4px; overflow: hidden; margin-bottom: 16px;">
+                    <div style="width: 12%; height: 100%; background: var(--accent-green); border-radius: 4px;"></div>
                 </div>
-                <p style="font-size: 14px; color: var(--text-muted);">Unlimited dynamic space linked to Synology NAS Server</p>
+                <p style="font-size: 14px; color: var(--text-muted); line-height: 1.5;">End-to-end encryption active. Storage limits bypassed via custom Synology node.</p>
             </div>
         </div>
     </div>
@@ -85,12 +90,12 @@
                 Home
             </button>
             <button class="nav-item" onclick="switchTab('files', this)">
-                <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
                 Files
             </button>
-            <button class="nav-item" onclick="tg.showAlert('Send any image, video or text to the bot. It will securely stream to this clean web layer instantly.', () => tg.close())">
-                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
-                Upload
+            <button class="nav-item" onclick="tg.showAlert('Send items to the Telegram Bot. They will instantly sync to this hub.', () => tg.close())">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                Info
             </button>
             <button class="nav-item" onclick="switchTab('profile', this)">
                 <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
@@ -106,9 +111,15 @@
 
     <div class="sheet-overlay" id="sheetOverlay" onclick="closeContextSheet()"></div>
     <div class="action-sheet" id="contextSheet">
-        <div class="sheet-header"><div class="sheet-drag"></div><div class="sheet-title" id="sheetFolderTitle">Manage Folder</div></div>
-        <button class="sheet-btn" onclick="renameFolderAction()">✏️ Rename Folder</button>
-        <button class="sheet-btn danger" onclick="deleteFolderAction()">🗑 Delete Folder</button>
+        <div class="sheet-header"><div class="sheet-drag"></div><div class="sheet-title" id="sheetFolderTitle">Space Settings</div></div>
+        <button class="sheet-btn" onclick="renameFolderAction()">
+            <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            Rename Space
+        </button>
+        <button class="sheet-btn danger" onclick="deleteFolderAction()">
+            <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+            Delete Space
+        </button>
     </div>
 
     <div id="toast-container"></div>
@@ -118,61 +129,58 @@
         tg.expand();
         tg.ready();
 
-        let globalFiles = [];
-        let folders = [
-            { id: 'work', name: 'Work', icon: '💼' },
-            { id: 'personal', name: 'Personal', icon: '🔒' }
-        ];
-        let activeFolderId = 'work';
-        let targetedFolderId = null; // Для контекстного меню
-        let searchString = '';
-
         const API_URL = "https://galaxylab.i234.me:8443/api/files";
         
+        // Векторные SVG иконки вместо эмодзи
+        const SVGS = {
+            work: `<svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>`,
+            personal: `<svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>`,
+            media: `<svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>`,
+            box: `<svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>`,
+            layer: `<svg viewBox="0 0 24 24"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>`
+        };
+
+        let globalFiles = [];
+        let folders = [
+            { id: 'work', name: 'Work', icon: SVGS.work },
+            { id: 'personal', name: 'Personal', icon: SVGS.personal }
+        ];
+        let activeFolderId = 'work';
+        let targetedFolderId = null;
+        let searchString = '';
+
         const user = tg.initDataUnsafe?.user;
         const firstName = user?.first_name || 'Bekhruz';
         document.getElementById('userName').innerText = firstName;
         document.getElementById('userAvatar').innerText = firstName.charAt(0);
 
-        // Fetch Data from Synology Server
         async function fetchFiles() {
-            renderSkeletons();
             const userId = user?.id || '123456789';
             try {
                 const response = await fetch(`${API_URL}?user_id=${userId}`);
                 const data = await response.json();
                 if (data.status === "success" && data.files.length > 0) {
                     globalFiles = data.files;
-                } else { throw new Error("empty"); }
+                } else throw new Error("empty");
             } catch (error) {
-                // Премиальные заглушки для оффлайн/демо режима
                 globalFiles = [
-                    { type: 'photo', url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=400', text: 'Geometric Art', folder: 'work' },
-                    { type: 'photo', url: 'https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=400', text: 'Minimal Gradient Overlay', folder: 'personal' },
-                    { type: 'document', text: 'Tor_Vergata_Form.pdf', folder: 'work' },
-                    { type: 'document', text: 'Vacation_Plan.docx', folder: 'personal' }
+                    { type: 'photo', url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=400', text: 'Abstract_Art', folder: 'work' },
+                    { type: 'photo', url: 'https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=400', text: 'Neon_Vibes', folder: 'personal' },
+                    { type: 'document', text: 'Bot_Architecture.pdf', folder: 'work' },
+                    { type: 'document', text: 'Tor_Vergata_Form.docx', folder: 'personal' }
                 ];
             }
-            
-            if(globalFiles.length > 0) {
-                updateHeroHighlight(globalFiles[0]);
-            }
+            if(globalFiles.length > 0) updateHeroHighlight(globalFiles[0]);
             renderFolders();
             renderGalleries();
         }
 
-        function renderSkeletons() {
-            const grid1 = document.getElementById('homeFolderGallery');
-            const grid2 = document.getElementById('fullGallery');
-            grid1.innerHTML = grid2.innerHTML = '<div class="skeleton" style="aspect-ratio:1;"></div><div class="skeleton" style="aspect-ratio:1;"></div>';
-        }
-
         function updateHeroHighlight(file) {
             if(!file) return;
-            document.getElementById('heroTitle').innerHTML = file.type === 'document' ? file.text.split('.')[0] : "Visual<br>Aura Archive";
-            document.getElementById('heroSubtitle').innerText = file.type === 'document' ? 'Latest Document Saved' : 'Latest Image Asset Saved';
+            document.getElementById('heroTitle').innerHTML = file.type === 'document' ? file.text.split('.')[0].substring(0,12) + '...' : "Visual<br>Asset";
+            document.getElementById('heroSubtitle').innerText = file.type === 'document' ? 'Document Stream' : 'Image Stream';
             if (file.type === 'photo') {
-                document.getElementById('heroCard').style.background = `linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.75)), url('${file.url}') center/cover`;
+                document.getElementById('heroCard').style.background = `linear-gradient(rgba(0,0,0,0.1), rgba(0,0,0,0.8)), url('${file.url}') center/cover`;
             }
         }
 
@@ -181,7 +189,7 @@
             if(globalFiles.length > 0 && globalFiles[0].type === 'photo') openModal(globalFiles[0].url);
         }
 
-        // ================= INTERACTIVE FOLDERS (CRUD) =================
+        // ================= FOLDERS =================
         function renderFolders() {
             const container = document.getElementById('foldersContainer');
             container.innerHTML = '';
@@ -190,56 +198,52 @@
                 const count = globalFiles.filter(f => f.folder === folder.id).length;
                 const card = document.createElement('div');
                 card.className = `glass-card ${activeFolderId === folder.id ? 'active' : ''}`;
-                
                 card.innerHTML = `
                     <div class="folder-icon-box">${folder.icon}</div>
                     <div>
-                        <h2 class="glass-title serif">${folder.name}</h2>
+                        <h2 class="glass-title">${folder.name}</h2>
                         <p class="glass-subtitle">${count} items</p>
-                    </div>
-                `;
+                    </div>`;
 
-                // Короткий клик — выбор папки
                 card.onclick = () => {
                     activeFolderId = folder.id;
+                    document.getElementById('currentFolderName').innerText = folder.name + " Content";
                     renderFolders();
                     renderGalleries();
                     tg.HapticFeedback.selectionChanged();
                 };
 
-                // Долгий клик/нажатие — вызов меню удаления/изменения
                 let pressTimer;
                 const start = () => pressTimer = setTimeout(() => openContextSheet(folder.id, folder.name), 600);
                 const cancel = () => clearTimeout(pressTimer);
-                
-                card.addEventListener('touchstart', start);
-                card.addEventListener('touchend', cancel);
-                card.addEventListener('mousedown', start);
-                card.addEventListener('mouseup', cancel);
+                card.addEventListener('touchstart', start); card.addEventListener('touchend', cancel);
+                card.addEventListener('mousedown', start); card.addEventListener('mouseup', cancel);
                 card.addEventListener('mouseleave', cancel);
 
                 container.appendChild(card);
             });
+            
+            // Sync title on first load
+            const activeFolder = folders.find(f => f.id === activeFolderId);
+            if(activeFolder) document.getElementById('currentFolderName').innerText = activeFolder.name + " Content";
         }
 
         function createNewFolder() {
             tg.HapticFeedback.impactOccurred('light');
-            const name = prompt("Enter folder name:");
+            const name = prompt("Name the new space:");
             if (!name) return;
             const id = 'f_' + Date.now();
-            const icons = ['📁', '🌌', '🌟', '🔮', '📚', '⚡️'];
-            const randomIcon = icons[Math.floor(Math.random() * icons.length)];
-            
-            folders.push({ id: id, name: name, icon: randomIcon });
+            const iconKeys = ['media', 'box', 'layer'];
+            const randomIconKey = iconKeys[Math.floor(Math.random() * iconKeys.length)];
+            folders.push({ id: id, name: name, icon: SVGS[randomIconKey] });
             activeFolderId = id;
-            renderFolders();
-            renderGalleries();
-            showToast("Folder created");
+            renderFolders(); renderGalleries();
+            showToast("Space initialized");
         }
 
         function openContextSheet(id, name) {
             targetedFolderId = id;
-            document.getElementById('sheetFolderTitle').innerText = `Folder: ${name}`;
+            document.getElementById('sheetFolderTitle').innerText = name + ' Settings';
             document.getElementById('contextSheet').classList.add('active');
             document.getElementById('sheetOverlay').style.display = 'block';
             tg.HapticFeedback.impactOccurred('medium');
@@ -248,92 +252,76 @@
         function closeContextSheet() {
             document.getElementById('contextSheet').classList.remove('active');
             document.getElementById('sheetOverlay').style.display = 'none';
-            targetedFolderId = null;
         }
 
         function renameFolderAction() {
-            if(!targetedFolderId) return;
-            const newName = prompt("Enter new folder name:");
-            if(newName) {
-                const folder = folders.find(f => f.id === targetedFolderId);
-                if(folder) folder.name = newName;
-                renderFolders();
-                showToast("Folder renamed");
+            const newName = prompt("Enter new name:");
+            if(newName && targetedFolderId) {
+                folders.find(f => f.id === targetedFolderId).name = newName;
+                renderFolders(); showToast("Name updated");
             }
             closeContextSheet();
         }
 
         function deleteFolderAction() {
             if(!targetedFolderId) return;
-            // Перемещаем файлы удаляемой папки обратно в общую кучу
             globalFiles.forEach(f => { if(f.folder === targetedFolderId) f.folder = null; });
             folders = folders.filter(f => f.id !== targetedFolderId);
-            
             if(activeFolderId === targetedFolderId) activeFolderId = folders[0]?.id || null;
-            renderFolders();
-            renderGalleries();
-            showToast("Folder deleted");
+            renderFolders(); renderGalleries();
+            showToast("Space deleted");
             closeContextSheet();
         }
 
-        // ================= SEARCH PANEL LOGIC (FIXED) =================
+        // ================= SEARCH & RENDER =================
         function toggleSearchPanel() {
             const overlay = document.getElementById('searchOverlay');
             overlay.classList.toggle('active');
-            if(overlay.classList.contains('active')) {
-                document.getElementById('searchBarInput').focus();
-            } else {
-                document.getElementById('searchBarInput').value = '';
-                searchString = '';
-                renderGalleries();
-            }
+            if(overlay.classList.contains('active')) document.getElementById('searchBarInput').focus();
+            else { document.getElementById('searchBarInput').value = ''; searchString = ''; renderGalleries(); }
             tg.HapticFeedback.impactOccurred('light');
         }
+        function executeSearch() { searchString = document.getElementById('searchBarInput').value.toLowerCase(); renderGalleries(); }
 
-        function executeSearch() {
-            searchString = document.getElementById('searchBarInput').value.toLowerCase();
-            renderGalleries();
-        }
-
-        // ================= RENDER ARCHIVE LOGIC =================
         function renderGalleries() {
             const homeGrid = document.getElementById('homeFolderGallery');
             const fullGrid = document.getElementById('fullGallery');
-            
-            homeGrid.innerHTML = '';
-            fullGrid.innerHTML = '';
+            homeGrid.innerHTML = fullGrid.innerHTML = '';
+
+            // SVG для документов
+            const docIcon = `<svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>`;
 
             globalFiles.forEach((file) => {
-                // Проверяем фильтр поиска
-                const matchesSearch = file.text ? file.text.toLowerCase().includes(searchString) : true;
-                if (!matchesSearch) return;
+                if (file.text && !file.text.toLowerCase().includes(searchString)) return;
 
                 const card = document.createElement('div');
                 card.className = `grid-item ${file.type}`;
                 
                 if (file.type === 'photo') {
-                    card.innerHTML = `<img src="${file.url}" alt="Image" loading="lazy">`;
+                    card.innerHTML = `<img src="${file.url}" alt="Asset" loading="lazy">`;
                     card.onclick = () => openModal(file.url);
                 } else {
-                    card.innerHTML = `<div style="font-size:32px; margin-bottom:8px; z-index:2;">📄</div><div class="item-title">${file.text || 'Document'}</div>`;
-                    card.onclick = () => tg.showAlert("Documents are streamed through the telegram bot channel.");
+                    card.innerHTML = `${docIcon}<div class="item-title">${file.text || 'Secure Document'}</div>`;
+                    card.onclick = () => tg.showAlert("Secure documents are streamed via Telegram native interface.");
                 }
 
-                // Клон для вкладки "All Files"
+                // 1. Вставляем ВСЕ файлы во вкладку "All Items" (Files Tab)
                 fullGrid.appendChild(card.cloneNode(true));
 
-                // Рендерим на главную только если совпадает с активной папкой
+                // 2. Вставляем ТОЛЬКО нужные файлы на Главную вкладку (Home Tab)
                 if (file.folder === activeFolderId) {
                     homeGrid.appendChild(card);
                 }
             });
 
             if (homeGrid.children.length === 0) {
-                homeGrid.innerHTML = '<div style="color:var(--text-muted); font-size:13px; padding:20px; grid-column:1/-1; text-align:center;">This folder is currently empty</div>';
+                homeGrid.innerHTML = '<div style="color:var(--text-muted); font-size:14px; padding:32px 20px; grid-column:1/-1; text-align:center; font-weight: 500;">No assets in this space</div>';
             }
         }
 
+        // ================= TABS & UTILS =================
         function switchTab(tabId, navElement = null) {
+            // Строгое CSS скрытие (display: none)
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
             document.getElementById('tab-' + tabId).classList.add('active');
             
@@ -345,20 +333,12 @@
             window.scrollTo(0, 0);
         }
 
-        function openModal(url) {
-            document.getElementById('modalImage').src = url;
-            document.getElementById('imageModal').classList.add('active');
-            tg.HapticFeedback.impactOccurred('light');
-        }
-
+        function openModal(url) { document.getElementById('modalImage').src = url; document.getElementById('imageModal').classList.add('active'); tg.HapticFeedback.impactOccurred('light'); }
         function closeModal() { document.getElementById('imageModal').classList.remove('active'); }
-
         function showToast(msg) {
-            const container = document.getElementById('toast-container');
-            const toast = document.createElement('div');
-            toast.className = 'toast'; toast.innerText = msg;
-            container.appendChild(toast);
-            setTimeout(() => toast.remove(), 3000);
+            const c = document.getElementById('toast-container');
+            const t = document.createElement('div'); t.className = 'toast'; t.innerText = msg;
+            c.appendChild(t); setTimeout(() => t.remove(), 3000);
         }
 
         window.onload = fetchFiles;
