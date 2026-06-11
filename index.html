@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#050505">
     <title>Infinity Data Base</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -52,21 +53,11 @@
 
             <div class="status-grid">
                 <div class="status-card">
-                    <svg class="svg-icon status-icon" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                    <div class="status-title">Connection</div>
-                    <div class="status-value">Secured</div>
-                </div>
-                <div class="status-card">
-                    <svg class="svg-icon status-icon" style="color: var(--accent-primary);" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-                    <div class="status-title">Sync Status</div>
-                    <div class="status-value">Active</div>
-                </div>
-                <div class="status-card" style="grid-column: 1 / -1; display: flex; flex-direction: row; align-items: center; justify-content: space-between;">
                     <div>
-                        <div class="status-title">Total Assets</div>
+                        <div class="status-title">Total Vault Assets</div>
                         <div class="status-value" id="totalFilesCount">0</div>
                     </div>
-                    <button class="section-action" onclick="switchTab('files', document.getElementById('nav-files'))">Browse All</button>
+                    <button class="section-action" onclick="switchTab('files', document.getElementById('nav-files'))">Browse Vault</button>
                 </div>
             </div>
 
@@ -114,25 +105,28 @@
                 <svg class="svg-icon" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
                 Files
             </button>
-            <button class="nav-item" onclick="tg.showAlert('Send assets directly via Telegram bot to sync.', () => tg.close())">
+            <button class="nav-item" onclick="openSyncModal()">
                 <svg class="svg-icon" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
                 Sync
             </button>
         </div>
     </div>
 
+    <div class="custom-alert-wrap" id="syncModal">
+        <div class="custom-alert">
+            <svg class="svg-icon alert-icon" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            <h3>Sync Assets</h3>
+            <p>Send all the files you want to save at any time to the bot. They will be securely synced to your Infinity Data Base.</p>
+            <button onclick="closeSyncModal()">Continue</button>
+        </div>
+    </div>
+
     <div class="sheet-overlay" id="sheetOverlay" onclick="closeSheet()"></div>
     <div class="action-sheet" id="actionSheet">
         <div class="sheet-handle"></div>
-        <div class="sheet-title heading" id="sheetTitle">Manage Workspace</div>
-        <button class="sheet-btn" onclick="actionRename()">
-            <svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-            Rename Workspace
-        </button>
-        <button class="sheet-btn danger" onclick="actionDelete()">
-            <svg class="svg-icon" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-            Delete Workspace
-        </button>
+        <div class="sheet-title heading" id="sheetTitle">Manage</div>
+        <div id="sheetContent">
+            </div>
     </div>
 
     <div class="modal" id="imageModal">
@@ -147,6 +141,13 @@
     <script>
         const tg = window.Telegram.WebApp;
         tg.expand(); tg.ready();
+
+        // Форсируем нативные элементы Telegram в глубокий черный цвет
+        try {
+            tg.setHeaderColor('#050505');
+            tg.setBackgroundColor('#050505');
+            tg.setBottomBarColor('#050505');
+        } catch(e) { console.log('Theme color overrides not fully supported on this device'); }
 
         let globalFiles = [];
         
@@ -164,6 +165,7 @@
         
         let activeWorkspace = 'all';
         let targetedWorkspace = null;
+        let targetedFile = null; // Для перемещения файлов
         let searchQuery = '';
 
         const API_URL = "https://galaxylab.i234.me:8443/api/files";
@@ -177,14 +179,14 @@
                 const response = await fetch(`${API_URL}?user_id=${userId}`);
                 const data = await response.json();
                 if (data.status === "success" && data.files.length > 0) {
-                    globalFiles = data.files.map(f => ({...f, folder: 'work'}));
+                    globalFiles = data.files.map((f, i) => ({...f, internalId: i, folder: 'work'}));
                 } else throw new Error("empty");
             } catch (e) {
                 globalFiles = [
-                    { type: 'photo', url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=400', text: 'Abstract Art', folder: 'work' },
-                    { type: 'document', text: 'Financial_Q3.pdf', folder: 'work' },
-                    { type: 'photo', url: 'https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=400', text: 'Design Concept', folder: 'personal' },
-                    { type: 'document', text: 'Passport_Scan.pdf', folder: 'personal' }
+                    { internalId: 1, type: 'photo', url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=400', text: 'Abstract Art', folder: 'work' },
+                    { internalId: 2, type: 'document', text: 'Financial_Q3.pdf', folder: 'work' },
+                    { internalId: 3, type: 'photo', url: 'https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=400', text: 'Design Concept', folder: 'personal' },
+                    { internalId: 4, type: 'document', text: 'Passport_Scan.pdf', folder: 'personal' }
                 ];
             }
             updateStorageData();
@@ -199,10 +201,17 @@
             document.getElementById('totalFilesCount').innerText = globalFiles.length;
             
             const fillPercent = Math.min(10 + (globalFiles.length * 2), 45);
-            
-            setTimeout(() => {
-                document.getElementById('dataUsedFill').style.width = fillPercent + '%';
-            }, 300);
+            setTimeout(() => { document.getElementById('dataUsedFill').style.width = fillPercent + '%'; }, 300);
+        }
+
+        // ================= CUSTOM SYNC MODAL =================
+        function openSyncModal() {
+            document.getElementById('syncModal').classList.add('active');
+            tg.HapticFeedback.impactOccurred('medium');
+        }
+        function closeSyncModal() {
+            document.getElementById('syncModal').classList.remove('active');
+            tg.HapticFeedback.impactOccurred('light');
         }
 
         // ================= ACCORDION LOGIC =================
@@ -224,7 +233,6 @@
             
             workspaces.forEach(ws => {
                 const count = ws.id === 'all' ? globalFiles.length : globalFiles.filter(f => f.folder === ws.id).length;
-                
                 const card = document.createElement('div');
                 card.className = `workspace-card ${activeWorkspace === ws.id ? 'active' : ''}`;
                 card.innerHTML = `
@@ -240,16 +248,20 @@
                     tg.HapticFeedback.selectionChanged();
                 };
                 
+                // Долгое нажатие для меню управления папкой
                 if (ws.id !== 'all') {
                     let pressTimer;
-                    const start = () => pressTimer = setTimeout(() => openSheet(ws), 600);
+                    const start = (e) => {
+                        // Предотвращаем скролл при долгом нажатии
+                        pressTimer = setTimeout(() => openWorkspaceSheet(ws), 600);
+                    };
                     const cancel = () => clearTimeout(pressTimer);
                     
                     card.addEventListener('touchstart', start); card.addEventListener('touchend', cancel);
+                    card.addEventListener('touchmove', cancel);
                     card.addEventListener('mousedown', start); card.addEventListener('mouseup', cancel);
                     card.addEventListener('mouseleave', cancel);
                 }
-                
                 container.appendChild(card);
             });
         }
@@ -262,7 +274,7 @@
             renderWorkspaces(); showToast("Workspace created");
         }
 
-        // ================= RENDER ARCHIVE =================
+        // ================= RENDER ARCHIVE & LONG PRESS =================
         function renderContent() {
             const fullGrid = document.getElementById('fullGallery');
             fullGrid.innerHTML = '';
@@ -276,7 +288,6 @@
             if(filteredAll.length === 0) {
                 fullGrid.innerHTML = `<div class="empty-state">${iconFolder}<div>No assets found here</div></div>`;
             }
-            
             filteredAll.forEach(file => fullGrid.appendChild(createCard(file)));
             updateStorageData();
         }
@@ -284,14 +295,50 @@
         function createCard(file) {
             const card = document.createElement('div');
             card.className = `grid-item ${file.type}`;
+            
             if(file.type === 'photo') {
                 card.innerHTML = `<img src="${file.url}" alt="Img" loading="lazy">`;
-                card.onclick = () => openModal(file.url);
             } else {
                 const docSvg = `<svg class="svg-icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>`;
                 card.innerHTML = `${docSvg}<div class="item-title">${file.text}</div><div class="item-meta">Document</div>`;
-                card.onclick = () => tg.showAlert("Secure documents are streamed via Telegram bot.");
             }
+
+            // ЛОГИКА ДОЛГОГО НАЖАТИЯ ДЛЯ ФАЙЛОВ
+            let pressTimer;
+            let isLongPress = false;
+
+            const startPress = (e) => {
+                isLongPress = false;
+                card.classList.add('holding'); // Анимация уменьшения карточки
+                pressTimer = setTimeout(() => {
+                    isLongPress = true;
+                    card.classList.remove('holding');
+                    openFileSheet(file);
+                }, 500); // 0.5 секунды удержания
+            };
+
+            const cancelPress = () => {
+                clearTimeout(pressTimer);
+                card.classList.remove('holding');
+            };
+
+            const endPress = (e) => {
+                cancelPress();
+                if(!isLongPress) {
+                    // Это был обычный клик
+                    if(file.type === 'photo') openModal(file.url);
+                    else tg.showAlert("Secure documents are streamed via Telegram bot.");
+                }
+            };
+
+            card.addEventListener('touchstart', startPress);
+            card.addEventListener('touchend', endPress);
+            card.addEventListener('touchmove', cancelPress);
+            
+            card.addEventListener('mousedown', startPress);
+            card.addEventListener('mouseup', endPress);
+            card.addEventListener('mouseleave', cancelPress);
+
             return card;
         }
 
@@ -311,35 +358,110 @@
             renderContent();
         }
 
-        // ================= SHEETS & MODALS =================
-        function openSheet(ws) {
+        // ================= DYNAMIC ACTION SHEETS =================
+        function closeSheet() {
+            document.getElementById('actionSheet').classList.remove('active');
+            document.getElementById('sheetOverlay').classList.remove('active');
+            targetedWorkspace = null;
+            targetedFile = null;
+        }
+
+        // 1. Меню управления ПАПКОЙ
+        function openWorkspaceSheet(ws) {
             targetedWorkspace = ws;
             document.getElementById('sheetTitle').innerText = ws.name;
+            const content = document.getElementById('sheetContent');
+            content.innerHTML = `
+                <button class="sheet-btn" onclick="actionRenameWorkspace()">
+                    <svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                    Rename Workspace
+                </button>
+                <button class="sheet-btn danger" onclick="actionDeleteWorkspace()">
+                    <svg class="svg-icon" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                    Delete Workspace
+                </button>
+            `;
             document.getElementById('actionSheet').classList.add('active');
             document.getElementById('sheetOverlay').classList.add('active');
             tg.HapticFeedback.impactOccurred('medium');
         }
 
-        function closeSheet() {
-            document.getElementById('actionSheet').classList.remove('active');
-            document.getElementById('sheetOverlay').classList.remove('active');
-            targetedWorkspace = null;
-        }
-
-        function actionRename() {
+        function actionRenameWorkspace() {
             const newName = prompt("Rename to:");
             if(newName && targetedWorkspace) { targetedWorkspace.name = newName; renderWorkspaces(); }
             closeSheet();
         }
 
-        function actionDelete() {
+        function actionDeleteWorkspace() {
             if(!targetedWorkspace) return;
-            globalFiles.forEach(f => { if(f.folder === targetedWorkspace.id) f.folder = 'work'; });
+            globalFiles.forEach(f => { if(f.folder === targetedWorkspace.id) f.folder = 'all'; });
             workspaces = workspaces.filter(w => w.id !== targetedWorkspace.id);
             if(activeWorkspace === targetedWorkspace.id) activeWorkspace = 'all';
             renderWorkspaces(); renderContent(); closeSheet(); showToast("Workspace Removed");
         }
 
+        // 2. Меню управления ФАЙЛОМ (При долгом нажатии)
+        function openFileSheet(file) {
+            targetedFile = file;
+            document.getElementById('sheetTitle').innerText = file.type === 'document' ? file.text : 'Image Asset';
+            const content = document.getElementById('sheetContent');
+            content.innerHTML = `
+                <button class="sheet-btn" onclick="showMoveFileOptions()">
+                    <svg class="svg-icon" viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                    Move to Workspace...
+                </button>
+                <button class="sheet-btn danger" onclick="actionDeleteFile()">
+                    <svg class="svg-icon" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                    Delete Asset
+                </button>
+            `;
+            document.getElementById('actionSheet').classList.add('active');
+            document.getElementById('sheetOverlay').classList.add('active');
+            tg.HapticFeedback.impactOccurred('heavy');
+        }
+
+        // 3. Меню выбора папки куда переместить файл
+        function showMoveFileOptions() {
+            document.getElementById('sheetTitle').innerText = 'Select Destination';
+            const content = document.getElementById('sheetContent');
+            let foldersHtml = '';
+            
+            // Фильтруем папки (исключаем 'All Assets' и текущую папку файла)
+            const availableWorkspaces = workspaces.filter(ws => ws.id !== 'all' && ws.id !== targetedFile.folder);
+            
+            if(availableWorkspaces.length === 0) {
+                foldersHtml = '<p style="color:var(--text-muted); text-align:center; padding:20px;">No other workspaces available.</p>';
+            } else {
+                availableWorkspaces.forEach(ws => {
+                    foldersHtml += `
+                        <button class="sheet-btn" onclick="actionMoveFile('${ws.id}')">
+                            ${ws.icon} ${ws.name}
+                        </button>
+                    `;
+                });
+            }
+            content.innerHTML = foldersHtml;
+        }
+
+        function actionMoveFile(workspaceId) {
+            if(targetedFile) {
+                targetedFile.folder = workspaceId;
+                renderWorkspaces(); renderContent();
+                showToast("Asset Moved successfully");
+            }
+            closeSheet();
+        }
+
+        function actionDeleteFile() {
+            if(targetedFile) {
+                globalFiles = globalFiles.filter(f => f.internalId !== targetedFile.internalId);
+                renderWorkspaces(); renderContent();
+                showToast("Asset Deleted");
+            }
+            closeSheet();
+        }
+
+        // ================= LIGHTBOX & UTILS =================
         function openModal(url) {
             document.getElementById('modalImage').src = url;
             document.getElementById('imageModal').classList.add('active');
