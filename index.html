@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Aura Storage</title>
+    <title>Infinity Data Base</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
@@ -15,7 +15,7 @@
     <div class="container">
         
         <div class="header-top">
-            <h1 class="app-title">Aura</h1>
+            <h1 class="app-title">Infinity Data Base</h1>
             <button class="icon-btn" onclick="switchTab('profile')">
                 <svg class="svg-icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
             </button>
@@ -24,7 +24,7 @@
         <div id="tab-home" class="tab-content active">
             
             <div class="storage-hero">
-                <h2 class="cd-hero-title heading">Aura Core</h2>
+                <h2 class="cd-hero-title heading">Personal Cloud</h2>
                 <div class="storage-labels">
                     <span class="storage-used" id="dataUsedText">0.0 MB</span>
                     <span class="storage-infinity">∞</span>
@@ -33,6 +33,21 @@
                     <div class="hero-progress-fill" id="dataUsedFill"></div>
                 </div>
                 <p class="storage-subtext">Infinite capacity linked to Synology Server</p>
+            </div>
+
+            <div class="info-accordion" onclick="toggleAccordion(this)">
+                <div class="accordion-header">
+                    <div class="accordion-title-wrap">
+                        <svg class="svg-icon accordion-icon" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                        <span class="accordion-title">Storage Data & Privacy</span>
+                    </div>
+                    <svg class="svg-icon accordion-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+                </div>
+                <div class="accordion-body">
+                    <div class="accordion-content">
+                        All your data is securely stored within the private Telegram chat with our bot. When you send a file, the bot processes it automatically and securely transfers it to your Infinity Data Base on the Synology Server. No third-party access, full privacy.
+                    </div>
+                </div>
             </div>
 
             <div class="status-grid">
@@ -141,7 +156,6 @@
         const iconBriefcase = `<svg class="svg-icon" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>`;
         const iconFolder = `<svg class="svg-icon" viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>`;
 
-        // Добавили папку "Все файлы" по умолчанию (id: 'all')
         let workspaces = [
             { id: 'all', name: 'All Assets', icon: iconGrid },
             { id: 'work', name: 'Workplace', icon: iconBriefcase },
@@ -170,8 +184,7 @@
                     { type: 'photo', url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=400', text: 'Abstract Art', folder: 'work' },
                     { type: 'document', text: 'Financial_Q3.pdf', folder: 'work' },
                     { type: 'photo', url: 'https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=400', text: 'Design Concept', folder: 'personal' },
-                    { type: 'document', text: 'Passport_Scan.pdf', folder: 'personal' },
-                    { type: 'photo', url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=400', text: 'Abstract Art 2', folder: 'work' }
+                    { type: 'document', text: 'Passport_Scan.pdf', folder: 'personal' }
                 ];
             }
             updateStorageData();
@@ -181,18 +194,27 @@
 
         // ================= PROGRESS BAR LOGIC =================
         function updateStorageData() {
-            // Эмуляция веса (каждый файл ~3.4 MB)
             const mbCount = (globalFiles.length * 3.4).toFixed(1);
             document.getElementById('dataUsedText').innerText = `${mbCount} MB`;
             document.getElementById('totalFilesCount').innerText = globalFiles.length;
             
-            // Чтобы бар визуально никогда не был полным (максимум ~45% для красоты дизайна)
-            // Логика: базовые 10% + 2% за каждый файл, но не больше 45%
             const fillPercent = Math.min(10 + (globalFiles.length * 2), 45);
             
             setTimeout(() => {
                 document.getElementById('dataUsedFill').style.width = fillPercent + '%';
             }, 300);
+        }
+
+        // ================= ACCORDION LOGIC =================
+        function toggleAccordion(element) {
+            element.classList.toggle('open');
+            const body = element.querySelector('.accordion-body');
+            if (element.classList.contains('open')) {
+                body.style.maxHeight = body.scrollHeight + "px";
+            } else {
+                body.style.maxHeight = "0";
+            }
+            tg.HapticFeedback.impactOccurred('light');
         }
 
         // ================= WORKSPACES (FOLDERS) =================
@@ -201,7 +223,6 @@
             container.innerHTML = '';
             
             workspaces.forEach(ws => {
-                // Если это "All Assets", считаем все файлы, иначе только файлы папки
                 const count = ws.id === 'all' ? globalFiles.length : globalFiles.filter(f => f.folder === ws.id).length;
                 
                 const card = document.createElement('div');
@@ -219,7 +240,6 @@
                     tg.HapticFeedback.selectionChanged();
                 };
                 
-                // Разрешаем удалять/переименовывать только если это НЕ папка "Все файлы"
                 if (ws.id !== 'all') {
                     let pressTimer;
                     const start = () => pressTimer = setTimeout(() => openSheet(ws), 600);
@@ -247,7 +267,6 @@
             const fullGrid = document.getElementById('fullGallery');
             fullGrid.innerHTML = '';
 
-            // Фильтруем и по поиску, и по выбранной папке
             const filteredAll = globalFiles.filter(f => {
                 const matchSearch = (f.text || '').toLowerCase().includes(searchQuery.toLowerCase());
                 const matchFolder = activeWorkspace === 'all' || f.folder === activeWorkspace;
@@ -259,7 +278,6 @@
             }
             
             filteredAll.forEach(file => fullGrid.appendChild(createCard(file)));
-            
             updateStorageData();
         }
 
@@ -316,7 +334,6 @@
 
         function actionDelete() {
             if(!targetedWorkspace) return;
-            // Если удаляем папку, возвращаем файлы из нее в корень ('all' без конкретной папки)
             globalFiles.forEach(f => { if(f.folder === targetedWorkspace.id) f.folder = 'work'; });
             workspaces = workspaces.filter(w => w.id !== targetedWorkspace.id);
             if(activeWorkspace === targetedWorkspace.id) activeWorkspace = 'all';
