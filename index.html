@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, overscroll-behavior-y=none">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Infinity Storage</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -10,340 +10,308 @@
 <body>
 
     <div id="tab-gallery" class="tab-content active">
-        <div class="profile-header">
-            <div class="profile-info">
-                <div class="avatar-small" id="userAvatar">U</div>
-                <div class="welcome-text">
-                    <h2 id="welcomeText">Loading...</h2>
-                    <h1 id="userName">Sarah's Storage</h1>
+        
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <h1>Storage</h1>
+            <button onclick="toggleViewMode()" style="background: none; border: none; color: var(--text-main);">
+                <svg width="28" height="28" viewBox="0 0 24 24"><path fill="currentColor" d="M3 4h18v2H3V4zm0 7h18v2H3v-2zm0 7h18v2H3v-2z"/></svg>
+            </button>
+        </div>
+
+        <div class="folders-container">
+            <div class="folder-card active">
+                <span class="folder-icon">🌌</span>
+                <span class="folder-name">All Files</span>
+                <span class="folder-count" id="allCount">0 items</span>
+            </div>
+            <div class="folder-card">
+                <span class="folder-icon">🔥</span>
+                <span class="folder-name">Memes</span>
+                <span class="folder-count">24 items</span>
+            </div>
+            <div class="folder-card">
+                <span class="folder-icon">💼</span>
+                <span class="folder-name">Work</span>
+                <span class="folder-count">12 items</span>
+            </div>
+        </div>
+
+        <div class="gallery view-grid" id="gallery">
+            </div>
+    </div>
+
+    <div id="tab-profile" class="tab-content">
+        <div class="profile-section">
+            <div class="user-card">
+                <h2 id="userName">Tomas</h2>
+                <p>Owner • Infinity Plan</p>
+            </div>
+            <h2 style="margin-bottom: 16px;">Storage Setup</h2>
+            <div style="background: var(--bg-card); border-radius: var(--border-radius-lg); padding: 20px;">
+                <p style="color: var(--text-muted); margin-bottom: 12px;">Active Tags</p>
+                <div class="tags-row" style="flex-wrap: wrap;">
+                    <span class="tag pink">Design</span>
+                    <span class="tag yellow">Important</span>
+                    <span class="tag blue">Work</span>
+                    <span class="tag green">Memes</span>
                 </div>
             </div>
-            <button class="header-icon" id="notificationBtn">🔔</button>
         </div>
-
-        <div class="search-container">
-            <input type="text" class="search-input" id="searchInput" placeholder="Search Files & Tags..." oninput="handleSearch()">
-            <button class="search-icon-btn">🔍</button>
-        </div>
-
-        <div class="section-header">
-            <h2>Recent Folders</h2>
-            <a class="see-all">See all</a>
-        </div>
-        
-        <div style="display: flex; gap: 12px; overflow-x: auto; margin-bottom: 24px; padding-bottom: 4px; scrollbar-width: none;">
-            <div style="flex: 0 0 140px; background: linear-gradient(135deg, rgba(120, 0, 255, 0.2), #1c1c1e); border-radius: 16px; padding: 16px; border: 1px solid rgba(120, 0, 255, 0.3);">
-                <div style="font-size: 24px; color: #7800ff; margin-bottom: 12px;">📂</div>
-                <div style="font-weight: 600; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Work</div>
-                <div style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">15 files</div>
-            </div>
-            <div style="flex: 0 0 140px; background: linear-gradient(135deg, rgba(10, 132, 255, 0.2), #1c1c1e); border-radius: 16px; padding: 16px; border: 1px solid rgba(10, 132, 255, 0.3);">
-                <div style="font-size: 24px; color: var(--accent-color); margin-bottom: 12px;">📂</div>
-                <div style="font-weight: 600; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Design</div>
-                <div style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">8 files</div>
-            </div>
-            <div style="flex: 0 0 140px; background: var(--bg-surface); border-radius: 16px; padding: 16px; border: 1px solid var(--border-color);">
-                <div style="font-size: 24px; color: var(--text-secondary); margin-bottom: 12px;">📂</div>
-                <div style="font-weight: 600; font-size: 15px;">Memos</div>
-                <div style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">4 files</div>
-            </div>
-        </div>
-
-        <div class="section-header">
-            <h2>Recent Files</h2>
-        </div>
-
-        <div class="filters" id="filterTabs">
-            <button class="filter-btn active" onclick="applyFilter('all')">All</button>
-            <button class="filter-btn" onclick="applyFilter('photo')">Photos</button>
-            <button class="filter-btn" onclick="applyFilter('document')">Documents</button>
-        </div>
-
-        <div class="recent-list gallery selection-mode" id="galleryList">
-            </div>
     </div>
 
-    <div id="tab-settings" class="tab-content" style="padding-bottom: 40px;">
-        <div class="header" style="margin-bottom: 24px;"><h1>Settings</h1></div>
-        
-        <div class="stats-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px;">
-            <div class="stat-card" style="background:var(--bg-surface); border-radius:16px; padding:16px; text-align:center;">
-                <h3 id="statTotal" style="font-size:28px; color:var(--accent-color); font-weight:700;">0</h3>
-                <p style="font-size:12px; color:var(--text-secondary); text-transform:uppercase;">Files Saved</p>
-            </div>
-            <div class="stat-card" style="background:var(--bg-surface); border-radius:16px; padding:16px; text-align:center;">
-                <h3 style="font-size:28px; color:var(--text-secondary);">∞</h3>
-                <p style="font-size:12px; color:var(--text-secondary); text-transform:uppercase;">Space</p>
-            </div>
-        </div>
+    <button class="fab" onclick="handleFabClick()">+</button>
 
-        <div class="settings-group" style="background:var(--bg-surface); border-radius:16px; overflow:hidden;">
-            <div class="setting-item">
-                <span>Haptic Feedback</span>
-                <label class="switch"><input type="checkbox" id="hapticToggle" checked><span class="slider"></span></label>
-            </div>
-            <div class="setting-item">
-                <span>Dark Mode Only (force)</span>
-                <label class="switch"><input type="checkbox" id="darkModeToggle" checked><span class="slider"></span></label>
-            </div>
-        </div>
-        
-        <button onclick="showToast('Offline Mode - Link not copied')" style="width:100%; padding:16px; border-radius:12px; border:none; background-color:var(--bg-surface); color:var(--text-primary); font-size:16px; font-weight:600; margin-top:20px; cursor:pointer;">
-            Get Link for Sarah
-        </button>
-    </div>
-
-    <button class="fab" id="fabBtn" onclick="handleFabClick()">+</button>
-
-    <nav class="floating-nav" id="floatingNav">
-        <button class="nav-item active" id="navGallery" onclick="switchTab('gallery', this)">
+    <nav class="bottom-nav" id="bottomNav">
+        <button class="nav-item active" onclick="switchTab('gallery', this)">
             <svg viewBox="0 0 24 24"><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>
-            <span>Home</span>
+            Home
         </button>
-        <button class="nav-item" id="navFiles" onclick="showToast('Files browser - not implemented')">
-            <svg viewBox="0 0 24 24"><path d="M20 6h-8l-2-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-6 10H8v-2h6v2zm3-4H8v-2h9v2z"/></svg>
-            <span>Files</span>
-        </button>
-        <button class="nav-item" id="navSettings" onclick="switchTab('settings', this)">
-            <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.06.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
-            <span>Settings</span>
+        <button class="nav-item" onclick="switchTab('profile', this)">
+            <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+            Profile
         </button>
     </nav>
 
     <nav class="selection-toolbar" id="selectionToolbar">
-        <button class="toolbar-btn danger" onclick="showToast('DELETE requires backend method')">🗑 Delete</button>
-        <button class="toolbar-btn" onclick="showToast('TAGS requires backend method')"># Tags</button>
         <button class="toolbar-btn" onclick="cancelSelection()">✕ Cancel</button>
+        <span id="selectionCount" style="font-weight: 700; font-size: 14px; color: var(--text-main);">1 selected</span>
+        <button class="toolbar-btn danger" onclick="deleteSelected()">🗑 Delete</button>
     </nav>
+
+    <div class="modal" id="imageModal">
+        <button class="action-btn close-btn" onclick="closeModal()">✕</button>
+        <button class="action-btn" onclick="openActionSheet()">⋮</button>
+        <img id="modalImage" src="" alt="Full size">
+    </div>
+
+    <div class="action-sheet" id="actionSheet">
+        <div class="sheet-header"><div class="sheet-drag"></div></div>
+        <button class="sheet-btn" onclick="closeActionSheet()">📥 Save to Device</button>
+        <button class="sheet-btn" onclick="closeActionSheet()">📁 Move to Folder...</button>
+        <button class="sheet-btn" onclick="closeActionSheet()">🏷 Edit Tags...</button>
+        <button class="sheet-btn danger" onclick="deleteCurrentItem()">🗑 Delete File</button>
+    </div>
+
+    <div id="sheetOverlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; display: none;" onclick="closeActionSheet()"></div>
 
     <div id="toast-container"></div>
 
     <script>
-        // ================= STATE & INIT =================
         const tg = window.Telegram.WebApp;
-        // Apply Telegram settings and theme immediately
         tg.expand();
         tg.ready();
-        
-        // Setup Dark Mode toggle based on theme
-        const isDarkMode = tg.colorScheme === 'dark';
-        document.getElementById('darkModeToggle').checked = isDarkMode;
 
         let globalFiles = [];
-        let currentFilter = 'all';
-        let searchQuery = '';
+        let viewMode = 'grid'; 
+        let currentPhotoIndex = 0;
+        let photoOnlyList = [];
         
-        // Multi-select state
+        // Anti-scroll bug tracking
+        let touchStartX = 0;
+        let touchStartY = 0;
+        let isScrolling = false;
+
+        // Selection State
         let isSelectionMode = false;
         let selectedIds = new Set();
         let pressTimer;
 
-        // URL твоего Synology
         const API_URL = "https://galaxylab.i234.me:8443/api/files";
 
-        // Подгружаем данные пользователя
+        // Init
         const user = tg.initDataUnsafe?.user;
-        const firstName = user?.first_name || 'Sarah';
-        document.getElementById('welcomeText').innerText = `Welcome, ${firstName}!`;
-        document.getElementById('userName').innerText = `${firstName}'s Storage`;
-        document.getElementById('userAvatar').innerText = firstName.charAt(0).toUpperCase();
+        document.getElementById('userName').innerText = user?.first_name || 'Bekhruz';
 
         async function fetchFiles() {
-            renderSkeletons();
             const userId = user?.id || '123456789';
-
             try {
                 const response = await fetch(`${API_URL}?user_id=${userId}`);
                 const data = await response.json();
                 if (data.status === "success") {
-                    // Добавляем internalId и mock теги/даты для дизайна
-                    globalFiles = data.files.map((f, index) => ({
-                        ...f, 
-                        internalId: index,
-                        // MOCK ДАННЫЕ ДЛЯ ТЕГОВ И ДАТЫ (берем последние 2 слова текста как теги)
-                        tags: f.text ? f.text.split(' ').slice(-2).map(w => '#' + w) : ['#memo'],
-                        dateMock: 'Today, 15:42'
-                    }));
+                    globalFiles = data.files.map((f, i) => ({...f, internalId: i, tags: getRandomTags()}));
                 }
             } catch (error) {
-                // Mock for offline mode in Sarah design
+                // Mock data with tags
                 globalFiles = [
-                    { internalId: 0, type: 'photo', url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=200', text: 'Sarah UI Design Screen', tags: ['#design', '#work'], dateMock: 'Yesterday, 10:11' },
-                    { internalId: 1, type: 'photo', url: 'https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=200', text: 'Profile picture backup', tags: ['#profile'], dateMock: 'Oct 2, 09:12' },
-                    { internalId: 2, type: 'document', text: 'Important_Sarah_Report.pdf', tags: ['#work', '#pdf'], dateMock: 'Oct 1, 14:30' }
+                    { internalId: 0, type: 'photo', url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=400', tags: [{name: 'Design', color: 'pink'}] },
+                    { internalId: 1, type: 'photo', url: 'https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=400', tags: [{name: 'Important', color: 'yellow'}] },
+                    { internalId: 2, type: 'document', text: 'Financial_Report.pdf', tags: [{name: 'Work', color: 'blue'}] }
                 ];
-                showToast("Demo Mode");
             }
-            
-            document.getElementById('statTotal').innerText = globalFiles.length;
+            document.getElementById('allCount').innerText = `${globalFiles.length} items`;
             renderGallery();
         }
 
-        // ================= RENDERING LOGIC (Photo 1 design) =================
-        function renderSkeletons() {
-            const list = document.getElementById('galleryList');
-            list.innerHTML = '';
-            for (let i = 0; i < 6; i++) {
-                list.innerHTML += `
-                    <div class="skeleton" style="height: 80px; display:flex; align-items:center; padding:16px; gap:16px; margin-bottom:12px;">
-                        <div style="width:44px; height:44px; border-radius:12px; background:rgba(255,255,255,0.02);"></div>
-                        <div style="flex:1;">
-                            <div style="height:14px; width:70%; background:rgba(255,255,255,0.02); border-radius:4px; margin-bottom:8px;"></div>
-                            <div style="height:10px; width:40%; background:rgba(255,255,255,0.01); border-radius:4px;"></div>
-                        </div>
-                    </div>`;
-            }
-        }
-
-        function getFilteredFiles() {
-            return globalFiles.filter(f => {
-                const matchType = currentFilter === 'all' || f.type === currentFilter;
-                // Ищем и в названии, и в тегах
-                const matchSearch = searchQuery === '' || 
-                                   f.text?.toLowerCase().includes(searchQuery) ||
-                                   f.tags?.some(t => t.toLowerCase().includes(searchQuery));
-                return matchType && matchSearch;
-            });
+        // Random mock tags for test
+        function getRandomTags() {
+            const allTags = [{name: 'Memes', color: 'green'}, {name: 'Work', color: 'blue'}, {name: 'Design', color: 'pink'}];
+            return Math.random() > 0.5 ? [allTags[Math.floor(Math.random() * allTags.length)]] : [];
         }
 
         function renderGallery() {
-            const list = document.getElementById('galleryList');
-            list.innerHTML = '';
-            const filtered = getFilteredFiles();
-            
-            if (filtered.length === 0) {
-                list.innerHTML = `<div style="text-align:center; padding:40px 20px; color:var(--text-secondary);">Archive is empty or nothing found</div>`;
-                return;
-            }
+            const gallery = document.getElementById('gallery');
+            gallery.innerHTML = '';
+            photoOnlyList = globalFiles.filter(f => f.type === 'photo');
 
-            filtered.forEach((file) => {
-                const isSelected = selectedIds.has(file.internalId);
-                const fileCard = document.createElement('div');
-                fileCard.className = `file-card ${isSelected ? 'selected' : ''}`;
+            globalFiles.forEach((file) => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = `item ${file.type} ${selectedIds.has(file.internalId) ? 'selected' : ''}`;
                 
-                const iconHTML = file.type === 'photo' 
-                    ? `<img src="${file.url}" alt="Foto" style="width:100%; height:100%; object-fit:cover; border-radius:12px;">`
-                    : `📄`; // Doc icon
+                let tagsHTML = file.tags && file.tags.length > 0 
+                    ? `<div class="tags-row">${file.tags.map(t => `<span class="tag ${t.color}">${t.name}</span>`).join('')}</div>`
+                    : '';
 
-                // Render tags as pills
-                const tagsHTML = file.tags?.map(t => `<span class="tag-pill-sm">${t}</span>`).join('') || '';
-
-                fileCard.innerHTML = `
-                    <div class="file-icon">${iconHTML}</div>
-                    <div class="file-details">
-                        <div class="file-name">${file.text || 'Sarah_File_Backup'}</div>
-                        <div class="file-meta">
-                            <span>1 Files</span> ${tagsHTML} <span>${file.dateMock}</span>
+                if (file.type === 'photo') {
+                    itemDiv.innerHTML = `
+                        <img src="${file.url}" alt="Photo" loading="lazy">
+                        <div class="item-content view-list-only">
+                            <div class="item-title">IMG_${file.internalId + 1024}.JPG</div>
+                            <div class="item-subtitle">Today, 14:30</div>
+                            ${tagsHTML}
                         </div>
-                    </div>
-                    <button class="file-card-menu">⋮</button>
-                    <div class="file-card-select"></div>
-                `;
+                        <div class="checkbox"></div>`;
+                } else {
+                    itemDiv.innerHTML = `
+                        <div class="doc-icon">📄</div>
+                        <div class="item-content">
+                            <div class="item-title">${file.text || 'Document'}</div>
+                            <div class="item-subtitle">1.2 MB PDF</div>
+                            ${tagsHTML}
+                        </div>
+                        <div class="checkbox"></div>`;
+                }
 
-                // ================= FIX SCROLL VS CLICK (Touch detection logic) =================
-                let touchStartPos = 0;
-                
-                // Track start position
-                fileCard.addEventListener('touchstart', (e) => {
-                    touchStartPos = e.changedTouches[0].screenX;
-                    
-                    // START Long Press timer
-                    if (!isSelectionMode) {
-                        pressTimer = setTimeout(() => {
-                            isSelectionMode = true;
-                            if (document.getElementById('hapticToggle').checked) tg.HapticFeedback.impactOccurred('medium');
-                            // Replace Bottom Nav with selection toolbar
-                            document.getElementById('floatingNav').style.display = 'none';
-                            document.getElementById('selectionToolbar').classList.add('active');
-                            toggleSelection(file.internalId);
-                        }, 600); // 600ms hold
-                    }
-                });
-
-                fileCard.addEventListener('touchend', (e) => {
-                    let touchEndPos = e.changedTouches[0].screenX;
-                    let distance = Math.abs(touchStartPos - touchEndPos);
-                    
-                    // CANCEL Long Press timer
-                    clearTimeout(pressTimer);
-                    
-                    // If finger moved > 10px, assume SCROLL, don't trigger click/modal
-                    if (distance > 10) {
-                        return;
-                    }
-
-                    // NORMAL CLICK (No scroll detected)
-                    if (isSelectionMode) {
-                        toggleSelection(file.internalId);
-                    } else {
-                        // Open file download/reaction
-                        showToast(`Offiline: download ${file.text}`);
-                    }
+                // TOUCH EVENTS (SCROLL BUG FIX)
+                itemDiv.addEventListener('touchstart', (e) => {
+                    touchStartX = e.touches[0].clientX;
+                    touchStartY = e.touches[0].clientY;
+                    isScrolling = false;
+                    startPress(file.internalId);
                 });
                 
-                // Cancel timer if finger moves (even a little) or is lifted before timer ends
-                fileCard.addEventListener('touchmove', () => {
-                    clearTimeout(pressTimer);
+                itemDiv.addEventListener('touchmove', (e) => {
+                    if (Math.abs(e.touches[0].clientY - touchStartY) > 10 || Math.abs(e.touches[0].clientX - touchStartX) > 10) {
+                        isScrolling = true;
+                        cancelPress();
+                    }
                 });
 
-                list.appendChild(fileCard);
+                itemDiv.addEventListener('touchend', (e) => {
+                    if (!isScrolling) endPress(file);
+                });
+
+                itemDiv.addEventListener('mousedown', () => startPress(file.internalId));
+                itemDiv.addEventListener('mouseup', () => { if(!isScrolling) endPress(file); });
+                itemDiv.addEventListener('mouseleave', cancelPress);
+
+                gallery.appendChild(itemDiv);
             });
         }
 
-        // ================= SEARCH & VIEW LOGIC =================
-        function handleSearch() {
-            searchQuery = document.getElementById('searchInput').value.trim().toLowerCase();
-            renderGallery();
+        // VIEW MODE
+        function toggleViewMode() {
+            const gallery = document.getElementById('gallery');
+            viewMode = viewMode === 'grid' ? 'list' : 'grid';
+            gallery.className = `gallery view-${viewMode}`;
+            tg.HapticFeedback.impactOccurred('light');
         }
 
-        function applyFilter(type) {
-            currentFilter = type;
-            document.querySelectorAll('#filterTabs .filter-btn').forEach(btn => btn.classList.remove('active'));
-            event.target.classList.add('active');
-            renderGallery();
+        // MULTI-SELECT
+        function startPress(id) {
+            pressTimer = setTimeout(() => {
+                if (!isSelectionMode) {
+                    isSelectionMode = true;
+                    tg.HapticFeedback.impactOccurred('heavy');
+                    document.getElementById('bottomNav').classList.add('hidden');
+                    document.getElementById('selectionToolbar').classList.add('active');
+                }
+                toggleSelection(id);
+            }, 500); 
         }
 
-        // ================= MULTI-SELECT LOGIC darkly styled =================
+        function cancelPress() { clearTimeout(pressTimer); }
+
+        function endPress(file) {
+            clearTimeout(pressTimer);
+            if (isSelectionMode) {
+                toggleSelection(file.internalId);
+            } else {
+                if (file.type === 'photo') {
+                    currentPhotoIndex = photoOnlyList.findIndex(f => f.url === file.url);
+                    openModal();
+                } else {
+                    showToast("Docs available in bot chat");
+                }
+            }
+        }
+
         function toggleSelection(id) {
-            if (selectedIds.has(id)) selectedIds.delete(id);
-            else selectedIds.add(id);
-            
+            selectedIds.has(id) ? selectedIds.delete(id) : selectedIds.add(id);
             if (selectedIds.size === 0) return cancelSelection();
-            
+            document.getElementById('selectionCount').innerText = `${selectedIds.size} selected`;
             renderGallery();
-            if (document.getElementById('hapticToggle').checked) tg.HapticFeedback.selectionChanged();
+            tg.HapticFeedback.selectionChanged();
         }
 
         function cancelSelection() {
             isSelectionMode = false;
             selectedIds.clear();
-            document.getElementById('floatingNav').style.display = 'flex';
+            document.getElementById('bottomNav').classList.remove('hidden');
             document.getElementById('selectionToolbar').classList.remove('active');
             renderGallery();
         }
 
-        // ================= TAB NAVIGATION LOGIC (Floating Nav) =================
-        function switchTab(tabId, element) {
-            // Прячем все вкладки
-            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-            document.getElementById('tab-' + tabId).classList.add('active');
-            
-            // Обновляем активную иконку в плавающем меню
-            document.querySelectorAll('#floatingNav .nav-item').forEach(b => b.classList.remove('active'));
-            element.classList.add('active');
-
-            if (document.getElementById('hapticToggle').checked) {
-                tg.HapticFeedback.selectionChanged();
-            }
+        function deleteSelected() {
+            globalFiles = globalFiles.filter(f => !selectedIds.has(f.internalId));
+            cancelSelection();
+            showToast("Selected files deleted");
+            tg.HapticFeedback.notificationOccurred('success');
         }
 
-        // ================= FAB & MISC LOGIC =================
+        // MODAL & ACTION SHEET
+        function openModal() {
+            const file = photoOnlyList[currentPhotoIndex];
+            if (!file) return;
+            document.getElementById('modalImage').src = file.url;
+            document.getElementById('imageModal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('imageModal').classList.remove('active');
+            closeActionSheet();
+        }
+
+        function openActionSheet() {
+            document.getElementById('actionSheet').classList.add('active');
+            document.getElementById('sheetOverlay').style.display = 'block';
+            tg.HapticFeedback.impactOccurred('light');
+        }
+
+        function closeActionSheet() {
+            document.getElementById('actionSheet').classList.remove('active');
+            document.getElementById('sheetOverlay').style.display = 'none';
+        }
+
+        function deleteCurrentItem() {
+            const file = photoOnlyList[currentPhotoIndex];
+            globalFiles = globalFiles.filter(f => f.internalId !== file.internalId);
+            closeActionSheet();
+            closeModal();
+            renderGallery();
+            showToast("File deleted");
+        }
+
         function handleFabClick() {
-            // Нативное Alert-окно Телеграма
-            tg.showAlert("Отправьте любой файл в чат с ботом, и он моментально появится в вашем облаке Sarah Storage.", function() {
-                // Закрывает WebApp и возвращает пользователя в чат с ботом
-                tg.close();
-            });
+            tg.HapticFeedback.notificationOccurred('success');
+            tg.showAlert("Отправьте фото или файл в чат, и он моментально сохранится в облаке.", () => tg.close());
+        }
+
+        function switchTab(tabId, element) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.getElementById('tab-' + tabId).classList.add('active');
+            document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+            element.classList.add('active');
+            tg.HapticFeedback.selectionChanged();
         }
 
         function showToast(msg) {
@@ -353,11 +321,6 @@
             toast.innerText = msg;
             container.appendChild(toast);
             setTimeout(() => { if (container.contains(toast)) toast.remove(); }, 3000);
-        }
-
-        // Устанавливаем тему (форсируем темную для Сара дизайна если включен переключатель)
-        if (!document.body.classList.contains('light-theme')) {
-            // ... apply strict dark styles ...
         }
 
         window.onload = fetchFiles;
