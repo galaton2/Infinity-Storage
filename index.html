@@ -9,52 +9,137 @@
 </head>
 <body>
 
-    <div class="header">
-        <h1>My Storage</h1>
-        <div class="filters">
-            <button class="filter-btn active" onclick="applyFilter('all')">All</button>
-            <button class="filter-btn" onclick="applyFilter('photo')">Photos</button>
-            <button class="filter-btn" onclick="applyFilter('document')">Documents</button>
+    <div id="tab-gallery" class="tab-content active">
+        <div class="header">
+            <h1>My Storage</h1>
+            <div class="filters">
+                <button class="filter-btn active" onclick="applyFilter('all')">All Files</button>
+                <button class="filter-btn" onclick="applyFilter('photo')">Photos</button>
+                <button class="filter-btn" onclick="applyFilter('document')">Documents</button>
+            </div>
+        </div>
+        <div class="gallery" id="gallery">
+            </div>
+    </div>
+
+    <div id="tab-profile" class="tab-content">
+        <div class="profile-header">
+            <div class="avatar" id="userAvatar">U</div>
+            <h2 id="userName">Loading...</h2>
+            <p>Storage Owner</p>
+        </div>
+        
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3 id="statTotal">0</h3>
+                <p>Total Files</p>
+            </div>
+            <div class="stat-card">
+                <h3>∞</h3>
+                <p>Storage Limit</p>
+            </div>
         </div>
     </div>
 
-    <div class="gallery" id="gallery">
+    <div id="tab-settings" class="tab-content">
+        <div class="header">
+            <h1>Settings</h1>
         </div>
+        
+        <div class="settings-list">
+            <div class="setting-item">
+                <span>Save Original Quality</span>
+                <label class="switch">
+                    <input type="checkbox" checked>
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="setting-item">
+                <span>Auto-sync files</span>
+                <label class="switch">
+                    <input type="checkbox" checked>
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="setting-item">
+                <span>Haptic Feedback</span>
+                <label class="switch">
+                    <input type="checkbox" id="hapticToggle" checked>
+                    <span class="slider"></span>
+                </label>
+            </div>
+        </div>
+        
+        <button class="btn-danger" onclick="showToast('Cache cleared successfully!')">
+            Clear Local Cache
+        </button>
+    </div>
+
+    <nav class="bottom-nav">
+        <button class="nav-item active" onclick="switchTab('gallery', this)">
+            <div class="icon">📁</div>
+            <span>Home</span>
+        </button>
+        <button class="nav-item" onclick="switchTab('profile', this)">
+            <div class="icon">👤</div>
+            <span>Profile</span>
+        </button>
+        <button class="nav-item" onclick="switchTab('settings', this)">
+            <div class="icon">⚙️</div>
+            <span>Settings</span>
+        </button>
+    </nav>
 
     <div class="modal" id="imageModal">
         <button class="btn-close" onclick="closeModal()">✕</button>
         <img id="modalImage" src="" alt="Full size">
         <div class="modal-actions">
-            <button class="modal-btn btn-download" onclick="downloadCurrentItem()">
-                📥 Download
-            </button>
-            <button class="modal-btn btn-delete" onclick="deleteCurrentItem()">
-                🗑 Delete
-            </button>
+            <button class="modal-btn btn-download" onclick="downloadCurrentItem()">📥 Download</button>
+            <button class="modal-btn btn-delete" onclick="deleteCurrentItem()">🗑 Delete</button>
         </div>
     </div>
-
     <div id="toast-container"></div>
 
     <script>
-        // ================= STATE & INIT =================
+        // ================= INIT =================
         const tg = window.Telegram.WebApp;
-        tg.expand(); // Expand to full screen
+        tg.expand();
         tg.ready();
 
         let globalFiles = [];
-        let currentActiveItem = null; // Stores URL of currently opened item
+        let currentActiveItem = null;
         let currentFilter = 'all';
 
-        // URL of your Synology API
+        // URL твоего Synology
         const API_URL = "https://galaxylab.i234.me:8443/api/files";
 
-        // ================= CORE FUNCTIONS =================
+        // Подгружаем данные пользователя
+        const user = tg.initDataUnsafe?.user;
+        const firstName = user?.first_name || 'Bekhruz'; // Твое имя как запасной вариант
+        
+        document.getElementById('userName').innerText = firstName;
+        document.getElementById('userAvatar').innerText = firstName.charAt(0).toUpperCase();
+
+        // ================= NAVIGATION LOGIC =================
+        function switchTab(tabId, element) {
+            // Прячем все вкладки
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            // Показываем нужную
+            document.getElementById('tab-' + tabId).classList.add('active');
+            
+            // Обновляем активную иконку в меню
+            document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
+            element.classList.add('active');
+
+            if (document.getElementById('hapticToggle').checked) {
+                tg.HapticFeedback.selectionChanged();
+            }
+        }
+
+        // ================= DATA FETCHING =================
         async function fetchFiles() {
             renderSkeletons();
-            
-            // Get User ID from Telegram (Fallback to mock ID if opened in normal browser)
-            const userId = tg.initDataUnsafe?.user?.id || '123456789'; 
+            const userId = user?.id || '123456789';
 
             try {
                 const response = await fetch(`${API_URL}?user_id=${userId}`);
@@ -63,57 +148,43 @@
                 if (data.status === "success" && data.files.length > 0) {
                     globalFiles = data.files;
                     renderGallery();
-                    showToast("Synced successfully!");
+                    document.getElementById('statTotal').innerText = globalFiles.length;
                 } else {
                     globalFiles = [];
-                    renderEmptyState("No files found. Send something to the bot!");
+                    renderEmptyState("Archive is empty. Send files to bot.");
                 }
             } catch (error) {
-                console.error("API Error:", error);
-                // OFFLINE MOCK MODE: If backend is down, show mock images to test UI
+                // MOCK DATA для проверки дизайна без бэкенда
                 globalFiles = [
                     { type: 'photo', url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=200&auto=format&fit=crop' },
                     { type: 'photo', url: 'https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=200&auto=format&fit=crop' },
-                    { type: 'document', text: 'Important_Report.pdf', url: '#' }
+                    { type: 'document', text: 'Economics_Report.pdf', url: '#' }
                 ];
                 renderGallery();
-                showToast("Offline Mode (Backend disconnected)");
+                document.getElementById('statTotal').innerText = globalFiles.length;
+                showToast("Offline Demo Mode");
             }
         }
 
-        // ================= RENDERING =================
+        // ================= RENDER LOGIC =================
         function renderSkeletons() {
             const gallery = document.getElementById('gallery');
             gallery.innerHTML = '';
-            for (let i = 0; i < 9; i++) {
-                gallery.innerHTML += `<div class="skeleton"></div>`;
-            }
+            for (let i = 0; i < 9; i++) gallery.innerHTML += `<div class="skeleton"></div>`;
         }
 
         function renderEmptyState(message) {
-            const gallery = document.getElementById('gallery');
-            gallery.innerHTML = `
-                <div class="empty-state">
-                    <h2 style="font-size: 40px; margin-bottom: 10px;">📭</h2>
-                    <p>${message}</p>
-                </div>
-            `;
+            document.getElementById('gallery').innerHTML = `<div class="empty-state"><h2 style="font-size: 40px;">📭</h2><p>${message}</p></div>`;
         }
 
         function renderGallery() {
             const gallery = document.getElementById('gallery');
             gallery.innerHTML = '';
 
-            const filteredFiles = globalFiles.filter(file => 
-                currentFilter === 'all' ? true : file.type === currentFilter
-            );
+            const filtered = globalFiles.filter(f => currentFilter === 'all' || f.type === currentFilter);
+            if (filtered.length === 0) return renderEmptyState(`No ${currentFilter}s found.`);
 
-            if (filteredFiles.length === 0) {
-                renderEmptyState(`No ${currentFilter}s found.`);
-                return;
-            }
-
-            filteredFiles.forEach((file) => {
+            filtered.forEach((file) => {
                 const itemDiv = document.createElement('div');
                 itemDiv.className = `item ${file.type}`;
                 
@@ -121,52 +192,34 @@
                     itemDiv.innerHTML = `<img src="${file.url}" alt="Photo" loading="lazy">`;
                     itemDiv.onclick = () => openModal(file.url);
                 } else {
-                    // Document fallback UI
-                    itemDiv.innerHTML = `
-                        <span style="font-size: 30px;">📄</span>
-                        <span>${file.text || 'Document'}</span>
-                    `;
-                    itemDiv.onclick = () => showToast("Documents download via Bot only currently");
+                    itemDiv.innerHTML = `<span style="font-size: 30px;">📄</span><span>${file.text || 'Doc'}</span>`;
+                    itemDiv.onclick = () => showToast("Documents download via Bot only");
                 }
-                
                 gallery.appendChild(itemDiv);
             });
         }
 
-        // ================= FILTERING =================
-        function applyFilter(filterType) {
-            currentFilter = filterType;
-            
-            // Update UI buttons
-            document.querySelectorAll('.filter-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
+        function applyFilter(type) {
+            currentFilter = type;
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
             event.target.classList.add('active');
-
             renderGallery();
-            tg.HapticFeedback.impactOccurred('light');
+            if (document.getElementById('hapticToggle').checked) tg.HapticFeedback.impactOccurred('light');
         }
 
-        // ================= MODAL (LIGHTBOX) =================
-        function openModal(imageUrl) {
-            currentActiveItem = imageUrl;
-            const modal = document.getElementById('imageModal');
-            const img = document.getElementById('modalImage');
-            
-            img.src = imageUrl;
-            modal.classList.add('active');
-            
-            // Telegram Haptic
-            tg.HapticFeedback.impactOccurred('medium');
+        // ================= MODAL LOGIC =================
+        function openModal(url) {
+            currentActiveItem = url;
+            document.getElementById('modalImage').src = url;
+            document.getElementById('imageModal').classList.add('active');
+            if (document.getElementById('hapticToggle').checked) tg.HapticFeedback.impactOccurred('medium');
         }
 
         function closeModal() {
-            const modal = document.getElementById('imageModal');
-            modal.classList.remove('active');
+            document.getElementById('imageModal').classList.remove('active');
             currentActiveItem = null;
         }
 
-        // Close modal if clicked outside image
         document.getElementById('imageModal').addEventListener('click', function(e) {
             if (e.target === this) closeModal();
         });
@@ -174,52 +227,34 @@
         // ================= ACTIONS =================
         function downloadCurrentItem() {
             if (!currentActiveItem) return;
-            
-            // Create temporary link to trigger download
             const a = document.createElement('a');
             a.href = currentActiveItem;
             a.download = 'Infinity_Storage_File.jpg';
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
-            
             showToast("Download started!");
-            tg.HapticFeedback.notificationOccurred('success');
         }
 
         function deleteCurrentItem() {
-            // Right now, this deletes only from UI (Frontend). 
-            // To delete from DB, we need to add a DELETE method to python API later.
-            globalFiles = globalFiles.filter(file => file.url !== currentActiveItem);
-            
+            globalFiles = globalFiles.filter(f => f.url !== currentActiveItem);
+            document.getElementById('statTotal').innerText = globalFiles.length;
             closeModal();
             renderGallery();
-            
             showToast("File deleted 🗑");
-            tg.HapticFeedback.notificationOccurred('warning');
+            if (document.getElementById('hapticToggle').checked) tg.HapticFeedback.notificationOccurred('warning');
         }
 
-        // ================= UTILS (TOASTS) =================
-        function showToast(message) {
+        function showToast(msg) {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
             toast.className = 'toast';
-            toast.innerText = message;
-            
+            toast.innerText = msg;
             container.appendChild(toast);
-            
-            // Remove after animation ends (3 seconds)
-            setTimeout(() => {
-                if (container.contains(toast)) {
-                    container.removeChild(toast);
-                }
-            }, 3000);
+            setTimeout(() => { if (container.contains(toast)) container.removeChild(toast); }, 3000);
         }
 
-        // ================= START APP =================
-        // Trigger fetch on load
         window.onload = fetchFiles;
-
     </script>
 </body>
 </html>
