@@ -10,125 +10,216 @@
 <body>
 
     <div class="header">
-        <h2 id="welcome-text">My Archive</h2>
+        <h1>My Storage</h1>
+        <div class="filters">
+            <button class="filter-btn active" onclick="applyFilter('all')">All</button>
+            <button class="filter-btn" onclick="applyFilter('photo')">Photos</button>
+            <button class="filter-btn" onclick="applyFilter('document')">Documents</button>
+        </div>
     </div>
 
-    <div class="loader" id="loader"></div>
-    <div class="gallery" id="gallery"></div>
+    <div class="gallery" id="gallery">
+        </div>
 
     <div class="modal" id="imageModal">
-        <img class="modal-img" id="modalImage" src="" alt="View">
-        <p class="modal-text" id="modalCaption"></p>
-        
+        <button class="btn-close" onclick="closeModal()">✕</button>
+        <img id="modalImage" src="" alt="Full size">
         <div class="modal-actions">
-            <button class="btn btn-copy" onclick="copyContent()">Copy</button>
-            <button class="btn btn-delete" onclick="deleteItem()">Delete</button>
-        </div>
-        <div class="modal-actions" style="margin-top: 15px;">
-            <button class="btn btn-close" onclick="closeModal()">Close</button>
+            <button class="modal-btn btn-download" onclick="downloadCurrentItem()">
+                📥 Download
+            </button>
+            <button class="modal-btn btn-delete" onclick="deleteCurrentItem()">
+                🗑 Delete
+            </button>
         </div>
     </div>
 
+    <div id="toast-container"></div>
+
     <script>
-        // Initialize Telegram WebApp API
+        // ================= STATE & INIT =================
         const tg = window.Telegram.WebApp;
-        tg.expand(); // Open in full screen mode
+        tg.expand(); // Expand to full screen
+        tg.ready();
 
-        const gallery = document.getElementById('gallery');
-        const loader = document.getElementById('loader');
-        const modal = document.getElementById('imageModal');
-        let currentFileUrl = "";
-        let currentCaption = "";
+        let globalFiles = [];
+        let currentActiveItem = null; // Stores URL of currently opened item
+        let currentFilter = 'all';
 
-        // API URL (Your Synology Server)
-        const API_BASE = "https://galaxylab.i234.me:8443/api/files";
+        // URL of your Synology API
+        const API_URL = "https://galaxylab.i234.me:8443/api/files";
 
-        // Get User ID (Fallback to a test ID if opened in a regular browser)
-        const userId = tg.initDataUnsafe?.user?.id || 123456789;
-
-        // Fetch data from backend
+        // ================= CORE FUNCTIONS =================
         async function fetchFiles() {
-            loader.style.display = "block";
-            try {
-                const response = await fetch(`${API_BASE}?user_id=${userId}`);
-                const data = await response.json();
-                
-                loader.style.display = "none";
+            renderSkeletons();
+            
+            // Get User ID from Telegram (Fallback to mock ID if opened in normal browser)
+            const userId = tg.initDataUnsafe?.user?.id || '123456789'; 
 
-                if (data.status === "success") {
-                    renderGallery(data.files);
+            try {
+                const response = await fetch(`${API_URL}?user_id=${userId}`);
+                const data = await response.json();
+
+                if (data.status === "success" && data.files.length > 0) {
+                    globalFiles = data.files;
+                    renderGallery();
+                    showToast("Synced successfully!");
                 } else {
-                    alert("Error loading files.");
+                    globalFiles = [];
+                    renderEmptyState("No files found. Send something to the bot!");
                 }
             } catch (error) {
-                loader.style.display = "none";
-                console.error("Fetch error:", error);
+                console.error("API Error:", error);
+                // OFFLINE MOCK MODE: If backend is down, show mock images to test UI
+                globalFiles = [
+                    { type: 'photo', url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=200&auto=format&fit=crop' },
+                    { type: 'photo', url: 'https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=200&auto=format&fit=crop' },
+                    { type: 'document', text: 'Important_Report.pdf', url: '#' }
+                ];
+                renderGallery();
+                showToast("Offline Mode (Backend disconnected)");
             }
         }
 
-        // Render images in the grid
-        function renderGallery(files) {
+        // ================= RENDERING =================
+        function renderSkeletons() {
+            const gallery = document.getElementById('gallery');
             gallery.innerHTML = '';
-            files.forEach(file => {
-                if (file.type === 'photo') {
-                    const imgContainer = document.createElement('div');
-                    
-                    const img = document.createElement('img');
-                    img.src = file.url;
-                    img.className = 'gallery-item';
-                    
-                    // Click event to open Modal
-                    img.onclick = () => openModal(file.url, file.text);
+            for (let i = 0; i < 9; i++) {
+                gallery.innerHTML += `<div class="skeleton"></div>`;
+            }
+        }
 
-                    gallery.appendChild(img);
+        function renderEmptyState(message) {
+            const gallery = document.getElementById('gallery');
+            gallery.innerHTML = `
+                <div class="empty-state">
+                    <h2 style="font-size: 40px; margin-bottom: 10px;">📭</h2>
+                    <p>${message}</p>
+                </div>
+            `;
+        }
+
+        function renderGallery() {
+            const gallery = document.getElementById('gallery');
+            gallery.innerHTML = '';
+
+            const filteredFiles = globalFiles.filter(file => 
+                currentFilter === 'all' ? true : file.type === currentFilter
+            );
+
+            if (filteredFiles.length === 0) {
+                renderEmptyState(`No ${currentFilter}s found.`);
+                return;
+            }
+
+            filteredFiles.forEach((file) => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = `item ${file.type}`;
+                
+                if (file.type === 'photo') {
+                    itemDiv.innerHTML = `<img src="${file.url}" alt="Photo" loading="lazy">`;
+                    itemDiv.onclick = () => openModal(file.url);
+                } else {
+                    // Document fallback UI
+                    itemDiv.innerHTML = `
+                        <span style="font-size: 30px;">📄</span>
+                        <span>${file.text || 'Document'}</span>
+                    `;
+                    itemDiv.onclick = () => showToast("Documents download via Bot only currently");
                 }
+                
+                gallery.appendChild(itemDiv);
             });
         }
 
-        // Feature 1 & 2: Open Modal and trigger Haptics
-        function openModal(url, text) {
-            tg.HapticFeedback.impactOccurred('light'); // Slight vibration
-            currentFileUrl = url;
-            currentCaption = text || "No caption";
+        // ================= FILTERING =================
+        function applyFilter(filterType) {
+            currentFilter = filterType;
             
-            document.getElementById('modalImage').src = url;
-            document.getElementById('modalCaption').innerText = currentCaption;
+            // Update UI buttons
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            renderGallery();
+            tg.HapticFeedback.impactOccurred('light');
+        }
+
+        // ================= MODAL (LIGHTBOX) =================
+        function openModal(imageUrl) {
+            currentActiveItem = imageUrl;
+            const modal = document.getElementById('imageModal');
+            const img = document.getElementById('modalImage');
             
-            modal.classList.add('show');
+            img.src = imageUrl;
+            modal.classList.add('active');
+            
+            // Telegram Haptic
+            tg.HapticFeedback.impactOccurred('medium');
         }
 
         function closeModal() {
-            modal.classList.remove('show');
+            const modal = document.getElementById('imageModal');
+            modal.classList.remove('active');
+            currentActiveItem = null;
         }
 
-        // Feature 4: Copy to clipboard
-        function copyContent() {
-            tg.HapticFeedback.impactOccurred('medium');
-            navigator.clipboard.writeText(currentCaption !== "No caption" ? currentCaption : currentFileUrl);
-            tg.showAlert("Copied to clipboard!");
-        }
+        // Close modal if clicked outside image
+        document.getElementById('imageModal').addEventListener('click', function(e) {
+            if (e.target === this) closeModal();
+        });
 
-        // Delete Logic
-        function deleteItem() {
-            tg.HapticFeedback.notificationOccurred('warning');
+        // ================= ACTIONS =================
+        function downloadCurrentItem() {
+            if (!currentActiveItem) return;
             
-            tg.showConfirm("Are you sure you want to delete this file from your archive?", function(confirmed) {
-                if (confirmed) {
-                    // NOTE: To make this actually delete from the database, 
-                    // we will need to add a new /api/delete route in your Python code later.
-                    // For now, it just closes the modal and shows a success message.
-                    
-                    tg.showAlert("File deleted! (UI only until backend route is added)");
-                    closeModal();
-                    
-                    // Re-fetch files to update UI
-                    fetchFiles();
-                }
-            });
+            // Create temporary link to trigger download
+            const a = document.createElement('a');
+            a.href = currentActiveItem;
+            a.download = 'Infinity_Storage_File.jpg';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            
+            showToast("Download started!");
+            tg.HapticFeedback.notificationOccurred('success');
         }
 
-        // Run fetch on load
-        fetchFiles();
+        function deleteCurrentItem() {
+            // Right now, this deletes only from UI (Frontend). 
+            // To delete from DB, we need to add a DELETE method to python API later.
+            globalFiles = globalFiles.filter(file => file.url !== currentActiveItem);
+            
+            closeModal();
+            renderGallery();
+            
+            showToast("File deleted 🗑");
+            tg.HapticFeedback.notificationOccurred('warning');
+        }
+
+        // ================= UTILS (TOASTS) =================
+        function showToast(message) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.innerText = message;
+            
+            container.appendChild(toast);
+            
+            // Remove after animation ends (3 seconds)
+            setTimeout(() => {
+                if (container.contains(toast)) {
+                    container.removeChild(toast);
+                }
+            }, 3000);
+        }
+
+        // ================= START APP =================
+        // Trigger fetch on load
+        window.onload = fetchFiles;
+
     </script>
 </body>
 </html>
