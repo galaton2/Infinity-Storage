@@ -3,98 +3,103 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Infinity Storage</title>
+    <title>Aura Storage</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
 <body>
 
-    <div id="tab-gallery" class="tab-content active">
-        
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-            <h1>Storage</h1>
-            <button onclick="toggleViewMode()" style="background: none; border: none; color: var(--text-main);">
-                <svg width="28" height="28" viewBox="0 0 24 24"><path fill="currentColor" d="M3 4h18v2H3V4zm0 7h18v2H3v-2zm0 7h18v2H3v-2z"/></svg>
+    <div class="ambient-glow"></div>
+    <div class="ambient-glow right"></div>
+
+    <div class="container">
+        <div class="header-top">
+            <button class="icon-btn">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+            </button>
+            <button class="icon-btn" onclick="switchTab('profile')">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
             </button>
         </div>
 
-        <div class="folders-container">
-            <div class="folder-card active">
-                <span class="folder-icon">🌌</span>
-                <span class="folder-name">All Files</span>
-                <span class="folder-count" id="allCount">0 items</span>
+        <div id="tab-home" class="tab-content active">
+            <div class="section-title">Latest Upload</div>
+            
+            <div class="hero-card" id="heroCard">
+                <div class="hero-content">
+                    <h1 class="hero-title serif" id="heroTitle">Economics<br>Summary</h1>
+                    <p class="hero-subtitle" id="heroSubtitle">12 MB PDF Document</p>
+                </div>
+                <button class="play-btn" onclick="openHeroFile()">
+                    <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                </button>
             </div>
-            <div class="folder-card">
-                <span class="folder-icon">🔥</span>
-                <span class="folder-name">Memes</span>
-                <span class="folder-count">24 items</span>
-            </div>
-            <div class="folder-card">
-                <span class="folder-icon">💼</span>
-                <span class="folder-name">Work</span>
-                <span class="folder-count">12 items</span>
-            </div>
-        </div>
 
-        <div class="gallery view-grid" id="gallery">
-            </div>
-    </div>
-
-    <div id="tab-profile" class="tab-content">
-        <div class="profile-section">
-            <div class="user-card">
-                <h2 id="userName">Tomas</h2>
-                <p>Owner • Infinity Plan</p>
-            </div>
-            <h2 style="margin-bottom: 16px;">Storage Setup</h2>
-            <div style="background: var(--bg-card); border-radius: var(--border-radius-lg); padding: 20px;">
-                <p style="color: var(--text-muted); margin-bottom: 12px;">Active Tags</p>
-                <div class="tags-row" style="flex-wrap: wrap;">
-                    <span class="tag pink">Design</span>
-                    <span class="tag yellow">Important</span>
-                    <span class="tag blue">Work</span>
-                    <span class="tag green">Memes</span>
+            <div class="section-title">Recent Folders</div>
+            
+            <div class="scroll-section">
+                <div class="glass-card gradient-bg">
+                    <div class="glass-content">
+                        <h2 class="glass-title serif">Tor Vergata<br>Docs</h2>
+                        <p class="glass-subtitle">8 items</p>
+                    </div>
+                </div>
+                <div class="glass-card">
+                    <img src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=400" alt="bg">
+                    <div class="glass-content">
+                        <h2 class="glass-title serif">Design<br>Moods</h2>
+                        <p class="glass-subtitle">24 items</p>
+                    </div>
                 </div>
             </div>
         </div>
+
+        <div id="tab-files" class="tab-content">
+            <h1 class="serif" style="font-size: 36px; margin-bottom: 24px;">All Files</h1>
+            <div class="gallery-grid" id="gallery">
+                </div>
+        </div>
+
+        <div id="tab-profile" class="tab-content" style="text-align: center;">
+            <div class="profile-avatar" id="userAvatar">B</div>
+            <h1 class="serif" id="userName" style="font-size: 32px; margin-bottom: 8px;">Bekhruz</h1>
+            <p class="section-title">Infinity Cloud Owner</p>
+            
+            <div class="glass-card" style="margin-top: 32px; height: auto; text-align: left; padding: 20px;">
+                <h3 class="serif" style="font-size: 20px; margin-bottom: 16px;">Storage Health</h3>
+                <div style="height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden; margin-bottom: 12px;">
+                    <div style="width: 15%; height: 100%; background: var(--accent-green); border-radius: 3px;"></div>
+                </div>
+                <p style="font-size: 14px; color: var(--text-muted);">Unlimited space available on Synology NAS</p>
+            </div>
+        </div>
     </div>
 
-    <button class="fab" onclick="handleFabClick()">+</button>
-
-    <nav class="bottom-nav" id="bottomNav">
-        <button class="nav-item active" onclick="switchTab('gallery', this)">
-            <svg viewBox="0 0 24 24"><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>
-            Home
-        </button>
-        <button class="nav-item" onclick="switchTab('profile', this)">
-            <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
-            Profile
-        </button>
-    </nav>
-
-    <nav class="selection-toolbar" id="selectionToolbar">
-        <button class="toolbar-btn" onclick="cancelSelection()">✕ Cancel</button>
-        <span id="selectionCount" style="font-weight: 700; font-size: 14px; color: var(--text-main);">1 selected</span>
-        <button class="toolbar-btn danger" onclick="deleteSelected()">🗑 Delete</button>
-    </nav>
+    <div class="bottom-nav-container">
+        <nav class="bottom-nav">
+            <button class="nav-item active" onclick="switchTab('home', this)">
+                <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                Home
+            </button>
+            <button class="nav-item" onclick="switchTab('files', this)">
+                <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Files
+            </button>
+            <button class="nav-item" onclick="tg.showAlert('Upload files via Telegram Bot.')">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+                Upload
+            </button>
+            <button class="nav-item" onclick="switchTab('profile', this)">
+                <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                Profile
+            </button>
+        </nav>
+    </div>
 
     <div class="modal" id="imageModal">
-        <button class="action-btn close-btn" onclick="closeModal()">✕</button>
-        <button class="action-btn" onclick="openActionSheet()">⋮</button>
+        <button class="modal-close" onclick="closeModal()">✕</button>
         <img id="modalImage" src="" alt="Full size">
     </div>
-
-    <div class="action-sheet" id="actionSheet">
-        <div class="sheet-header"><div class="sheet-drag"></div></div>
-        <button class="sheet-btn" onclick="closeActionSheet()">📥 Save to Device</button>
-        <button class="sheet-btn" onclick="closeActionSheet()">📁 Move to Folder...</button>
-        <button class="sheet-btn" onclick="closeActionSheet()">🏷 Edit Tags...</button>
-        <button class="sheet-btn danger" onclick="deleteCurrentItem()">🗑 Delete File</button>
-    </div>
-
-    <div id="sheetOverlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; display: none;" onclick="closeActionSheet()"></div>
-
-    <div id="toast-container"></div>
 
     <script>
         const tg = window.Telegram.WebApp;
@@ -102,225 +107,94 @@
         tg.ready();
 
         let globalFiles = [];
-        let viewMode = 'grid'; 
-        let currentPhotoIndex = 0;
-        let photoOnlyList = [];
-        
-        // Anti-scroll bug tracking
-        let touchStartX = 0;
-        let touchStartY = 0;
-        let isScrolling = false;
-
-        // Selection State
-        let isSelectionMode = false;
-        let selectedIds = new Set();
-        let pressTimer;
-
         const API_URL = "https://galaxylab.i234.me:8443/api/files";
-
-        // Init
+        
+        // Установка имени пользователя
         const user = tg.initDataUnsafe?.user;
-        document.getElementById('userName').innerText = user?.first_name || 'Bekhruz';
+        const firstName = user?.first_name || 'Bekhruz';
+        document.getElementById('userName').innerText = firstName;
+        document.getElementById('userAvatar').innerText = firstName.charAt(0);
 
         async function fetchFiles() {
             const userId = user?.id || '123456789';
             try {
                 const response = await fetch(`${API_URL}?user_id=${userId}`);
                 const data = await response.json();
-                if (data.status === "success") {
-                    globalFiles = data.files.map((f, i) => ({...f, internalId: i, tags: getRandomTags()}));
-                }
+                if (data.status === "success" && data.files.length > 0) {
+                    globalFiles = data.files;
+                    updateHeroCard(globalFiles[0]);
+                } else { throw new Error("No files"); }
             } catch (error) {
-                // Mock data with tags
+                // Премиум Mock-данные
                 globalFiles = [
-                    { internalId: 0, type: 'photo', url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=400', tags: [{name: 'Design', color: 'pink'}] },
-                    { internalId: 1, type: 'photo', url: 'https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=400', tags: [{name: 'Important', color: 'yellow'}] },
-                    { internalId: 2, type: 'document', text: 'Financial_Report.pdf', tags: [{name: 'Work', color: 'blue'}] }
+                    { type: 'photo', url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=400' },
+                    { type: 'photo', url: 'https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=400' },
+                    { type: 'document', text: 'Python_Bot_Code.py' },
+                    { type: 'document', text: 'Economics_Summary.pdf' }
                 ];
+                updateHeroCard(globalFiles[3]);
             }
-            document.getElementById('allCount').innerText = `${globalFiles.length} items`;
             renderGallery();
         }
 
-        // Random mock tags for test
-        function getRandomTags() {
-            const allTags = [{name: 'Memes', color: 'green'}, {name: 'Work', color: 'blue'}, {name: 'Design', color: 'pink'}];
-            return Math.random() > 0.5 ? [allTags[Math.floor(Math.random() * allTags.length)]] : [];
+        function updateHeroCard(file) {
+            if(!file) return;
+            document.getElementById('heroTitle').innerHTML = file.type === 'document' ? file.text.split('.')[0] : "Recent<br>Photo";
+            document.getElementById('heroSubtitle').innerText = file.type === 'document' ? 'Document File' : 'Image File';
+            
+            if (file.type === 'photo') {
+                document.getElementById('heroCard').style.background = `linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.8)), url('${file.url}') center/cover`;
+            }
+        }
+
+        function openHeroFile() {
+            tg.HapticFeedback.impactOccurred('medium');
+            if (globalFiles.length > 0 && globalFiles[0].type === 'photo') {
+                openModal(globalFiles[0].url);
+            } else {
+                tg.showAlert("This file type is best viewed directly in the Telegram chat.");
+            }
         }
 
         function renderGallery() {
             const gallery = document.getElementById('gallery');
             gallery.innerHTML = '';
-            photoOnlyList = globalFiles.filter(f => f.type === 'photo');
-
+            
             globalFiles.forEach((file) => {
-                const itemDiv = document.createElement('div');
-                itemDiv.className = `item ${file.type} ${selectedIds.has(file.internalId) ? 'selected' : ''}`;
+                const item = document.createElement('div');
+                item.className = `grid-item ${file.type}`;
                 
-                let tagsHTML = file.tags && file.tags.length > 0 
-                    ? `<div class="tags-row">${file.tags.map(t => `<span class="tag ${t.color}">${t.name}</span>`).join('')}</div>`
-                    : '';
-
                 if (file.type === 'photo') {
-                    itemDiv.innerHTML = `
-                        <img src="${file.url}" alt="Photo" loading="lazy">
-                        <div class="item-content view-list-only">
-                            <div class="item-title">IMG_${file.internalId + 1024}.JPG</div>
-                            <div class="item-subtitle">Today, 14:30</div>
-                            ${tagsHTML}
-                        </div>
-                        <div class="checkbox"></div>`;
+                    item.innerHTML = `<img src="${file.url}" alt="Photo" loading="lazy">`;
+                    item.onclick = () => openModal(file.url);
                 } else {
-                    itemDiv.innerHTML = `
-                        <div class="doc-icon">📄</div>
-                        <div class="item-content">
-                            <div class="item-title">${file.text || 'Document'}</div>
-                            <div class="item-subtitle">1.2 MB PDF</div>
-                            ${tagsHTML}
-                        </div>
-                        <div class="checkbox"></div>`;
+                    item.innerHTML = `<div style="font-size: 32px; margin-bottom: 8px;">📄</div><div style="font-size: 12px; font-weight: 500; word-break: break-all;">${file.text || 'File'}</div>`;
+                    item.onclick = () => tg.showAlert("Documents are downloaded via bot.");
                 }
-
-                // TOUCH EVENTS (SCROLL BUG FIX)
-                itemDiv.addEventListener('touchstart', (e) => {
-                    touchStartX = e.touches[0].clientX;
-                    touchStartY = e.touches[0].clientY;
-                    isScrolling = false;
-                    startPress(file.internalId);
-                });
-                
-                itemDiv.addEventListener('touchmove', (e) => {
-                    if (Math.abs(e.touches[0].clientY - touchStartY) > 10 || Math.abs(e.touches[0].clientX - touchStartX) > 10) {
-                        isScrolling = true;
-                        cancelPress();
-                    }
-                });
-
-                itemDiv.addEventListener('touchend', (e) => {
-                    if (!isScrolling) endPress(file);
-                });
-
-                itemDiv.addEventListener('mousedown', () => startPress(file.internalId));
-                itemDiv.addEventListener('mouseup', () => { if(!isScrolling) endPress(file); });
-                itemDiv.addEventListener('mouseleave', cancelPress);
-
-                gallery.appendChild(itemDiv);
+                gallery.appendChild(item);
             });
         }
 
-        // VIEW MODE
-        function toggleViewMode() {
-            const gallery = document.getElementById('gallery');
-            viewMode = viewMode === 'grid' ? 'list' : 'grid';
-            gallery.className = `gallery view-${viewMode}`;
-            tg.HapticFeedback.impactOccurred('light');
-        }
-
-        // MULTI-SELECT
-        function startPress(id) {
-            pressTimer = setTimeout(() => {
-                if (!isSelectionMode) {
-                    isSelectionMode = true;
-                    tg.HapticFeedback.impactOccurred('heavy');
-                    document.getElementById('bottomNav').classList.add('hidden');
-                    document.getElementById('selectionToolbar').classList.add('active');
-                }
-                toggleSelection(id);
-            }, 500); 
-        }
-
-        function cancelPress() { clearTimeout(pressTimer); }
-
-        function endPress(file) {
-            clearTimeout(pressTimer);
-            if (isSelectionMode) {
-                toggleSelection(file.internalId);
-            } else {
-                if (file.type === 'photo') {
-                    currentPhotoIndex = photoOnlyList.findIndex(f => f.url === file.url);
-                    openModal();
-                } else {
-                    showToast("Docs available in bot chat");
-                }
+        function switchTab(tabId, navElement = null) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.getElementById('tab-' + tabId).classList.add('active');
+            
+            if(navElement) {
+                document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+                navElement.classList.add('active');
+                tg.HapticFeedback.selectionChanged();
             }
+            window.scrollTo(0, 0);
         }
 
-        function toggleSelection(id) {
-            selectedIds.has(id) ? selectedIds.delete(id) : selectedIds.add(id);
-            if (selectedIds.size === 0) return cancelSelection();
-            document.getElementById('selectionCount').innerText = `${selectedIds.size} selected`;
-            renderGallery();
-            tg.HapticFeedback.selectionChanged();
-        }
-
-        function cancelSelection() {
-            isSelectionMode = false;
-            selectedIds.clear();
-            document.getElementById('bottomNav').classList.remove('hidden');
-            document.getElementById('selectionToolbar').classList.remove('active');
-            renderGallery();
-        }
-
-        function deleteSelected() {
-            globalFiles = globalFiles.filter(f => !selectedIds.has(f.internalId));
-            cancelSelection();
-            showToast("Selected files deleted");
-            tg.HapticFeedback.notificationOccurred('success');
-        }
-
-        // MODAL & ACTION SHEET
-        function openModal() {
-            const file = photoOnlyList[currentPhotoIndex];
-            if (!file) return;
-            document.getElementById('modalImage').src = file.url;
+        function openModal(url) {
+            document.getElementById('modalImage').src = url;
             document.getElementById('imageModal').classList.add('active');
+            tg.HapticFeedback.impactOccurred('light');
         }
 
         function closeModal() {
             document.getElementById('imageModal').classList.remove('active');
-            closeActionSheet();
-        }
-
-        function openActionSheet() {
-            document.getElementById('actionSheet').classList.add('active');
-            document.getElementById('sheetOverlay').style.display = 'block';
-            tg.HapticFeedback.impactOccurred('light');
-        }
-
-        function closeActionSheet() {
-            document.getElementById('actionSheet').classList.remove('active');
-            document.getElementById('sheetOverlay').style.display = 'none';
-        }
-
-        function deleteCurrentItem() {
-            const file = photoOnlyList[currentPhotoIndex];
-            globalFiles = globalFiles.filter(f => f.internalId !== file.internalId);
-            closeActionSheet();
-            closeModal();
-            renderGallery();
-            showToast("File deleted");
-        }
-
-        function handleFabClick() {
-            tg.HapticFeedback.notificationOccurred('success');
-            tg.showAlert("Отправьте фото или файл в чат, и он моментально сохранится в облаке.", () => tg.close());
-        }
-
-        function switchTab(tabId, element) {
-            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-            document.getElementById('tab-' + tabId).classList.add('active');
-            document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
-            element.classList.add('active');
-            tg.HapticFeedback.selectionChanged();
-        }
-
-        function showToast(msg) {
-            const container = document.getElementById('toast-container');
-            const toast = document.createElement('div');
-            toast.className = 'toast';
-            toast.innerText = msg;
-            container.appendChild(toast);
-            setTimeout(() => { if (container.contains(toast)) toast.remove(); }, 3000);
         }
 
         window.onload = fetchFiles;
