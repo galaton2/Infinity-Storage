@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Aura Storage</title>
+    <title>Premium Storage</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
@@ -14,7 +14,6 @@
 
     <div class="container">
         
-        <!-- Header -->
         <div class="header-top">
             <h1 class="app-title">Aura</h1>
             <button class="icon-btn" onclick="switchTab('profile')">
@@ -22,90 +21,70 @@
             </button>
         </div>
 
-        <!-- ================= TAB 1: HOME (RECENT ACTIVITY ONLY) ================= -->
         <div id="tab-home" class="tab-content active">
-            <!-- Диск и прогресс убраны, Home служит дашбордом активности -->
-            <div class="section-header" style="margin-top: 0;">
-                <h2 class="section-title">Workspace Activity</h2>
-                <button class="section-action" onclick="switchTab('files', document.getElementById('nav-files'))">View All Assets</button>
+            
+            <div class="greeting-card">
+                <h1 class="greeting-text serif">Welcome back, <br><span id="greetName">Bekhruz</span></h1>
+                <p class="greeting-sub">Your decentralized vault is secure.</p>
+            </div>
+
+            <div class="section-header">
+                <h2 class="section-title">Global Recent</h2>
+                <button class="section-action" onclick="switchTab('files', document.getElementById('nav-files'))">View Vault</button>
             </div>
             
             <div class="grid-gallery" id="homeRecentGallery">
-                <!-- Тут будут ТОЛЬКО 4 последних файла из активной папки -->
-            </div>
+                </div>
         </div>
 
-        <!-- ================= TAB 2: FILES (WORKSPACES MOVED HERE) ================= -->
         <div id="tab-files" class="tab-content">
-            <h1 class="heading" style="font-size: 32px; margin-bottom: 24px;">Vault Assets</h1>
-
-            <!-- Workspaces Section (Перенесено сюда, наверх) -->
+            
             <div class="section-header" style="margin-top: 0;">
                 <h2 class="section-title">Workspaces</h2>
-                <button class="section-action" onclick="createWorkspace()">Create New</button>
+                <button class="section-action" onclick="createWorkspace()">+ Add</button>
             </div>
             
             <div class="workspace-scroll" id="foldersContainer">
-                <!-- Папки рендерятся тут -->
-            </div>
-            
-            <!-- Поиск -->
+                </div>
+
             <div class="search-box">
                 <svg class="svg-icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-                <input type="text" class="search-input" id="searchInput" placeholder="Search by name..." oninput="handleSearch()">
+                <input type="text" class="search-input" id="searchInput" placeholder="Search filtered assets..." oninput="handleSearch()">
             </div>
 
-            <!-- Сетка всех файлов -->
             <div class="grid-gallery" id="fullGallery">
-                <!-- Все файлы -->
-            </div>
+                </div>
         </div>
 
-        <!-- ================= TAB 3: PROFILE (PROGRESS BAR HERE) ================= -->
         <div id="tab-profile" class="tab-content">
             <h1 class="heading" style="font-size: 32px; margin-bottom: 24px;">Account</h1>
             
-            <!-- Карточка профиля -->
-            <div class="grid-item document" style="aspect-ratio: auto; width: 100%; padding: 32px 24px; margin-bottom: 24px;">
-                <div style="width: 80px; height: 80px; border-radius: 50%; background: var(--accent-primary); display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: 600; color: #fff; margin-bottom: 16px;" id="userAvatar">B</div>
+            <div class="greeting-card" style="text-align: center; display: flex; flex-direction: column; align-items: center; border-radius: var(--radius-xl); padding: 40px 24px;">
+                <div style="width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, var(--accent-primary), var(--accent-purple)); display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: 600; color: #fff; margin-bottom: 16px;" id="userAvatar">B</div>
                 <h2 class="heading" id="userName" style="font-size: 24px; margin-bottom: 4px; color: #fff;">Bekhruz</h2>
                 <p style="color: var(--text-muted); font-size: 14px;">Master Admin</p>
-            </div>
-
-            <!-- Прогресс-бар (Сдвинут влево, исправлено положение) -->
-            <div class="profile-progress-box">
-                <div class="progress-labels">
-                    <span class="progress-used" id="dataUsedText">0.0 MB</span>
-                    <span class="progress-infinity">∞</span>
-                </div>
-                <div class="progress-track">
-                    <div class="progress-fill" id="dataUsedFill" style="width: 0%;"></div>
-                </div>
-                <p style="font-size: 12px; color: var(--text-muted); margin-top: 12px;">Unlimited safe space active on Synology Server.</p>
             </div>
         </div>
 
     </div>
 
-    <!-- FLOATING NAV -->
     <div class="nav-container">
         <div class="nav-bar">
             <button class="nav-item active" id="nav-home" onclick="switchTab('home', this)">
                 <svg class="svg-icon" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-                Home
+                Dashboard
             </button>
             <button class="nav-item" id="nav-files" onclick="switchTab('files', this)">
                 <svg class="svg-icon" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-                Files
+                Vault
             </button>
-            <button class="nav-item" onclick="tg.showAlert('Send assets directly via Telegram bot to sync.', () => tg.close())">
-                <svg class="svg-icon" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            <button class="nav-item" onclick="tg.showAlert('Send assets to the Telegram bot to sync.', () => tg.close())">
+                <svg class="svg-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 8 12 12 14 14"/><path d="M12 2a10 10 0 1 0 10 10"/></svg>
                 Sync
             </button>
         </div>
     </div>
 
-    <!-- ACTION SHEET -->
     <div class="sheet-overlay" id="sheetOverlay" onclick="closeSheet()"></div>
     <div class="action-sheet" id="actionSheet">
         <div class="sheet-handle"></div>
@@ -120,7 +99,6 @@
         </button>
     </div>
 
-    <!-- LIGHTBOX -->
     <div class="modal" id="imageModal">
         <button class="icon-btn modal-close" onclick="closeModal()">
             <svg class="svg-icon" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -132,6 +110,10 @@
 
     <script>
         const tg = window.Telegram.WebApp;
+        // КЛЮЧЕВОЕ ИСПРАВЛЕНИЕ: Пытаемся отключить нативный вертикальный свайп для закрытия
+        if (tg.isVersionAtLeast('6.0')) {
+            tg.Settings?.overscrollBehavior?.set?.('contain'); 
+        }
         tg.expand(); tg.ready();
 
         let globalFiles = [];
@@ -151,6 +133,7 @@
 
         const API_URL = "https://galaxylab.i234.me:8443/api/files";
         const user = tg.initDataUnsafe?.user;
+        document.getElementById('greetName').innerText = user?.first_name || 'Bekhruz';
         document.getElementById('userName').innerText = user?.first_name || 'Bekhruz';
         document.getElementById('userAvatar').innerText = (user?.first_name || 'B').charAt(0);
 
@@ -163,12 +146,13 @@
                     globalFiles = data.files.map(f => ({...f, folder: 'work'}));
                 } else throw new Error("empty");
             } catch (e) {
+                // Mock data
                 globalFiles = [
-                    { type: 'photo', url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=400', text: 'Abstract Art', folder: 'work' },
-                    { type: 'document', text: 'Financial_Q3.pdf', folder: 'work' },
-                    { type: 'photo', url: 'https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=400', text: 'Design Concept', folder: 'personal' },
-                    { type: 'document', text: 'Passport_Scan.pdf', folder: 'personal' },
-                    { type: 'photo', url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=400', text: 'Abstract Art 2', folder: 'work' }
+                    { type: 'photo', url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=400', text: 'Geometric_Study.png', folder: 'work' },
+                    { type: 'document', text: 'Tax_Report_2026.pdf', folder: 'work' },
+                    { type: 'photo', url: 'https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=400', text: 'Identity_Concept.jpg', folder: 'personal' },
+                    { type: 'document', text: 'Seed_Phrases.txt', folder: 'personal' },
+                    { type: 'photo', url: 'https://images.unsplash.com/photo-1506748686214-e9df14d4d9d0?q=80&w=400', text: 'Landscape_Ref.jpg', folder: 'work' }
                 ];
             }
             renderWorkspaces();
@@ -178,6 +162,7 @@
         // ================= WORKSPACES (FOLDERS) =================
         function renderWorkspaces() {
             const container = document.getElementById('foldersContainer');
+            if(!container) return; // Prevent error if tab is not active
             container.innerHTML = '';
             
             workspaces.forEach(ws => {
@@ -217,24 +202,22 @@
             renderWorkspaces(); showToast("Workspace created");
         }
 
-        // ================= RENDER ARCHIVE =================
+        // ================= RENDER CONTENT (NEW LOGIC) =================
         function renderContent() {
             const homeGrid = document.getElementById('homeRecentGallery');
             const fullGrid = document.getElementById('fullGallery');
             
-            homeGrid.innerHTML = ''; fullGrid.innerHTML = '';
+            homeGrid.innerHTML = ''; 
+            fullGrid.innerHTML = '';
 
+            // 1. HOME TAB: Global Recent (Top 4 latest files from ALL folders)
+            const globalRecent = globalFiles.slice(0, 4);
+            globalRecent.forEach(file => homeGrid.appendChild(createCard(file)));
+
+            // 2. FILES TAB: Filtered by active workspace and search
             const folderFiles = globalFiles.filter(f => f.folder === activeWorkspace);
-            const recentFolderFiles = folderFiles.slice(0, 4); // Ограничение для главной
-
-            if(recentFolderFiles.length === 0) homeGrid.innerHTML = `<div class="empty-state">${iconFolder}<div>No assets in this workspace</div></div>`;
-            recentFolderFiles.forEach(file => homeGrid.appendChild(createCard(file)));
-
-            const filteredAll = globalFiles.filter(f => (f.text || '').toLowerCase().includes(searchQuery.toLowerCase()));
-            if(filteredAll.length === 0) fullGrid.innerHTML = `<div class="empty-state">${iconFolder}<div>No matches found</div></div>`;
-            filteredAll.forEach(file => fullGrid.appendChild(createCard(file)));
-            
-            updateProfileStorage(); // Обновляем прогресс в профиле
+            const filtered = folderFiles.filter(f => (f.text || '').toLowerCase().includes(searchQuery.toLowerCase()));
+            filtered.forEach(file => fullGrid.appendChild(createCard(file)));
         }
 
         function createCard(file) {
@@ -251,22 +234,6 @@
             return card;
         }
 
-        // ================= PROFILE PROGRESS LOGIC =================
-        function updateProfileStorage() {
-            // Эмуляция веса (каждый файл ~3.4 MB)
-            const mbCount = (globalFiles.length * 3.4).toFixed(1);
-            document.getElementById('dataUsedText').innerText = `${mbCount} MB`;
-            
-            // Заполнение (каждый файл 5%, макс 100%)
-            const fillPercent = Math.min((globalFiles.length * 5), 100);
-            
-            // Плавное заполнение в профиле при переключении табов
-            setTimeout(() => {
-                const fillEl = document.getElementById('dataUsedFill');
-                if(fillEl) fillEl.style.width = fillPercent + '%';
-            }, 100);
-        }
-
         // ================= TABS & SEARCH =================
         function switchTab(tabId, navBtn) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
@@ -275,6 +242,10 @@
                 document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
                 navBtn.classList.add('active');
             }
+            
+            // Если переключаемся на Files, нужно заново отрендерить воркспейсы
+            if(tabId === 'files') renderWorkspaces();
+
             window.scrollTo(0,0); tg.HapticFeedback.selectionChanged();
         }
 
