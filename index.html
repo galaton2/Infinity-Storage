@@ -8,7 +8,6 @@
     <link rel="stylesheet" href="style.css">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        /* Дополнительные стили для новых форматов, на случай если их нет в style.css */
         .grid-item.video::after, .grid-item.animation::after, .grid-item.video_note::after {
             content: '▶';
             position: absolute;
@@ -33,6 +32,11 @@
     </style>
 </head>
 <body>
+
+    <div id="loader" class="loader-wrap">
+        <div class="loader-logo">♾</div>
+        <div class="loader-text">SYNCING VAULT...</div>
+    </div>
 
     <div class="ambient-glow"></div>
     <div class="ambient-glow secondary"></div>
@@ -100,11 +104,9 @@
                 <button class="section-action" onclick="createWorkspace()">Create New</button>
             </div>
             
-            <div class="workspace-scroll" id="foldersContainer">
-                </div>
+            <div class="workspace-scroll" id="foldersContainer"></div>
 
-            <div class="grid-gallery" id="fullGallery">
-                </div>
+            <div class="grid-gallery" id="fullGallery"></div>
         </div>
 
         <div id="tab-profile" class="tab-content">
@@ -141,7 +143,7 @@
             <svg class="svg-icon alert-icon" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
             <h3>Sync Assets</h3>
             <p>Send all the files you want to save at any time to the bot. They will be securely synced to your Infinity Data Base.</p>
-            <button onclick="closeSyncModal()">Continue</button>
+            <button onclick="tg.close()">Continue</button>
         </div>
     </div>
 
@@ -149,8 +151,7 @@
     <div class="action-sheet" id="actionSheet">
         <div class="sheet-handle"></div>
         <div class="sheet-title heading" id="sheetTitle">Manage</div>
-        <div id="sheetContent">
-            </div>
+        <div id="sheetContent"></div>
     </div>
 
     <div class="modal" id="mediaModal">
@@ -170,7 +171,7 @@
             tg.setHeaderColor('#050505');
             tg.setBackgroundColor('#050505');
             tg.setBottomBarColor('#050505');
-        } catch(e) { console.log('Theme color overrides not fully supported on this device'); }
+        } catch(e) {}
 
         let globalFiles = [];
         
@@ -214,6 +215,11 @@
             updateStorageData();
             renderWorkspaces();
             renderContent();
+
+            // Плавное скрытие лоадера после подгрузки всех данных
+            setTimeout(() => {
+                document.getElementById('loader').classList.add('hidden');
+            }, 600);
         }
 
         function updateStorageData() {
@@ -231,7 +237,6 @@
         }
         function closeSyncModal() {
             document.getElementById('syncModal').classList.remove('active');
-            tg.HapticFeedback.impactOccurred('light');
         }
 
         function toggleAccordion(element) {
@@ -268,14 +273,14 @@
                 
                 if (ws.id !== 'all') {
                     let pressTimer;
-                    const start = (e) => {
-                        pressTimer = setTimeout(() => openWorkspaceSheet(ws), 600);
-                    };
+                    const start = (e) => { pressTimer = setTimeout(() => openWorkspaceSheet(ws), 600); };
                     const cancel = () => clearTimeout(pressTimer);
                     
-                    card.addEventListener('touchstart', start); card.addEventListener('touchend', cancel);
-                    card.addEventListener('touchmove', cancel);
-                    card.addEventListener('mousedown', start); card.addEventListener('mouseup', cancel);
+                    card.addEventListener('touchstart', start, {passive: true}); 
+                    card.addEventListener('touchend', cancel);
+                    card.addEventListener('touchmove', cancel, {passive: true});
+                    card.addEventListener('mousedown', start); 
+                    card.addEventListener('mouseup', cancel);
                     card.addEventListener('mouseleave', cancel);
                 }
                 container.appendChild(card);
@@ -309,15 +314,12 @@
 
         function createCard(file) {
             const card = document.createElement('div');
-            // Добавляем класс типа файла для правильной стилизации и значков Play
             card.className = `grid-item ${file.type}`;
             
-            // Логика отрисовки разных типов файлов
             if(file.type === 'photo') {
                 card.innerHTML = `<img src="${file.url}" alt="Img" style="width:100%; height:100%; object-fit:cover; pointer-events:none;" loading="lazy">`;
             } 
             else if (['video', 'animation', 'video_note'].includes(file.type)) {
-                // Видео отображается без контролов на сетке (как обложка)
                 card.innerHTML = `<video src="${file.url}" style="width:100%; height:100%; object-fit:cover; pointer-events:none;" muted preload="metadata"></video>`;
             }
             else if (file.type === 'text') {
@@ -325,35 +327,49 @@
                 card.innerHTML = `<div class="text-card-body">${file.text}</div><div class="item-meta" style="position:absolute; bottom:12px; left:12px;">NOTE</div>`;
             } 
             else {
-                // Аудио, голосовые и документы
                 const docSvg = `<svg class="svg-icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>`;
                 const displayName = file.text || file.type.toUpperCase();
                 card.style.display = 'flex'; card.style.flexDirection = 'column'; card.style.alignItems = 'center'; card.style.justifyContent = 'center'; card.style.padding = '16px'; card.style.textAlign = 'center';
                 card.innerHTML = `${docSvg}<div class="item-title" style="margin-top:8px; font-size:13px; word-break:break-all;">${displayName}</div><div class="item-meta" style="margin-top:4px; font-size:11px; color:#888;">${file.type.toUpperCase()}</div>`;
             }
 
+            // НОВОЕ: Умная логика тапов с защитой от скроллинга
             let pressTimer;
             let isLongPress = false;
+            let isScrolling = false;
+            let startY = 0;
 
             const startPress = (e) => {
                 isLongPress = false;
+                isScrolling = false;
+                if(e.touches) startY = e.touches[0].clientY;
+                
                 card.classList.add('holding'); 
                 pressTimer = setTimeout(() => {
-                    isLongPress = true;
-                    card.classList.remove('holding');
-                    openFileSheet(file);
+                    if(!isScrolling) {
+                        isLongPress = true;
+                        card.classList.remove('holding');
+                        openFileSheet(file);
+                    }
                 }, 500); 
             };
 
-            const cancelPress = () => {
-                clearTimeout(pressTimer);
-                card.classList.remove('holding');
+            const movePress = (e) => {
+                if(e.touches && Math.abs(e.touches[0].clientY - startY) > 10) {
+                    isScrolling = true;
+                    clearTimeout(pressTimer);
+                    card.classList.remove('holding');
+                }
             };
 
             const endPress = (e) => {
-                cancelPress();
+                clearTimeout(pressTimer);
+                card.classList.remove('holding');
+                
+                // Если был скролл - игнорируем нажатие
+                if(isScrolling) return; 
+                
                 if(!isLongPress) {
-                    // Открытие файла при обычном клике
                     if(['photo', 'video', 'animation', 'video_note'].includes(file.type)) {
                         openModal(file);
                     } else if (file.type === 'text') {
@@ -364,13 +380,17 @@
                 }
             };
 
-            card.addEventListener('touchstart', startPress);
+            card.addEventListener('touchstart', startPress, {passive: true});
+            card.addEventListener('touchmove', movePress, {passive: true});
             card.addEventListener('touchend', endPress);
-            card.addEventListener('touchmove', cancelPress);
             
             card.addEventListener('mousedown', startPress);
             card.addEventListener('mouseup', endPress);
-            card.addEventListener('mouseleave', cancelPress);
+            card.addEventListener('mouseleave', () => {
+                clearTimeout(pressTimer);
+                card.classList.remove('holding');
+                isScrolling = true; // Отменяем клик при уходе курсора
+            });
 
             return card;
         }
@@ -437,7 +457,13 @@
             
             document.getElementById('sheetTitle').innerText = title;
             const content = document.getElementById('sheetContent');
+            
+            // НОВОЕ: Кнопка Rename Asset добавлена в шторку
             content.innerHTML = `
+                <button class="sheet-btn" onclick="actionRenameFile()">
+                    <svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                    Rename Asset
+                </button>
                 <button class="sheet-btn" onclick="showMoveFileOptions()">
                     <svg class="svg-icon" viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
                     Move to Workspace...
@@ -450,6 +476,17 @@
             document.getElementById('actionSheet').classList.add('active');
             document.getElementById('sheetOverlay').classList.add('active');
             tg.HapticFeedback.impactOccurred('heavy');
+        }
+
+        // Функция переименования файла для удобного поиска
+        function actionRenameFile() {
+            const newName = prompt("Enter new asset name:");
+            if(newName && targetedFile) {
+                targetedFile.text = newName;
+                renderContent();
+                showToast("Asset renamed successfully");
+            }
+            closeSheet();
         }
 
         function showMoveFileOptions() {
@@ -491,10 +528,9 @@
             closeSheet();
         }
 
-        // Динамическая загрузка медиа в модальное окно
         function openModal(file) {
             const container = document.getElementById('modalContent');
-            container.innerHTML = ''; // Очищаем старое
+            container.innerHTML = ''; 
             
             if(file.type === 'photo') {
                 container.innerHTML = `<img src="${file.url}" alt="Asset">`;
@@ -508,7 +544,6 @@
         
         function closeModal() { 
             document.getElementById('mediaModal').classList.remove('active');
-            // Очищаем HTML, чтобы видео гарантированно перестало играть в фоне
             setTimeout(() => {
                 document.getElementById('modalContent').innerHTML = '';
             }, 300);
