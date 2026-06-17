@@ -7,32 +7,154 @@
   <title>Infinity Data Base</title>
   <link rel="stylesheet" href="style.css">
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    /* ── Files section additions ── */
+    .files-topbar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 18px;
+      min-height: 42px;
+    }
+    .files-topbar-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text-main);
+      letter-spacing: -0.025em;
+      flex: 1;
+    }
+    .back-btn {
+      width: 38px; height: 38px;
+      border-radius: 50%;
+      background: var(--glass-bg);
+      border: 1px solid var(--border);
+      color: var(--text-main);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: background 0.18s, transform 0.15s var(--spring);
+    }
+    .back-btn:active { transform: scale(0.88); background: rgba(255,255,255,0.06); }
+
+    /* folder grid */
+    .folder-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 11px;
+    }
+    .folder-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+      padding: 20px 16px 18px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      position: relative;
+      overflow: hidden;
+      user-select: none;
+      -webkit-user-select: none;
+      min-height: 126px;
+      transition: transform 0.18s var(--spring), border-color 0.2s, box-shadow 0.25s;
+    }
+    .folder-card:active { transform: scale(0.93); }
+    .folder-card.holding { transform: scale(0.90); opacity: 0.65; }
+
+    .folder-card-icon {
+      width: 46px; height: 46px;
+      border-radius: 13px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px;
+      flex-shrink: 0;
+    }
+    .folder-card-info { display: flex; flex-direction: column; gap: 3px; margin-top: auto; }
+    .folder-card-name {
+      font-family: 'Outfit', sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-main);
+      letter-spacing: -0.015em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .folder-card-count {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+    /* colour accent strip on left edge */
+    .folder-card::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 16px; bottom: 16px;
+      width: 3px;
+      border-radius: 0 3px 3px 0;
+      background: var(--folder-accent, var(--blue));
+      opacity: 0.7;
+    }
+
+    /* add-folder card */
+    .folder-card.add-folder {
+      border-style: dashed;
+      border-color: var(--text-hint);
+      align-items: center;
+      justify-content: center;
+      flex-direction: row;
+      gap: 9px;
+      min-height: 70px;
+    }
+    .folder-card.add-folder::before { display: none; }
+    .folder-card.add-folder span {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    /* folder contents header row */
+    .folder-section-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+    .folder-section-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      font-weight: 700;
+      color: var(--text-muted);
+      font-family: 'Outfit', sans-serif;
+    }
+  </style>
 </head>
 <body>
 
-<!-- ============ SPLASH SCREEN ============ -->
+<!-- ============ SPLASH ============ -->
 <div id="app-loader" class="app-loader">
   <div class="loader-spinner"></div>
   <div class="loader-text">Syncing Vault…</div>
 </div>
 
-<!-- ============ BACKGROUND ============ -->
+<!-- ============ AMBIENT BG ============ -->
 <div class="ambient-glow"></div>
 <div class="ambient-glow secondary"></div>
 
 <!-- ============ MAIN CONTAINER ============ -->
 <div class="container">
 
-  <!-- HEADER -->
-  <div class="header-top">
-    <h1 class="app-title">Infinity Data Base</h1>
-    <button class="icon-btn" onclick="switchTab('profile')">
-      <svg class="svg-icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-    </button>
-  </div>
-
   <!-- ======== TAB: HOME ======== -->
   <div id="tab-home" class="tab-content active">
+
+    <!-- Header lives ONLY inside Home -->
+    <div class="header-top">
+      <h1 class="app-title">Infinity Data Base</h1>
+      <button class="icon-btn" onclick="switchTab('profile', null)">
+        <svg class="svg-icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      </button>
+    </div>
 
     <!-- Hero storage card -->
     <div class="storage-hero">
@@ -70,7 +192,7 @@
           <div class="status-title">Total Vault Assets</div>
           <div class="status-value" id="totalFilesCount">0</div>
         </div>
-        <button class="section-action" onclick="switchTab('files', document.getElementById('nav-files'))">Browse Vault →</button>
+        <button class="section-action" onclick="switchTab('files', document.getElementById('nav-files'))">Browse →</button>
       </div>
     </div>
 
@@ -79,27 +201,26 @@
   <!-- ======== TAB: FILES ======== -->
   <div id="tab-files" class="tab-content">
 
-    <h1 class="heading tab-page-title">Vault Assets</h1>
+    <!-- Dynamic top bar (folder list title ↔ back + folder name) -->
+    <div class="files-topbar" id="filesTopbar">
+      <!-- populated by renderFilesView() -->
+    </div>
 
-    <div class="search-box">
+    <!-- Search — always visible, context-aware placeholder -->
+    <div class="search-box" style="margin-bottom:16px;">
       <svg class="svg-icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-      <input type="text" class="search-input" id="searchInput" placeholder="Search assets…" oninput="handleSearch()">
+      <input type="text" class="search-input" id="searchInput" placeholder="Search folders…" oninput="handleSearch()">
     </div>
 
-    <div class="filter-scroll">
-      <div class="filter-chip active" onclick="setFilter('all', this)">All</div>
-      <div class="filter-chip" onclick="setFilter('media', this)">Media</div>
-      <div class="filter-chip" onclick="setFilter('document', this)">Documents</div>
-      <div class="filter-chip" onclick="setFilter('text', this)">Notes</div>
+    <!-- Folder grid (shown when no folder open) -->
+    <div id="folderGridView">
+      <div class="folder-grid" id="folderGrid"></div>
     </div>
 
-    <div class="section-header" style="margin-top:0;">
-      <h2 class="section-title">Workspaces</h2>
-      <button class="section-action" onclick="createWorkspace()">+ New</button>
+    <!-- Folder contents (shown when a folder is open) -->
+    <div id="folderContentsView" style="display:none;">
+      <div class="grid-gallery" id="folderGallery"></div>
     </div>
-
-    <div class="workspace-scroll" id="foldersContainer"></div>
-    <div class="grid-gallery" id="fullGallery"></div>
 
   </div><!-- /tab-files -->
 
@@ -126,7 +247,7 @@
       Home
     </button>
     <button class="nav-item" id="nav-files" onclick="switchTab('files', this)">
-      <svg class="svg-icon" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      <svg class="svg-icon" viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
       Files
     </button>
     <button class="nav-item" onclick="openSyncModal()">
@@ -144,7 +265,7 @@
     </div>
     <h3>Sync Assets</h3>
     <p>Send all the files you want to save at any time to the bot. They will be securely synced to your Infinity Data Base.</p>
-    <button onclick="tg.close()">Continue</button>
+    <button onclick="closeSyncModal()">Continue</button>
   </div>
 </div>
 
@@ -167,8 +288,9 @@
 <!-- ============ TOASTS ============ -->
 <div id="toast-box"></div>
 
-<!-- ============ JAVASCRIPT (unchanged logic) ============ -->
+<!-- ============ JAVASCRIPT ============ -->
 <script>
+/* ─── Telegram init ─── */
 const tg = window.Telegram.WebApp;
 tg.expand(); tg.ready();
 try {
@@ -177,251 +299,365 @@ try {
   tg.setBottomBarColor('#020204');
 } catch(e) {}
 
-let globalFiles = [];
-let currentTypeFilter = 'all';
-
-const iconGrid      = `<svg class="svg-icon" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>`;
-const iconShield    = `<svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`;
-const iconBriefcase = `<svg class="svg-icon" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>`;
-const iconFolder    = `<svg class="svg-icon" viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>`;
-
-let workspaces = [
-  { id: 'all',      name: 'All Assets',    icon: iconGrid },
-  { id: 'work',     name: 'Workplace',     icon: iconBriefcase },
-  { id: 'personal', name: 'Private Vault', icon: iconShield }
-];
-let activeWorkspace   = 'all';
-let targetedWorkspace = null;
-let targetedFile      = null;
-let searchQuery       = '';
-
-const API_URL = "https://galaxylab.i234.me:8443/api/files";
-const user    = tg.initDataUnsafe?.user;
-
+const user = tg.initDataUnsafe?.user;
 document.getElementById('userName').innerText   = user?.first_name || 'Bekhruz';
 document.getElementById('userAvatar').innerText = (user?.first_name || 'B').charAt(0);
 
+/* ─── Global state ─── */
+let globalFiles    = [];
+let activeFolder   = null;   // null = showing folder grid; string = folder id open
+let searchQuery    = '';
+let targetedFolder = null;
+let targetedFile   = null;
+
+/* ─── Default folders ─────────────────────────────────────── */
+/* Protected IDs (cannot be deleted): texts, documents, media, personal */
+let folders = [
+  {
+    id:     'texts',
+    name:   'Texts',
+    emoji:  '📝',
+    accent: '#a078ff',
+    bg:     'rgba(160,120,255,0.1)',
+    protected: true,
+    /* files that belong here by type */
+    autoTypes: ['text']
+  },
+  {
+    id:     'documents',
+    name:   'Documents',
+    emoji:  '📄',
+    accent: '#5b8cff',
+    bg:     'rgba(91,140,255,0.1)',
+    protected: true,
+    autoTypes: ['document','audio']
+  },
+  {
+    id:     'media',
+    name:   'Media',
+    emoji:  '🖼️',
+    accent: '#00d98a',
+    bg:     'rgba(0,217,138,0.1)',
+    protected: true,
+    autoTypes: ['photo','video','animation','video_note']
+  },
+  {
+    id:     'personal',
+    name:   'Personal',
+    emoji:  '🔒',
+    accent: '#ff4e68',
+    bg:     'rgba(255,78,104,0.08)',
+    protected: false,
+    autoTypes: []
+  }
+];
+
+const API_URL = "https://galaxylab.i234.me:8443/api/files";
+
+/* ─── Resolve folder for a file by type ─── */
+function resolveFolder(file) {
+  for (const f of folders) {
+    if (f.autoTypes.includes(file.type)) return f.id;
+  }
+  return 'personal';
+}
+
+/* ─── Files for a given folder ─── */
+function filesInFolder(folderId) {
+  const fDef = folders.find(f => f.id === folderId);
+  if (!fDef) return [];
+  if (fDef.autoTypes.length > 0) {
+    // auto-folders: match by type
+    return globalFiles.filter(f => fDef.autoTypes.includes(f.type));
+  }
+  // manual folders: match by folder tag
+  return globalFiles.filter(f => f.folder === folderId);
+}
+
+/* ─── Init ─── */
 async function initApp() {
   const userId = user?.id || '123456789';
   try {
     const response = await fetch(`${API_URL}?user_id=${userId}`);
     const data = await response.json();
-    if (data.status === "success" && data.files.length > 0) {
-      globalFiles = data.files.map((f, i) => ({...f, internalId: i, folder: 'work'}));
-    } else throw new Error("empty");
+    if (data.status === 'success' && data.files.length > 0) {
+      globalFiles = data.files.map((f, i) => ({...f, internalId: i, folder: resolveFolder(f)}));
+    } else throw new Error('empty');
   } catch (e) {
+    // Demo data
     globalFiles = [
-      { internalId: 1, type: 'photo',    url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=400', text: 'Abstract Art',  folder: 'work' },
-      { internalId: 2, type: 'document', text: 'Financial_Q3.pdf', folder: 'work' },
-      { internalId: 3, type: 'photo',    url: 'https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=400', text: 'Design Concept', folder: 'personal' },
-      { internalId: 4, type: 'text',     text: 'Server restart scheduled for midnight.', folder: 'personal' }
+      { internalId: 1, type: 'photo',    url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=400', text: 'Abstract Art' },
+      { internalId: 2, type: 'document', text: 'Financial_Q3.pdf' },
+      { internalId: 3, type: 'photo',    url: 'https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=400', text: 'Design Concept' },
+      { internalId: 4, type: 'text',     text: 'Server restart scheduled for midnight.' },
+      { internalId: 5, type: 'text',     text: 'Remember to check the quarterly report.' },
+      { internalId: 6, type: 'document', text: 'Project_Brief.docx' }
     ];
+    globalFiles.forEach(f => { f.folder = resolveFolder(f); });
   }
   updateStorageData();
-  renderWorkspaces();
-  renderContent();
-  setTimeout(() => { document.getElementById('app-loader').classList.add('hidden'); }, 600);
+  renderFilesView();
+  setTimeout(() => document.getElementById('app-loader').classList.add('hidden'), 600);
 }
 
+/* ─── Home stats ─── */
 function updateStorageData() {
-  const mbCount = (globalFiles.length * 3.4).toFixed(1);
-  document.getElementById('dataUsedText').innerText   = `${mbCount} MB`;
+  const mb = (globalFiles.length * 3.4).toFixed(1);
+  document.getElementById('dataUsedText').innerText    = `${mb} MB`;
   document.getElementById('totalFilesCount').innerText = globalFiles.length;
-  const fillPercent = Math.min(10 + (globalFiles.length * 2), 45);
-  setTimeout(() => { document.getElementById('dataUsedFill').style.width = fillPercent + '%'; }, 300);
+  const pct = Math.min(10 + globalFiles.length * 2, 45);
+  setTimeout(() => { document.getElementById('dataUsedFill').style.width = pct + '%'; }, 300);
 }
 
-function openSyncModal() {
-  document.getElementById('syncModal').classList.add('active');
-  tg.HapticFeedback.impactOccurred('medium');
+/* ═══════════════════════════════════════════════════════════
+   FILES VIEW RENDERING
+═══════════════════════════════════════════════════════════ */
+
+function renderFilesView() {
+  updateTopbar();
+  if (activeFolder === null) {
+    document.getElementById('folderGridView').style.display = '';
+    document.getElementById('folderContentsView').style.display = 'none';
+    document.getElementById('searchInput').placeholder = 'Search folders…';
+    renderFolderGrid();
+  } else {
+    document.getElementById('folderGridView').style.display = 'none';
+    document.getElementById('folderContentsView').style.display = '';
+    document.getElementById('searchInput').placeholder = 'Search in folder…';
+    renderFolderContents();
+  }
 }
 
-function closeSyncModal() {
-  document.getElementById('syncModal').classList.remove('active');
+/* ── Topbar ── */
+function updateTopbar() {
+  const bar = document.getElementById('filesTopbar');
+  if (activeFolder === null) {
+    bar.innerHTML = `
+      <span class="files-topbar-title">Folders</span>
+      <button class="section-action" onclick="createFolder()" style="flex-shrink:0;">+ New</button>`;
+  } else {
+    const fd = folders.find(f => f.id === activeFolder);
+    const name = fd ? fd.name : 'Folder';
+    bar.innerHTML = `
+      <button class="back-btn" onclick="closeFolder()">
+        <svg class="svg-icon" viewBox="0 0 24 24" style="width:18px;height:18px;"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <span class="files-topbar-title">${escHtml(name)}</span>`;
+  }
 }
 
-function toggleAccordion(element) {
-  element.classList.toggle('open');
-  const body = element.querySelector('.accordion-body');
-  body.style.maxHeight = element.classList.contains('open') ? body.scrollHeight + "px" : "0";
-  tg.HapticFeedback.impactOccurred('light');
-}
+/* ── Folder grid ── */
+function renderFolderGrid() {
+  const grid = document.getElementById('folderGrid');
+  const q    = searchQuery.trim().toLowerCase();
 
-function setFilter(type, btnElement) {
-  currentTypeFilter = type;
-  document.querySelectorAll('.filter-chip').forEach(el => el.classList.remove('active'));
-  btnElement.classList.add('active');
-  tg.HapticFeedback.selectionChanged();
-  renderContent();
-}
+  // filter folders by search
+  const visible = folders.filter(f => !q || f.name.toLowerCase().includes(q));
 
-function renderWorkspaces() {
-  const container = document.getElementById('foldersContainer');
-  container.innerHTML = '';
-  workspaces.forEach(ws => {
-    const count = ws.id === 'all' ? globalFiles.length : globalFiles.filter(f => f.folder === ws.id).length;
+  grid.innerHTML = '';
+  visible.forEach(fd => {
+    const count = filesInFolder(fd.id).length;
     const card  = document.createElement('div');
-    card.className = `workspace-card ${activeWorkspace === ws.id ? 'active' : ''}`;
+    card.className = 'folder-card';
+    card.style.setProperty('--folder-accent', fd.accent);
     card.innerHTML = `
-      <div class="workspace-icon">${ws.icon}</div>
-      <div>
-        <div class="workspace-title">${ws.name}</div>
-        <div class="workspace-count">${count} assets</div>
+      <div class="folder-card-icon" style="background:${fd.bg};">${fd.emoji}</div>
+      <div class="folder-card-info">
+        <div class="folder-card-name">${escHtml(fd.name)}</div>
+        <div class="folder-card-count">${count} ${count === 1 ? 'item' : 'items'}</div>
       </div>`;
-    card.onclick = () => {
-      activeWorkspace = ws.id;
-      renderWorkspaces(); renderContent();
-      tg.HapticFeedback.selectionChanged();
+
+    // tap → open
+    let pressTimer, isLong = false, startY = 0, moved = false;
+    const onStart = (e) => {
+      isLong = false; moved = false;
+      startY = e.touches ? e.touches[0].clientY : e.clientY;
+      card.classList.add('holding');
+      pressTimer = setTimeout(() => {
+        if (!moved) { isLong = true; card.classList.remove('holding'); openFolderSheet(fd); }
+      }, 500);
     };
-    if (ws.id !== 'all') {
-      let pressTimer; let hasMoved = false; let startY = 0;
-      const start  = (e) => { hasMoved = false; startY = e.touches ? e.touches[0].clientY : e.clientY; pressTimer = setTimeout(() => { if (!hasMoved) openWorkspaceSheet(ws); }, 500); };
-      const move   = (e) => { const y = e.touches ? e.touches[0].clientY : e.clientY; if (Math.abs(y - startY) > 10) hasMoved = true; };
-      const cancel = () => clearTimeout(pressTimer);
-      card.addEventListener('touchstart', start, {passive:true});
-      card.addEventListener('touchmove',  move,  {passive:true});
-      card.addEventListener('touchend',   cancel);
-    }
-    container.appendChild(card);
+    const onMove = (e) => {
+      const y = e.touches ? e.touches[0].clientY : e.clientY;
+      if (Math.abs(y - startY) > 10) { moved = true; clearTimeout(pressTimer); card.classList.remove('holding'); }
+    };
+    const onEnd = () => {
+      clearTimeout(pressTimer); card.classList.remove('holding');
+      if (!moved && !isLong) openFolder(fd.id);
+    };
+    card.addEventListener('touchstart', onStart, {passive:true});
+    card.addEventListener('touchmove',  onMove,  {passive:true});
+    card.addEventListener('touchend',   onEnd);
+    card.addEventListener('mousedown',  onStart);
+    card.addEventListener('mousemove',  onMove);
+    card.addEventListener('mouseup',    onEnd);
+    card.addEventListener('mouseleave', () => { moved = true; clearTimeout(pressTimer); card.classList.remove('holding'); });
+    grid.appendChild(card);
   });
+
+  // empty state when search finds nothing
+  if (visible.length === 0) {
+    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1;">
+      <svg class="svg-icon" viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+      <div style="margin-top:12px;font-weight:700;font-family:'Outfit',sans-serif;font-size:17px;color:var(--text-main);">No folders found</div>
+    </div>`;
+  }
 }
 
-function createWorkspace() {
-  tg.HapticFeedback.impactOccurred('light');
-  const name = prompt("Workspace Name:");
-  if (!name) return;
-  workspaces.push({ id: 'ws_' + Date.now(), name: name, icon: iconFolder });
-  renderWorkspaces(); showToast("Workspace created");
+/* ── Open / close folder ── */
+function openFolder(folderId) {
+  activeFolder = folderId;
+  searchQuery  = '';
+  document.getElementById('searchInput').value = '';
+  tg.HapticFeedback.selectionChanged();
+  renderFilesView();
 }
 
-function renderContent() {
-  const fullGrid = document.getElementById('fullGallery');
-  fullGrid.innerHTML = '';
-  const filteredAll = globalFiles.filter(f => {
-    const matchSearch = (f.text || '').toLowerCase().includes(searchQuery.toLowerCase());
-    const matchFolder = activeWorkspace === 'all' || f.folder === activeWorkspace;
-    let matchType = true;
-    if (currentTypeFilter === 'media')    matchType = ['photo','video','animation','video_note'].includes(f.type);
-    if (currentTypeFilter === 'document') matchType = ['document','audio'].includes(f.type);
-    if (currentTypeFilter === 'text')     matchType = f.type === 'text';
-    return matchSearch && matchFolder && matchType;
-  });
-  if (filteredAll.length === 0) {
-    fullGrid.innerHTML = `<div class="empty-state"><svg class="svg-icon" viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg><div style="margin-top:12px; font-weight:700; font-family:'Outfit',sans-serif; font-size:17px; color:var(--text-main);">No assets found</div><div style="font-size:13px; margin-top:5px;">Try adjusting your filters or search query.</div></div>`;
+function closeFolder() {
+  activeFolder = null;
+  searchQuery  = '';
+  document.getElementById('searchInput').value = '';
+  tg.HapticFeedback.selectionChanged();
+  renderFilesView();
+}
+
+/* ── Folder contents ── */
+function renderFolderContents() {
+  const gallery = document.getElementById('folderGallery');
+  gallery.innerHTML = '';
+  const q    = searchQuery.trim().toLowerCase();
+  let files  = filesInFolder(activeFolder);
+  if (q) files = files.filter(f => (f.text || '').toLowerCase().includes(q) || f.type.includes(q));
+
+  if (files.length === 0) {
+    gallery.innerHTML = `<div class="empty-state" style="grid-column:1/-1;">
+      <svg class="svg-icon" viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+      <div style="margin-top:12px;font-weight:700;font-family:'Outfit',sans-serif;font-size:17px;color:var(--text-main);">Empty folder</div>
+      <div style="font-size:13px;margin-top:5px;">Nothing here yet.</div>
+    </div>`;
     return;
   }
-  filteredAll.forEach(file => fullGrid.appendChild(createCard(file)));
+  files.forEach(f => gallery.appendChild(createCard(f)));
 }
 
-function createCard(file) {
-  const card = document.createElement('div');
-  card.className = `grid-item ${file.type}`;
-  if (file.type === 'photo') {
-    card.innerHTML = `<img src="${file.url}" alt="Asset" loading="lazy">`;
-  } else if (['video','animation','video_note'].includes(file.type)) {
-    card.innerHTML = `<video src="${file.url}" muted preload="metadata"></video>`;
-  } else if (file.type === 'text') {
-    card.style.background = 'linear-gradient(145deg, #14121f 0%, #09080f 100%)';
-    card.innerHTML = `<div class="text-card-body">${file.text}</div><div style="position:absolute; bottom:12px; left:12px; font-size:10px; font-weight:700; letter-spacing:0.1em; color:var(--blue); text-transform:uppercase; font-family:'Outfit',sans-serif;">Note</div>`;
-  } else {
-    const docSvg    = `<svg class="svg-icon" viewBox="0 0 24 24" style="width:32px;height:32px;color:var(--text-muted)"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>`;
-    const displayName = file.text || file.type.toUpperCase();
-    card.style.cssText = 'display:flex; flex-direction:column; align-items:center; justify-content:center; padding:16px; text-align:center; gap:10px;';
-    card.innerHTML = `${docSvg}<div style="font-size:12px; font-weight:600; word-break:break-all; color:var(--text-main); line-height:1.35;">${displayName}</div>`;
-  }
-
-  let pressTimer; let isLongPress = false; let startY = 0; let hasMoved = false;
-  const startPress = (e) => {
-    isLongPress = false; hasMoved = false;
-    startY = e.touches ? e.touches[0].clientY : e.clientY;
-    card.classList.add('holding');
-    pressTimer = setTimeout(() => { if (!hasMoved) { isLongPress = true; card.classList.remove('holding'); openFileSheet(file); } }, 500);
-  };
-  const trackMovement = (e) => {
-    const currentY = e.touches ? e.touches[0].clientY : e.clientY;
-    if (Math.abs(currentY - startY) > 10) { hasMoved = true; clearTimeout(pressTimer); card.classList.remove('holding'); }
-  };
-  const endPress = (e) => {
-    clearTimeout(pressTimer); card.classList.remove('holding');
-    if (hasMoved) return;
-    if (!isLongPress) {
-      if (['photo','video','animation','video_note'].includes(file.type)) {
-        openModal(file);
-      } else if (file.type === 'text') {
-        tg.showAlert(file.text);
-      } else {
-        tg.showAlert("Secure files are streamed directly via the Telegram bot interface.");
-      }
-    }
-  };
-  card.addEventListener('touchstart', startPress,    {passive:true});
-  card.addEventListener('touchmove',  trackMovement, {passive:true});
-  card.addEventListener('touchend',   endPress);
-  card.addEventListener('mousedown',  startPress);
-  card.addEventListener('mousemove',  trackMovement);
-  card.addEventListener('mouseup',    endPress);
-  card.addEventListener('mouseleave', () => { hasMoved = true; clearTimeout(pressTimer); card.classList.remove('holding'); });
-  return card;
-}
-
-function switchTab(tabId, navBtn) {
-  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-  document.getElementById('tab-' + tabId).classList.add('active');
-  if (navBtn) {
-    document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-    navBtn.classList.add('active');
-  }
-  window.scrollTo(0, 0);
-  tg.HapticFeedback.selectionChanged();
-}
-
-function handleSearch() {
-  searchQuery = document.getElementById('searchInput').value;
-  renderContent();
-}
-
-function closeSheet() {
-  document.getElementById('actionSheet').classList.remove('active');
-  document.getElementById('sheetOverlay').classList.remove('active');
-  targetedWorkspace = null; targetedFile = null;
-}
-
-function openWorkspaceSheet(ws) {
-  targetedWorkspace = ws;
-  document.getElementById('sheetTitle').innerText = ws.name;
+/* ── Folder sheet (long-press) ── */
+function openFolderSheet(fd) {
+  targetedFolder = fd;
+  document.getElementById('sheetTitle').innerText = fd.name;
+  const canDelete = !fd.protected;
   document.getElementById('sheetContent').innerHTML = `
-    <button class="sheet-btn" onclick="actionRenameWorkspace()">
+    <button class="sheet-btn" onclick="actionRenameFolder()">
       <svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-      Rename Workspace
+      Rename Folder
     </button>
-    <button class="sheet-btn danger" onclick="actionDeleteWorkspace()">
+    ${canDelete ? `<button class="sheet-btn danger" onclick="actionDeleteFolder()">
       <svg class="svg-icon" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-      Delete Workspace
-    </button>`;
+      Delete Folder
+    </button>` : `<p style="font-size:12px; color:var(--text-muted); text-align:center; padding:10px 0 4px;">Default folders cannot be deleted.</p>`}`;
   document.getElementById('actionSheet').classList.add('active');
   document.getElementById('sheetOverlay').classList.add('active');
   tg.HapticFeedback.impactOccurred('medium');
 }
 
-function actionRenameWorkspace() {
-  const newName = prompt("Rename to:");
-  if (newName && targetedWorkspace) { targetedWorkspace.name = newName; renderWorkspaces(); }
+function actionRenameFolder() {
   closeSheet();
+  const newName = prompt('Rename folder:', targetedFolder?.name || '');
+  if (newName && newName.trim() && targetedFolder) {
+    targetedFolder.name = newName.trim();
+    renderFilesView();
+    showToast('Folder renamed');
+  }
+  targetedFolder = null;
 }
 
-function actionDeleteWorkspace() {
-  if (!targetedWorkspace) return;
-  globalFiles.forEach(f => { if (f.folder === targetedWorkspace.id) f.folder = 'all'; });
-  workspaces = workspaces.filter(w => w.id !== targetedWorkspace.id);
-  if (activeWorkspace === targetedWorkspace.id) activeWorkspace = 'all';
-  renderWorkspaces(); renderContent(); closeSheet(); showToast("Workspace Removed");
+function actionDeleteFolder() {
+  if (!targetedFolder || targetedFolder.protected) { closeSheet(); return; }
+  // orphan files → personal
+  globalFiles.forEach(f => { if (f.folder === targetedFolder.id) f.folder = 'personal'; });
+  folders = folders.filter(f => f.id !== targetedFolder.id);
+  if (activeFolder === targetedFolder.id) activeFolder = null;
+  closeSheet();
+  renderFilesView();
+  showToast('Folder deleted');
+  targetedFolder = null;
 }
 
+/* ── Create folder ── */
+function createFolder() {
+  tg.HapticFeedback.impactOccurred('light');
+  const name = prompt('New folder name:');
+  if (!name || !name.trim()) return;
+  const id = 'folder_' + Date.now();
+  folders.push({
+    id, name: name.trim(),
+    emoji: '📁',
+    accent: '#5b8cff',
+    bg: 'rgba(91,140,255,0.08)',
+    protected: false,
+    autoTypes: []
+  });
+  renderFolderGrid();
+  showToast('Folder created');
+}
+
+/* ═══════════════════════════════════════════════════════════
+   FILE CARDS (unchanged logic)
+═══════════════════════════════════════════════════════════ */
+
+function createCard(file) {
+  const card = document.createElement('div');
+  card.className = `grid-item ${file.type}`;
+
+  if (file.type === 'photo') {
+    card.innerHTML = `<img src="${file.url}" alt="Asset" loading="lazy">`;
+  } else if (['video','animation','video_note'].includes(file.type)) {
+    card.innerHTML = `<video src="${file.url}" muted preload="metadata"></video>`;
+  } else if (file.type === 'text') {
+    card.style.background = 'linear-gradient(145deg,#14121f 0%,#09080f 100%)';
+    card.innerHTML = `<div class="text-card-body">${escHtml(file.text)}</div>
+      <div style="position:absolute;bottom:12px;left:12px;font-size:10px;font-weight:700;letter-spacing:0.1em;color:var(--blue);text-transform:uppercase;font-family:'Outfit',sans-serif;">Note</div>`;
+  } else {
+    const displayName = file.text || file.type.toUpperCase();
+    card.style.cssText = 'display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px;text-align:center;gap:10px;';
+    card.innerHTML = `<svg class="svg-icon" viewBox="0 0 24 24" style="width:32px;height:32px;color:var(--text-muted)"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+      <div style="font-size:12px;font-weight:600;word-break:break-all;color:var(--text-main);line-height:1.35;">${escHtml(displayName)}</div>`;
+  }
+
+  /* touch / press logic */
+  let pressTimer, isLong = false, startY = 0, moved = false;
+  const onStart = (e) => {
+    isLong = false; moved = false;
+    startY = e.touches ? e.touches[0].clientY : e.clientY;
+    card.classList.add('holding');
+    pressTimer = setTimeout(() => {
+      if (!moved) { isLong = true; card.classList.remove('holding'); openFileSheet(file); }
+    }, 500);
+  };
+  const onMove = (e) => {
+    const y = e.touches ? e.touches[0].clientY : e.clientY;
+    if (Math.abs(y - startY) > 10) { moved = true; clearTimeout(pressTimer); card.classList.remove('holding'); }
+  };
+  const onEnd = () => {
+    clearTimeout(pressTimer); card.classList.remove('holding');
+    if (moved || isLong) return;
+    if (['photo','video','animation','video_note'].includes(file.type)) openModal(file);
+    else if (file.type === 'text') tg.showAlert(file.text);
+    else tg.showAlert('Secure files are streamed directly via the Telegram bot interface.');
+  };
+  card.addEventListener('touchstart', onStart,    {passive:true});
+  card.addEventListener('touchmove',  onMove,     {passive:true});
+  card.addEventListener('touchend',   onEnd);
+  card.addEventListener('mousedown',  onStart);
+  card.addEventListener('mousemove',  onMove);
+  card.addEventListener('mouseup',    onEnd);
+  card.addEventListener('mouseleave', () => { moved = true; clearTimeout(pressTimer); card.classList.remove('holding'); });
+  return card;
+}
+
+/* ─── File action sheet ─── */
 function openFileSheet(file) {
   targetedFile = file;
-  let title = file.type.toUpperCase() + ' ASSET';
-  if (file.text) title = file.text;
-  document.getElementById('sheetTitle').innerText = title;
+  document.getElementById('sheetTitle').innerText = file.text || file.type.toUpperCase();
   document.getElementById('sheetContent').innerHTML = `
     <button class="sheet-btn" onclick="actionRenameFile()">
       <svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
@@ -429,7 +665,7 @@ function openFileSheet(file) {
     </button>
     <button class="sheet-btn" onclick="showMoveFileOptions()">
       <svg class="svg-icon" viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
-      Move to Workspace…
+      Move to Folder…
     </button>
     <button class="sheet-btn danger" onclick="actionDeleteFile()">
       <svg class="svg-icon" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
@@ -441,36 +677,83 @@ function openFileSheet(file) {
 }
 
 function actionRenameFile() {
-  if (!targetedFile) return;
-  const newName = prompt("Enter new name:", targetedFile.text || '');
-  if (newName !== null && newName.trim() !== '') { targetedFile.text = newName.trim(); renderContent(); showToast("Asset renamed"); }
   closeSheet();
+  const newName = prompt('Enter new name:', targetedFile?.text || '');
+  if (newName !== null && newName.trim() !== '' && targetedFile) {
+    targetedFile.text = newName.trim();
+    renderFolderContents();
+    showToast('Asset renamed');
+  }
+  targetedFile = null;
 }
 
 function showMoveFileOptions() {
-  document.getElementById('sheetTitle').innerText = 'Select Destination';
-  const available = workspaces.filter(ws => ws.id !== 'all' && ws.id !== targetedFile.folder);
+  /* only manual folders (non-auto) are valid destinations */
+  const available = folders.filter(f => f.autoTypes.length === 0 && f.id !== targetedFile?.folder);
+  document.getElementById('sheetTitle').innerText = 'Move to Folder';
   document.getElementById('sheetContent').innerHTML = available.length
-    ? available.map(ws => `<button class="sheet-btn" onclick="actionMoveFile('${ws.id}')">${ws.icon} ${ws.name}</button>`).join('')
-    : `<p style="color:var(--text-muted); text-align:center; padding:20px 0;">No other workspaces available.</p>`;
+    ? available.map(f => `<button class="sheet-btn" onclick="actionMoveFile('${f.id}')">${f.emoji} ${escHtml(f.name)}</button>`).join('')
+    : `<p style="color:var(--text-muted);text-align:center;padding:20px 0;">No other folders available.</p>`;
 }
 
-function actionMoveFile(workspaceId) {
-  if (targetedFile) { targetedFile.folder = workspaceId; renderWorkspaces(); renderContent(); showToast("Asset moved"); }
+function actionMoveFile(folderId) {
+  if (targetedFile) {
+    targetedFile.folder = folderId;
+    renderFolderContents();
+    showToast('Asset moved');
+  }
   closeSheet();
+  targetedFile = null;
 }
 
 function actionDeleteFile() {
   if (targetedFile) {
     globalFiles = globalFiles.filter(f => f.internalId !== targetedFile.internalId);
-    renderWorkspaces(); renderContent(); showToast("Asset deleted");
+    updateStorageData();
+    renderFolderContents();
+    showToast('Asset deleted');
   }
   closeSheet();
+  targetedFile = null;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   NAVIGATION & MODALS
+═══════════════════════════════════════════════════════════ */
+
+function switchTab(tabId, navBtn) {
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+  document.getElementById('tab-' + tabId).classList.add('active');
+  if (navBtn) {
+    document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+    navBtn.classList.add('active');
+  }
+  /* if switching to files, refresh view */
+  if (tabId === 'files') {
+    searchQuery = '';
+    document.getElementById('searchInput').value = '';
+    renderFilesView();
+  }
+  window.scrollTo(0, 0);
+  tg.HapticFeedback.selectionChanged();
+}
+
+function handleSearch() {
+  searchQuery = document.getElementById('searchInput').value;
+  if (activeFolder === null) renderFolderGrid();
+  else renderFolderContents();
+}
+
+function openSyncModal()  { document.getElementById('syncModal').classList.add('active'); tg.HapticFeedback.impactOccurred('medium'); }
+function closeSyncModal() { document.getElementById('syncModal').classList.remove('active'); }
+
+function closeSheet() {
+  document.getElementById('actionSheet').classList.remove('active');
+  document.getElementById('sheetOverlay').classList.remove('active');
 }
 
 function openModal(file) {
-  const container = document.getElementById('modalContent');
-  container.innerHTML = file.type === 'photo'
+  document.getElementById('modalContent').innerHTML = file.type === 'photo'
     ? `<img src="${file.url}" alt="Asset">`
     : `<video src="${file.url}" controls autoplay playsinline loop></video>`;
   document.getElementById('mediaModal').classList.add('active');
@@ -482,6 +765,13 @@ function closeModal() {
   setTimeout(() => { document.getElementById('modalContent').innerHTML = ''; }, 300);
 }
 
+function toggleAccordion(element) {
+  element.classList.toggle('open');
+  const body = element.querySelector('.accordion-body');
+  body.style.maxHeight = element.classList.contains('open') ? body.scrollHeight + 'px' : '0';
+  tg.HapticFeedback.impactOccurred('light');
+}
+
 function showToast(msg) {
   const box   = document.getElementById('toast-box');
   const toast = document.createElement('div');
@@ -489,6 +779,12 @@ function showToast(msg) {
   toast.innerText = msg;
   box.appendChild(toast);
   setTimeout(() => toast.remove(), 3000);
+}
+
+/* ─── Utility ─── */
+function escHtml(str) {
+  if (!str) return '';
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
 window.onload = initApp;
