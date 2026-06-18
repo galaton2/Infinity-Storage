@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>TeleBase OS | Developer Console</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-base: #050505;
+            --bg-card: rgba(20, 20, 25, 0.6);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --accent-glow: #00f0ff;
+            --text-main: #ffffff;
+            --text-muted: #8b8b93;
+            --radius-lg: 20px;
+            --radius-md: 14px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background-color: var(--bg-base);
+            color: var(--text-main);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            background-image: 
+                radial-gradient(circle at 50% -20%, rgba(0, 240, 255, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 50% 120%, rgba(0, 240, 255, 0.1) 0%, transparent 50%);
+            background-attachment: fixed;
+            min-height: 100vh;
+        }
+
+        /* Анимации */
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-up { animation: fadeIn 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
+
+        /* Шапка */
+        header {
+            padding: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--glass-border);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo { font-weight: 700; font-size: 20px; letter-spacing: -0.5px; display: flex; align-items: center; gap: 10px; }
+        .logo span { color: var(--accent-glow); text-shadow: 0 0 15px rgba(0,240,255,0.4); }
+        .status-badge { background: rgba(0,240,255,0.1); color: var(--accent-glow); padding: 4px 10px; border-radius: 30px; font-size: 12px; font-weight: 600; border: 1px solid rgba(0,240,255,0.2); }
+
+        /* Контейнер */
+        .container { padding: 24px; max-width: 800px; margin: 0 auto; }
+
+        /* Экраны */
+        .screen { display: none; }
+        .screen.active { display: block; }
+
+        /* Экран авторизации */
+        .auth-box {
+            margin-top: 10vh;
+            background: var(--bg-card);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-lg);
+            padding: 32px 24px;
+            text-align: center;
+            backdrop-filter: blur(20px);
+        }
+        .auth-box h1 { font-size: 24px; margin-bottom: 12px; }
+        .auth-box p { color: var(--text-muted); font-size: 14px; margin-bottom: 24px; line-height: 1.5; }
+        
+        .input-group { position: relative; margin-bottom: 20px; }
+        input[type="text"] {
+            width: 100%; padding: 16px; background: rgba(0,0,0,0.5);
+            border: 1px solid var(--glass-border); border-radius: var(--radius-md);
+            color: #fff; font-family: 'JetBrains Mono', monospace; font-size: 14px;
+            outline: none; transition: all 0.3s ease;
+        }
+        input[type="text"]:focus { border-color: var(--accent-glow); box-shadow: 0 0 20px rgba(0,240,255,0.1); }
+        
+        button.btn-primary {
+            width: 100%; padding: 16px; border: none; border-radius: var(--radius-md);
+            background: var(--text-main); color: var(--bg-base); font-weight: 600; font-size: 15px;
+            cursor: pointer; transition: transform 0.2s, background 0.2s;
+        }
+        button.btn-primary:active { transform: scale(0.97); }
+
+        /* Экран Dashboard */
+        .dash-header { margin-bottom: 24px; }
+        .dash-header h2 { font-size: 28px; font-weight: 700; margin-bottom: 8px; }
+        .api-key-display { 
+            display: inline-block; background: rgba(0,0,0,0.5); padding: 8px 12px; 
+            border-radius: 8px; border: 1px solid var(--glass-border); 
+            font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--accent-glow);
+        }
+
+        /* Навигация (Табы) */
+        .tabs { display: flex; gap: 8px; margin-bottom: 24px; background: rgba(0,0,0,0.3); padding: 4px; border-radius: 12px; border: 1px solid var(--glass-border); }
+        .tab-btn { flex: 1; padding: 10px; text-align: center; border-radius: 8px; font-size: 14px; font-weight: 600; color: var(--text-muted); cursor: pointer; transition: all 0.3s; }
+        .tab-btn.active { background: var(--bg-card); color: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.2); border: 1px solid var(--glass-border); }
+
+        /* Секции Dashboard */
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        /* Код блоки (Документация) */
+        .code-block {
+            background: #0d0d12; border: 1px solid var(--glass-border); border-radius: var(--radius-md);
+            padding: 16px; margin-bottom: 20px; position: relative; overflow-x: auto;
+        }
+        .code-block pre { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #a9a9b3; line-height: 1.5; }
+        .code-title { font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; font-weight: 600; }
+        .keyword { color: #ff7b72; } .string { color: #a5d6ff; } .func { color: #d2a8ff; } .comment { color: #8b949e; }
+        
+        .endpoint-url { background: rgba(0,240,255,0.05); border: 1px dashed rgba(0,240,255,0.3); padding: 12px; border-radius: 8px; margin-bottom: 24px; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #fff; }
+
+        .logout-btn { margin-top: 40px; text-align: center; color: #ff453a; font-size: 14px; cursor: pointer; font-weight: 600; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">TeleBase <span>OS</span></div>
+        <div class="status-badge">API: ONLINE</div>
+    </header>
+
+    <div class="container">
+        <div id="authScreen" class="screen active animate-up">
+            <div class="auth-box">
+                <h1>Developer Console</h1>
+                <p>Connect to your TeleBase Vault. If you don't have an API key, send <b>/register &lt;bot_token&gt;</b> to the Master Bot in Telegram.</p>
+                <div class="input-group">
+                    <input type="text" id="apiKeyInput" placeholder="tlb_live_..." autocomplete="off">
+                </div>
+                <button class="btn-primary" onclick="login()">Connect Vault</button>
+            </div>
+        </div>
+
+        <div id="dashScreen" class="screen animate-up">
+            <div class="dash-header">
+                <h2>Workspace</h2>
+                <div class="api-key-display" id="displayKey">Key: tlb_live_***</div>
+            </div>
+
+            <div class="tabs">
+                <div class="tab-btn active" onclick="switchTab('docs')">API Docs</div>
+                <div class="tab-btn" onclick="switchTab('explorer')">Data Explorer</div>
+            </div>
+
+            <div id="docs" class="tab-content active animate-up">
+                <p style="color: var(--text-muted); margin-bottom: 16px; font-size: 14px;">Use these endpoints to interact with your serverless database.</p>
+                
+                <div class="endpoint-url">
+                    <span style="color:var(--accent-glow);">POST</span> https://galaxylab.i234.me:8443/api/v1/database/{collection}/{id}
+                </div>
+
+                <div class="code-block">
+                    <div class="code-title">JavaScript (Fetch Example)</div>
+                    <pre><span class="comment">// 1. Save data to TeleBase</span>
+<span class="keyword">async function</span> <span class="func">saveData</span>(userId, data) {
+  <span class="keyword">const</span> res = <span class="keyword">await</span> <span class="func">fetch</span>(<span class="string">`https://galaxylab.i234.me:8443/api/v1/database/users/${userId}`</span>, {
+    method: <span class="string">"POST"</span>,
+    headers: {
+      <span class="string">"Content-Type"</span>: <span class="string">"application/json"</span>,
+      <span class="string">"Authorization"</span>: <span class="string">`Bearer ${YOUR_API_KEY}`</span>
+    },
+    body: <span class="func">JSON.stringify</span>(data)
+  });
+  <span class="keyword">return await</span> res.<span class="func">json</span>();
+}</pre>
+                </div>
+
+                <div class="code-block">
+                    <div class="code-title">Python (Requests Example)</div>
+                    <pre><span class="keyword">import</span> requests
+
+<span class="comment"># 2. Get data from TeleBase</span>
+headers = {<span class="string">"Authorization"</span>: <span class="string">"Bearer YOUR_API_KEY"</span>}
+url = <span class="string">"https://galaxylab.i234.me:8443/api/v1/database/users/user_123"</span>
+
+response = requests.<span class="func">get</span>(url, headers=headers)
+data = response.<span class="func">json</span>()
+<span class="func">print</span>(data)</pre>
+                </div>
+            </div>
+
+            <div id="explorer" class="tab-content animate-up">
+                <div style="background: var(--bg-card); border: 1px solid var(--glass-border); border-radius: var(--radius-md); padding: 40px 20px; text-align: center;">
+                    <svg viewBox="0 0 24 24" style="width: 48px; height: 48px; color: var(--text-muted); margin-bottom: 16px;" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg>
+                    <h3 style="margin-bottom: 8px;">Vault is Syncing...</h3>
+                    <p style="color: var(--text-muted); font-size: 14px;">Data Explorer will be available in the next update. All your files are safely encrypted via Telegram infrastructure.</p>
+                </div>
+            </div>
+
+            <div class="logout-btn" onclick="logout()">Disconnect Vault</div>
+        </div>
+    </div>
+
+    <script>
+        // Инициализация Telegram Mini App
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+        tg.ready();
+
+        // Проверка локального хранилища при загрузке
+        document.addEventListener("DOMContentLoaded", () => {
+            const savedKey = localStorage.getItem("telebase_api_key");
+            if (savedKey) {
+                showDashboard(savedKey);
+            }
+        });
+
+        // Логика Входа
+        function login() {
+            const input = document.getElementById("apiKeyInput");
+            const key = input.value.trim();
+            
+            if (!key.startsWith("tlb_live_")) {
+                if(tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('error');
+                alert("Invalid API Key format. Must start with 'tlb_live_'");
+                return;
+            }
+
+            if(tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+            localStorage.setItem("telebase_api_key", key);
+            showDashboard(key);
+        }
+
+        // Логика Выхода
+        function logout() {
+            localStorage.removeItem("telebase_api_key");
+            document.getElementById("apiKeyInput").value = "";
+            document.getElementById("dashScreen").classList.remove("active");
+            document.getElementById("authScreen").classList.add("active");
+            if(tg.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
+        }
+
+        // Переключение экранов
+        function showDashboard(key) {
+            document.getElementById("authScreen").classList.remove("active");
+            document.getElementById("dashScreen").classList.add("active");
+            
+            // Скрываем часть ключа для красоты
+            const hiddenKey = key.substring(0, 15) + "..." + key.slice(-4);
+            document.getElementById("displayKey").innerText = `Key: ${hiddenKey}`;
+        }
+
+        // Переключение вкладок (Табы)
+        function switchTab(tabId) {
+            if(tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+            
+            // Убираем active у всех кнопок
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            // Убираем active у всех контентов
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            // Добавляем active нужным
+            event.target.classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+        }
+    </script>
+</body>
+</html>
