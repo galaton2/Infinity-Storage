@@ -1,135 +1,63 @@
 "use strict";
 
-/* ─────────────────────────────────────────────────────────────
-   Telegram: безопасная работа и в Telegram, и в обычном браузере
-───────────────────────────────────────────────────────────── */
+/* ───────── Telegram ───────── */
 const tg = window.Telegram?.WebApp || null;
 
 try {
-  tg?.ready();
-  tg?.expand();
+  tg?.ready?.();
+  tg?.expand?.();
   tg?.setHeaderColor?.("#020204");
   tg?.setBackgroundColor?.("#020204");
-  tg?.setBottomBarColor?.("#020204");
-} catch (error) {
-  console.warn("Telegram WebApp недоступен:", error);
-}
+} catch (_) {}
 
 const telegramUser = tg?.initDataUnsafe?.user || null;
 
-function haptic(type = "selection") {
+function haptic(kind = "selection") {
   try {
-    if (type === "impact") {
-      tg?.HapticFeedback?.impactOccurred?.("medium");
-    } else {
-      tg?.HapticFeedback?.selectionChanged?.();
-    }
-  } catch {
-    /* В обычном браузере вибрации Telegram нет. */
-  }
+    if (kind === "impact") tg?.HapticFeedback?.impactOccurred?.("medium");
+    else tg?.HapticFeedback?.selectionChanged?.();
+  } catch (_) {}
 }
 
-/* ─────────────────────────────────────────────────────────────
-   Константы и состояние
-───────────────────────────────────────────────────────────── */
+/* ───────── Настройки ИИ ───────── */
 const API_URL = "https://galaxylab.i234.me:8443/api/files";
 
 const AI_PROVIDERS = {
   together: {
-    name: "Together AI",
+    title: "Together AI",
     models: [
-      {
-        value: "meta-llama/Llama-3.3-70B-Instruct-Turbo",
-        label: "Llama 3.3 70B"
-      },
-      {
-        value: "meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo",
-        label: "Llama 3.1 8B"
-      },
-      {
-        value: "Qwen/Qwen2.5-72B-Instruct-Turbo",
-        label: "Qwen 2.5 72B"
-      }
+      ["meta-llama/Llama-3.3-70B-Instruct-Turbo", "Llama 3.3 70B"],
+      ["meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo", "Llama 3.1 8B"],
+      ["Qwen/Qwen2.5-72B-Instruct-Turbo", "Qwen 2.5 72B"]
     ]
   },
-
   openai: {
-    name: "OpenAI",
+    title: "OpenAI",
     models: [
-      { value: "gpt-4o-mini", label: "GPT-4o mini" },
-      { value: "gpt-4.1-mini", label: "GPT-4.1 mini" },
-      { value: "gpt-4o", label: "GPT-4o" }
+      ["gpt-4o-mini", "GPT-4o mini"],
+      ["gpt-4.1-mini", "GPT-4.1 mini"],
+      ["gpt-4o", "GPT-4o"]
     ]
   },
-
   anthropic: {
-    name: "Anthropic",
+    title: "Anthropic",
     models: [
-      {
-        value: "claude-3-5-haiku-latest",
-        label: "Claude 3.5 Haiku"
-      },
-      {
-        value: "claude-3-5-sonnet-latest",
-        label: "Claude 3.5 Sonnet"
-      }
+      ["claude-3-5-haiku-latest", "Claude 3.5 Haiku"],
+      ["claude-3-5-sonnet-latest", "Claude 3.5 Sonnet"]
     ]
   },
-
   google: {
-    name: "Google Gemini",
+    title: "Google Gemini",
     models: [
-      { value: "gemini-2.0-flash", label: "Gemini 2.0 Flash" },
-      { value: "gemini-1.5-flash", label: "Gemini 1.5 Flash" },
-      { value: "gemini-1.5-pro", label: "Gemini 1.5 Pro" }
+      ["gemini-2.0-flash", "Gemini 2.0 Flash"],
+      ["gemini-1.5-flash", "Gemini 1.5 Flash"],
+      ["gemini-1.5-pro", "Gemini 1.5 Pro"]
     ]
   }
 };
 
-let globalFiles = [];
-let activeFolder = null;
-let searchQuery = "";
-let currentMood = "😐";
-
-let folders = [
-  {
-    id: "smart_notes",
-    name: "Smart Notes",
-    emoji: "🧠",
-    accent: "#ff9800",
-    bg: "rgba(255,152,0,.1)",
-    autoTypes: ["smart_note"]
-  },
-  {
-    id: "texts",
-    name: "Texts",
-    emoji: "📝",
-    accent: "#a078ff",
-    bg: "rgba(160,120,255,.1)",
-    autoTypes: ["text"]
-  },
-  {
-    id: "documents",
-    name: "Documents",
-    emoji: "📄",
-    accent: "#5b8cff",
-    bg: "rgba(91,140,255,.1)",
-    autoTypes: ["document", "audio", "voice"]
-  },
-  {
-    id: "media",
-    name: "Media",
-    emoji: "🖼️",
-    accent: "#00d98a",
-    bg: "rgba(0,217,138,.1)",
-    autoTypes: ["photo", "video", "animation", "video_note"]
-  }
-];
-
-/* ─────────────────────────────────────────────────────────────
-   Local Storage
-───────────────────────────────────────────────────────────── */
-const defaultDatabase = {
+/* ───────── Данные ───────── */
+const defaultDB = {
   notes: [],
   journal: [],
   stats: {
@@ -145,66 +73,83 @@ const defaultDatabase = {
   }
 };
 
-function loadLocalDatabase() {
+function clone(value) {
+  return JSON.parse(JSON.stringify(value));
+}
+
+function loadDB() {
   try {
     const saved = JSON.parse(localStorage.getItem("infinityLocalDB"));
 
-    if (!saved || typeof saved !== "object") {
-      return structuredClone(defaultDatabase);
-    }
+    if (!saved || typeof saved !== "object") return clone(defaultDB);
 
-    const database = {
-      ...structuredClone(defaultDatabase),
+    const db = {
+      ...clone(defaultDB),
       ...saved,
-      stats: {
-        ...structuredClone(defaultDatabase.stats),
-        ...(saved.stats || {})
-      },
-      settings: {
-        ...structuredClone(defaultDatabase.settings),
-        ...(saved.settings || {})
-      }
+      stats: { ...clone(defaultDB.stats), ...(saved.stats || {}) },
+      settings: { ...clone(defaultDB.settings), ...(saved.settings || {}) }
     };
 
-    database.notes = Array.isArray(database.notes) ? database.notes : [];
-    database.journal = Array.isArray(database.journal) ? database.journal : [];
-    database.settings.apiKeys = database.settings.apiKeys || {};
+    db.notes = Array.isArray(db.notes) ? db.notes : [];
+    db.journal = Array.isArray(db.journal) ? db.journal : [];
+    db.settings.apiKeys ||= {};
 
-    /* Совместимость со старой версией приложения */
-    if (
-      database.settings.togetherApiKey &&
-      !database.settings.apiKeys.together
-    ) {
-      database.settings.apiKeys.together =
-        database.settings.togetherApiKey;
+    /* Совместимость со старым ключом Together AI */
+    if (db.settings.togetherApiKey && !db.settings.apiKeys.together) {
+      db.settings.apiKeys.together = db.settings.togetherApiKey;
     }
 
-    return database;
-  } catch (error) {
-    console.error("Не удалось прочитать локальные данные:", error);
-    return structuredClone(defaultDatabase);
+    return db;
+  } catch (_) {
+    return clone(defaultDB);
   }
 }
 
-let localDB = loadLocalDatabase();
+let localDB = loadDB();
+let globalFiles = [];
+let activeFolder = null;
+let searchQuery = "";
+let currentMood = "😐";
 
-function saveLocalDB() {
-  try {
-    localStorage.setItem("infinityLocalDB", JSON.stringify(localDB));
-  } catch (error) {
-    console.error("Не удалось сохранить данные:", error);
-    showToast("Не удалось сохранить данные в браузере");
+const folders = [
+  {
+    id: "smart_notes",
+    name: "Smart Notes",
+    emoji: "🧠",
+    bg: "rgba(255,152,0,.1)",
+    autoTypes: ["smart_note"]
+  },
+  {
+    id: "texts",
+    name: "Texts",
+    emoji: "📝",
+    bg: "rgba(160,120,255,.1)",
+    autoTypes: ["text"]
+  },
+  {
+    id: "documents",
+    name: "Documents",
+    emoji: "📄",
+    bg: "rgba(91,140,255,.1)",
+    autoTypes: ["document", "audio", "voice"]
+  },
+  {
+    id: "media",
+    name: "Media",
+    emoji: "🖼️",
+    bg: "rgba(0,217,138,.1)",
+    autoTypes: ["photo", "video", "animation", "video_note"]
   }
+];
 
+function saveDB() {
+  localStorage.setItem("infinityLocalDB", JSON.stringify(localDB));
   updateStatsUI();
   updateStorageUI();
 }
 
-/* ─────────────────────────────────────────────────────────────
-   Вспомогательные функции
-───────────────────────────────────────────────────────────── */
-function esc(value = "") {
-  return String(value)
+function esc(text = "") {
+  return String(text)
     .replaceAll("&", "&amp;")
     .replaceAll("<", "&lt;")
     .replaceAll(">", "&gt;")
@@ -212,185 +157,149 @@ function esc(value = "") {
     .replaceAll("'", "&#039;");
 }
 
+function cleanText(text = "") {
+  return String(text).replace(/\s+/g, " ").trim();
+}
+
+function words(text = "") {
+  return cleanText(text)
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}\s-]/gu, " ")
+    .split(/\s+/)
+    .filter((word) => word.length > 1);
+}
+
 function safeUrl(value) {
   try {
     const url = new URL(value, window.location.href);
-
-    if (url.protocol === "http:" || url.protocol === "https:") {
-      return url.href;
-    }
-  } catch {
-    /* Невалидная ссылка не должна попасть в DOM */
+    return ["https:", "http:"].includes(url.protocol) ? url.href : "";
+  } catch (_) {
+    return "";
   }
-
-  return "";
 }
 
-function formatBytes(bytes) {
-  const value = Number(bytes) || 0;
-
-  if (value < 1024) return `${value} Б`;
-  if (value < 1024 ** 2) return `${(value / 1024).toFixed(1)} КБ`;
-  if (value < 1024 ** 3) return `${(value / 1024 ** 2).toFixed(1)} МБ`;
-
-  return `${(value / 1024 ** 3).toFixed(2)} ГБ`;
-}
-
-function getAllItems() {
-  const localNotes = localDB.notes.map((note) => ({
-    internalId: `local_note_${note.id}`,
+function allItems() {
+  const notes = localDB.notes.map((note) => ({
+    internalId: `note_${note.id}`,
     id: note.id,
     type: "smart_note",
-    text: note.text || "",
     title: note.title || "Заметка",
+    text: note.text || "",
     tags: Array.isArray(note.tags) ? note.tags : [],
     date: note.date || new Date().toISOString(),
     size: new Blob([note.text || ""]).size
   }));
 
-  return [...globalFiles, ...localNotes];
+  return [...globalFiles, ...notes];
 }
 
-function getCurrentProvider() {
-  return localDB.settings.aiProvider in AI_PROVIDERS
+function getProvider() {
+  return AI_PROVIDERS[localDB.settings.aiProvider]
     ? localDB.settings.aiProvider
     : "together";
 }
 
-function getCurrentModel() {
-  const provider = getCurrentProvider();
+function getModel() {
+  const provider = getProvider();
   const models = AI_PROVIDERS[provider].models;
-  const selected = localDB.settings.aiModel;
+  const saved = localDB.settings.aiModel;
 
-  return models.some((model) => model.value === selected)
-    ? selected
-    : models[0].value;
+  return models.some(([id]) => id === saved) ? saved : models[0][0];
 }
 
-function getCurrentApiKey() {
-  const provider = getCurrentProvider();
+function getKey() {
+  const provider = getProvider();
 
   return (
     localDB.settings.apiKeys?.[provider] ||
-    (provider === "together"
-      ? localDB.settings.togetherApiKey || ""
-      : "")
+    (provider === "together" ? localDB.settings.togetherApiKey : "") ||
+    ""
   ).trim();
 }
 
-/* ─────────────────────────────────────────────────────────────
-   Настройки ИИ
-───────────────────────────────────────────────────────────── */
-function renderModelOptions(provider, selectedModel = "") {
-  const modelSelect = document.getElementById("aiModel");
-  const availableModels = AI_PROVIDERS[provider]?.models || [];
+/* ───────── UI настроек ───────── */
+function renderModels(provider, selected = "") {
+  const select = document.getElementById("aiModel");
+  const models = AI_PROVIDERS[provider]?.models || [];
 
-  modelSelect.innerHTML = availableModels
-    .map(
-      (model) =>
-        `<option value="${esc(model.value)}">${esc(model.label)}</option>`
-    )
+  select.innerHTML = models
+    .map(([value, label]) => `<option value="${esc(value)}">${esc(label)}</option>`)
     .join("");
 
-  const validModel = availableModels.some(
-    (model) => model.value === selectedModel
-  )
-    ? selectedModel
-    : availableModels[0]?.value || "";
+  const valid = models.some(([value]) => value === selected)
+    ? selected
+    : models[0]?.[0] || "";
 
-  modelSelect.value = validModel;
-  return validModel;
+  select.value = valid;
+  return valid;
 }
 
 function loadSettingsUI() {
+  const provider = getProvider();
   const providerSelect = document.getElementById("aiProvider");
   const keyInput = document.getElementById("togetherApiKey");
 
-  const provider = getCurrentProvider();
   providerSelect.value = provider;
-
-  const selectedModel = renderModelOptions(
-    provider,
-    localDB.settings.aiModel
-  );
-
-  localDB.settings.aiProvider = provider;
-  localDB.settings.aiModel = selectedModel;
+  localDB.settings.aiModel = renderModels(provider, localDB.settings.aiModel);
   keyInput.value = localDB.settings.apiKeys?.[provider] || "";
 }
 
-function onProviderChange() {
-  const provider = document.getElementById("aiProvider").value;
-  const previousProvider = getCurrentProvider();
+function changeProvider() {
+  const previousProvider = getProvider();
+  const nextProvider = document.getElementById("aiProvider").value;
   const keyInput = document.getElementById("togetherApiKey");
 
   localDB.settings.apiKeys ||= {};
   localDB.settings.apiKeys[previousProvider] = keyInput.value.trim();
+  localDB.settings.aiProvider = nextProvider;
+  localDB.settings.aiModel = renderModels(nextProvider, "");
 
-  localDB.settings.aiProvider = provider;
-  localDB.settings.aiModel = renderModelOptions(
-    provider,
-    localDB.settings.aiModel
-  );
-
-  keyInput.value = localDB.settings.apiKeys[provider] || "";
+  keyInput.value = localDB.settings.apiKeys[nextProvider] || "";
 }
 
 function saveSettings() {
   const provider = document.getElementById("aiProvider").value;
   const model = document.getElementById("aiModel").value;
-  const apiKey = document.getElementById("togetherApiKey").value.trim();
+  const key = document.getElementById("togetherApiKey").value.trim();
 
   localDB.settings.apiKeys ||= {};
   localDB.settings.aiProvider = provider;
   localDB.settings.aiModel = model;
-  localDB.settings.apiKeys[provider] = apiKey;
+  localDB.settings.apiKeys[provider] = key;
+  localDB.settings.togetherApiKey = localDB.settings.apiKeys.together || "";
 
-  /* Оставлено только для совместимости со старыми резервными копиями */
-  localDB.settings.togetherApiKey =
-    localDB.settings.apiKeys.together || "";
-
-  saveLocalDB();
-  showToast(`Настройки ${AI_PROVIDERS[provider].name} сохранены`);
+  saveDB();
+  showToast("Настройки ИИ сохранены");
 }
 
 function toggleApiKeyVisibility() {
-  const keyInput = document.getElementById("togetherApiKey");
-
-  keyInput.type = keyInput.type === "password" ? "text" : "password";
+  const input = document.getElementById("togetherApiKey");
+  input.type = input.type === "password" ? "text" : "password";
 }
 
-/* ─────────────────────────────────────────────────────────────
-   Запросы к ИИ
-───────────────────────────────────────────────────────────── */
-async function readApiError(response) {
+/* ───────── API ИИ ───────── */
+async function apiError(response) {
   try {
     const data = await response.json();
-
-    return (
-      data?.error?.message ||
-      data?.message ||
-      data?.error ||
-      `Ошибка API: ${response.status}`
-    );
-  } catch {
-    return `Ошибка API: ${response.status}`;
+    return data?.error?.message || data?.message || `Ошибка ${response.status}`;
+  } catch (_) {
+    return `Ошибка ${response.status}`;
   }
 }
 
-async function callAI(systemPrompt, userPrompt) {
-  const provider = getCurrentProvider();
-  const model = getCurrentModel();
-  const apiKey = getCurrentApiKey();
+async function callAI(system, prompt) {
+  const provider = getProvider();
+  const model = getModel();
+  const key = getKey();
 
-  if (!apiKey) {
-    showToast(`Введите API-ключ для ${AI_PROVIDERS[provider].name}`);
+  if (!key) {
+    showToast(`Введите API-ключ ${AI_PROVIDERS[provider].title}`);
     return null;
   }
 
   try {
     let response;
-    let text = "";
+    let answer = "";
 
     if (provider === "together" || provider === "openai") {
       const endpoint =
@@ -401,159 +310,125 @@ async function callAI(systemPrompt, userPrompt) {
       response = await fetch(endpoint, {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${apiKey}`,
+          Authorization: `Bearer ${key}`,
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
           model,
+          temperature: 0.35,
+          max_tokens: 900,
           messages: [
-            { role: "system", content: systemPrompt },
-            { role: "user", content: userPrompt }
-          ],
-          temperature: 0.5,
-          max_tokens: 700
+            { role: "system", content: system },
+            { role: "user", content: prompt }
+          ]
         })
       });
 
-      if (!response.ok) {
-        throw new Error(await readApiError(response));
-      }
+      if (!response.ok) throw new Error(await apiError(response));
 
       const data = await response.json();
-      text = data?.choices?.[0]?.message?.content || "";
+      answer = data?.choices?.[0]?.message?.content || "";
     }
 
     if (provider === "anthropic") {
       response = await fetch("https://api.anthropic.com/v1/messages", {
         method: "POST",
         headers: {
-          "x-api-key": apiKey,
+          "x-api-key": key,
           "anthropic-version": "2023-06-01",
-          "content-type": "application/json"
+          "Content-Type": "application/json"
         },
         body: JSON.stringify({
           model,
-          max_tokens: 700,
-          system: systemPrompt,
-          messages: [{ role: "user", content: userPrompt }]
+          max_tokens: 900,
+          system,
+          messages: [{ role: "user", content: prompt }]
         })
       });
 
-      if (!response.ok) {
-        throw new Error(await readApiError(response));
-      }
+      if (!response.ok) throw new Error(await apiError(response));
 
       const data = await response.json();
-      text = data?.content?.[0]?.text || "";
+      answer = data?.content?.[0]?.text || "";
     }
 
     if (provider === "google") {
       response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(apiKey)}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(key)}`,
         {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            system_instruction: {
-              parts: [{ text: systemPrompt }]
-            },
-            contents: [
-              {
-                role: "user",
-                parts: [{ text: userPrompt }]
-              }
-            ],
+            system_instruction: { parts: [{ text: system }] },
+            contents: [{ role: "user", parts: [{ text: prompt }] }],
             generationConfig: {
-              temperature: 0.5,
-              maxOutputTokens: 700
+              temperature: 0.35,
+              maxOutputTokens: 900
             }
           })
         }
       );
 
-      if (!response.ok) {
-        throw new Error(await readApiError(response));
-      }
+      if (!response.ok) throw new Error(await apiError(response));
 
       const data = await response.json();
-      text = data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
+      answer = data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
     }
 
-    if (!text.trim()) {
-      throw new Error("ИИ вернул пустой ответ");
-    }
+    if (!answer.trim()) throw new Error("Пустой ответ от модели");
 
-    return text.trim();
+    return answer.trim();
   } catch (error) {
-    console.error("Ошибка ИИ:", error);
-
-    const message =
-      error instanceof Error ? error.message : "Неизвестная ошибка";
+    console.error("AI error:", error);
+    const message = error instanceof Error ? error.message : "";
 
     if (/401|403|key|auth|unauthorized/i.test(message)) {
-      showToast("Проверьте API-ключ и доступ к выбранной модели");
+      showToast("Проверьте API-ключ и доступ к этой модели");
     } else {
-      showToast("Не удалось получить ответ ИИ");
+      showToast("ИИ сейчас недоступен. Попробуйте ещё раз");
     }
 
     return null;
   }
 }
 
-/* ─────────────────────────────────────────────────────────────
-   Статистика
-───────────────────────────────────────────────────────────── */
-function updateStatsUI() {
-  const streak = document.getElementById("streakCounter");
-  const words = document.getElementById("wordsCount");
-  const total = document.getElementById("totalFilesCount");
+/* ───────── Статистика ───────── */
+function formatBytes(bytes) {
+  if (bytes < 1024) return `${bytes} Б`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} КБ`;
+  return `${(bytes / 1024 / 1024).toFixed(1)} МБ`;
+}
 
-  if (streak) streak.textContent = `🔥 ${localDB.stats.streak || 0}`;
-  if (words) words.textContent = localDB.stats.wordsWritten || 0;
-  if (total) total.textContent = getAllItems().length;
+function updateStatsUI() {
+  document.getElementById("streakCounter").textContent =
+    `🔥 ${localDB.stats.streak || 0}`;
+
+  document.getElementById("wordsCount").textContent =
+    localDB.stats.wordsWritten || 0;
+
+  document.getElementById("totalFilesCount").textContent = allItems().length;
 }
 
 function updateStorageUI() {
-  const allItems = getAllItems();
-
-  const serverBytes = globalFiles.reduce(
-    (sum, file) => sum + Number(file.size || file.file_size || 0),
+  const serverSize = globalFiles.reduce(
+    (total, file) => total + Number(file.size || file.file_size || 0),
     0
   );
 
-  const notesBytes = localDB.notes.reduce(
-    (sum, note) => sum + new Blob([note.text || ""]).size,
+  const notesSize = localDB.notes.reduce(
+    (total, note) => total + new Blob([note.text || ""]).size,
     0
   );
 
-  const usedBytes = serverBytes + notesBytes;
-  const storageText = document.getElementById("dataUsedText");
-  const fill = document.getElementById("dataUsedFill");
+  const size = serverSize + notesSize;
+  document.getElementById("dataUsedText").textContent = formatBytes(size);
 
-  if (storageText) storageText.textContent = formatBytes(usedBytes);
-
-  /*
-    Это не лимит хранилища, а просто визуальная шкала.
-    После 100 МБ она будет показывать 100%.
-  */
-  const percent = Math.min((usedBytes / (100 * 1024 * 1024)) * 100, 100);
-
-  if (fill) {
-    fill.style.width = `${percent}%`;
-    fill.parentElement?.setAttribute(
-      "aria-valuenow",
-      String(Math.round(percent))
-    );
-  }
-
-  updateStatsUI();
+  const percent = Math.min(size / (100 * 1024 * 1024) * 100, 100);
+  document.getElementById("dataUsedFill").style.width = `${percent}%`;
 }
 
 function updateStreak() {
   const today = new Date().toDateString();
-
   if (localDB.stats.lastLogin === today) return;
 
   const yesterday = new Date(Date.now() - 86400000).toDateString();
@@ -564,12 +439,10 @@ function updateStreak() {
       : 1;
 
   localDB.stats.lastLogin = today;
-  saveLocalDB();
+  saveDB();
 }
 
-/* ─────────────────────────────────────────────────────────────
-   Серверные файлы
-───────────────────────────────────────────────────────────── */
+/* ───────── Загрузка серверных файлов ───────── */
 async function fetchServerFiles() {
   const userId = telegramUser?.id || "browser-user";
 
@@ -578,62 +451,47 @@ async function fetchServerFiles() {
       `${API_URL}?user_id=${encodeURIComponent(userId)}&limit=100`
     );
 
-    if (!response.ok) {
-      throw new Error(`Сервер вернул ${response.status}`);
-    }
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
     const data = await response.json();
-    const files = Array.isArray(data?.files) ? data.files : [];
 
-    globalFiles = files.map((file, index) => ({
-      ...file,
-      internalId: `server_${file.id || index}`,
-      type: file.type || file.file_type || "document",
-      title: file.title || file.name || file.file_name || "Файл",
-      text: file.text || file.caption || "",
-      url: file.url || file.file_url || "",
-      size: Number(file.size || file.file_size || 0),
-      date: file.date || file.created_at || new Date().toISOString()
-    }));
+    globalFiles = (Array.isArray(data?.files) ? data.files : []).map(
+      (file, index) => ({
+        ...file,
+        internalId: `server_${file.id || index}`,
+        type: file.type || file.file_type || "document",
+        title: file.title || file.name || file.file_name || "Файл",
+        text: file.text || file.caption || "",
+        url: file.url || file.file_url || "",
+        size: Number(file.size || file.file_size || 0)
+      })
+    );
   } catch (error) {
+    console.warn("Файлы сервера не загружены:", error);
     globalFiles = [];
-    console.warn("Серверные файлы недоступны:", error);
   }
 
+  updateStatsUI();
   updateStorageUI();
 }
 
-/* ─────────────────────────────────────────────────────────────
-   Умные заметки
-───────────────────────────────────────────────────────────── */
+/* ───────── Умные заметки ───────── */
 function parseNoteAnalysis(answer) {
-  const fallback = {
-    title: "Заметка",
-    tags: []
-  };
-
   try {
-    const jsonPart = answer.match(/\{[\s\S]*\}/)?.[0];
-    if (!jsonPart) return fallback;
-
-    const parsed = JSON.parse(jsonPart);
+    const json = answer.match(/\{[\s\S]*\}/)?.[0];
+    const data = JSON.parse(json);
 
     return {
-      title:
-        typeof parsed.title === "string" && parsed.title.trim()
-          ? parsed.title.trim().slice(0, 80)
-          : fallback.title,
-
-      tags: Array.isArray(parsed.tags)
-        ? parsed.tags
-            .filter((tag) => typeof tag === "string")
-            .map((tag) => tag.trim().replace(/^#/, "").slice(0, 30))
+      title: String(data.title || "Заметка").slice(0, 90),
+      tags: Array.isArray(data.tags)
+        ? data.tags
+            .map((tag) => String(tag).trim().replace(/^#/, ""))
             .filter(Boolean)
-            .slice(0, 5)
+            .slice(0, 6)
         : []
     };
-  } catch {
-    return fallback;
+  } catch (_) {
+    return { title: "Заметка", tags: [] };
   }
 }
 
@@ -642,79 +500,72 @@ async function saveSmartNote() {
   const text = input.value.trim();
 
   if (!text) {
-    showToast("Введите текст заметки");
     input.focus();
+    showToast("Напишите заметку");
     return;
   }
 
   haptic("impact");
   input.value = "";
 
-  let noteData = {
-    title: "Заметка",
+  let data = {
+    title: text.slice(0, 55),
     tags: []
   };
 
-  if (getCurrentApiKey()) {
+  if (getKey()) {
     showToast("ИИ анализирует заметку…");
 
     const answer = await callAI(
-      "Ты помощник по организации заметок. Верни только валидный JSON без Markdown: {\"title\":\"краткий заголовок\",\"tags\":[\"тег1\",\"тег2\"]}. Заголовок — до 80 символов, тегов — до 5.",
+      "Верни только валидный JSON без Markdown: {\"title\":\"краткий заголовок\",\"tags\":[\"тег1\",\"тег2\"]}. Не более 6 тегов. Язык ответа — русский.",
       text
     );
 
-    if (answer) {
-      noteData = parseNoteAnalysis(answer);
-    }
+    if (answer) data = parseNoteAnalysis(answer);
   }
 
   localDB.notes.unshift({
     id: Date.now(),
+    title: data.title,
     text,
-    title: noteData.title,
-    tags: noteData.tags,
+    tags: data.tags,
     date: new Date().toISOString()
   });
 
-  localDB.stats.wordsWritten += text.split(/\s+/).filter(Boolean).length;
+  localDB.stats.wordsWritten += words(text).length;
 
-  saveLocalDB();
+  saveDB();
   renderFilesView();
-
   showToast("Заметка сохранена");
 }
 
-/* ─────────────────────────────────────────────────────────────
-   Дневник
-───────────────────────────────────────────────────────────── */
+/* ───────── Дневник ───────── */
 function setMood(mood) {
   currentMood = mood;
 
-  document
-    .querySelectorAll(".journal-mood-selector button")
-    .forEach((button) => {
-      button.classList.toggle(
-        "selected",
-        button.getAttribute("aria-label") ===
-          {
-            "😢": "Грустно",
-            "😐": "Нейтрально",
-            "😊": "Хорошо",
-            "🤩": "Отлично"
-          }[mood]
-      );
-    });
+  const labels = {
+    "😢": "Грустно",
+    "😐": "Нейтрально",
+    "😊": "Хорошо",
+    "🤩": "Отлично"
+  };
+
+  document.querySelectorAll(".journal-mood-selector button").forEach((button) => {
+    button.classList.toggle(
+      "selected",
+      button.getAttribute("aria-label") === labels[mood]
+    );
+  });
 
   haptic();
 }
 
 function renderJournalFeed() {
   const feed = document.getElementById("journalFeed");
-  if (!feed) return;
 
   if (!localDB.journal.length) {
     feed.innerHTML =
-      '<div class="journal-entry" style="color:var(--text-muted);text-align:center;">Записей пока нет.</div>';
+      '<div class="journal-entry" style="text-align:center;color:var(--text-muted)">Записей пока нет.</div>';
     return;
   }
 
@@ -722,21 +573,16 @@ function renderJournalFeed() {
     .map((entry) => {
       const date = new Date(entry.date);
 
-      const dateText = Number.isNaN(date.getTime())
-        ? ""
-        : `${date.toLocaleDateString("ru-RU")} · ${date.toLocaleTimeString(
-            "ru-RU",
-            {
-              hour: "2-digit",
-              minute: "2-digit"
-            }
-          )}`;
-
       return `
         <article class="journal-entry">
           <div class="journal-entry-header">
-            <span>${esc(dateText)}</span>
-            <span aria-label="Настроение">${esc(entry.mood || "😐")}</span>
+            <span>${esc(date.toLocaleDateString("ru-RU"))} · ${esc(
+              date.toLocaleTimeString("ru-RU", {
+                hour: "2-digit",
+                minute: "2-digit"
+              })
+            )}</span>
+            <span>${esc(entry.mood || "😐")}</span>
           </div>
           <div>${esc(entry.text || "")}</div>
           ${
@@ -755,23 +601,22 @@ async function saveJournal() {
   const text = input.value.trim();
 
   if (!text) {
-    showToast("Введите запись для дневника");
     input.focus();
+    showToast("Введите запись для дневника");
     return;
   }
 
-  haptic("impact");
   input.value = "";
+  haptic("impact");
 
-  let aiComment =
-    "Запись сохранена. Возвращайтесь к ней позже, чтобы увидеть свои мысли со стороны.";
+  let aiComment = "Запись сохранена. Вернитесь к ней позже и посмотрите на мысли со стороны.";
 
-  if (getCurrentApiKey()) {
+  if (getKey()) {
     showToast("ИИ готовит рефлексию…");
 
     const answer = await callAI(
-      "Ты бережный помощник по рефлексии. Дай короткий, спокойный и поддерживающий комментарий к дневниковой записи: максимум два предложения. Не ставь диагнозы, не утверждай медицинские факты.",
-      `Настроение: ${currentMood}\n\nЗапись:\n${text}`
+      "Ты бережный помощник по рефлексии. Дай короткий поддерживающий комментарий: максимум 2 предложения. Не ставь диагнозов и не используй медицинские утверждения.",
+      `Настроение: ${currentMood}\n\nЗапись пользователя:\n${text}`
     );
 
     if (answer) aiComment = answer;
@@ -785,48 +630,93 @@ async function saveJournal() {
     date: new Date().toISOString()
   });
 
-  localDB.stats.wordsWritten += text.split(/\s+/).filter(Boolean).length;
+  localDB.stats.wordsWritten += words(text).length;
 
-  saveLocalDB();
+  saveDB();
   renderJournalFeed();
-
-  showToast("Запись дневника сохранена");
+  showToast("Запись сохранена");
 }
 
-/* ─────────────────────────────────────────────────────────────
-   Чат по заметкам
-───────────────────────────────────────────────────────────── */
-function appendChatMsg(text, sender, id = "") {
+/* ───────── Умный RAG-чат ───────── */
+function noteRelevance(note, questionWords) {
+  const noteWords = words(
+    `${note.title || ""} ${note.text || ""} ${(note.tags || []).join(" ")}`
+  );
+
+  const uniqueNoteWords = new Set(noteWords);
+  let score = 0;
+
+  questionWords.forEach((word) => {
+    if (uniqueNoteWords.has(word)) score += 3;
+    if ((note.tags || []).some((tag) => tag.toLowerCase() === word)) score += 5;
+  });
+
+  const ageDays = Math.max(
+    0,
+    (Date.now() - new Date(note.date || Date.now()).getTime()) / 86400000
+  );
+
+  score += Math.max(0, 0.8 - ageDays / 1000);
+  return score;
+}
+
+function findRelevantNotes(question) {
+  const questionWords = words(question);
+
+  return localDB.notes
+    .map((note) => ({
+      ...note,
+      relevance: noteRelevance(note, questionWords)
+    }))
+    .sort((a, b) => b.relevance - a.relevance)
+    .slice(0, 6);
+}
+
+function buildChatContext(notes) {
+  return notes
+    .map(
+      (note, index) =>
+        `[${index + 1}] ЗАГОЛОВОК: ${note.title || "Без названия"}\nТЕГИ: ${(note.tags || []).join(", ") || "нет"}\nТЕКСТ: ${(note.text || "").slice(0, 2500)}`
+    )
+    .join("\n\n---\n\n")
+    .slice(0, 14500);
+}
+
+function appendChatMessage(text, sender, sources = [], id = "") {
   const container = document.getElementById("chatContainer");
-  if (!container) return;
-
   const message = document.createElement("div");
-  message.className = `chat-msg ${sender}`;
 
+  message.className = `chat-msg ${sender}`;
   if (id) message.id = id;
 
-  /* textContent защищает чат от вставки HTML/скриптов */
-  message.textContent = text;
+  const body = document.createElement("div");
+  body.textContent = text;
+  message.appendChild(body);
+
+  if (sources.length) {
+    const sourceWrap = document.createElement("div");
+    sourceWrap.className = "chat-sources";
+
+    const title = document.createElement("div");
+    title.className = "chat-sources-title";
+    title.textContent = "Источники:";
+    sourceWrap.appendChild(title);
+
+    sources.forEach((note) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "chat-source";
+      button.textContent = note.title || "Заметка";
+
+      button.addEventListener("click", () => openNoteDetails(note));
+      sourceWrap.appendChild(button);
+    });
+
+    message.appendChild(sourceWrap);
+  }
 
   container.appendChild(message);
   container.scrollTop = container.scrollHeight;
-}
-
-function buildRagContext() {
-  const notes = localDB.notes
-    .slice(0, 20)
-    .map(
-      (note) =>
-        `ЗАМЕТКА: ${note.title || "Без названия"}\n${note.text || ""}`
-    );
-
-  const journal = localDB.journal
-    .slice(0, 10)
-    .map((entry) => `ДНЕВНИК: ${entry.text || ""}`);
-
-  const context = [...notes, ...journal].join("\n\n---\n\n");
-
-  return context.slice(0, 14000);
 }
 
 async function sendChatMessage() {
@@ -836,38 +726,44 @@ async function sendChatMessage() {
   if (!question) return;
 
   input.value = "";
-  appendChatMsg(question, "user");
+  appendChatMessage(question, "user");
 
-  if (!getCurrentApiKey()) {
-    appendChatMsg(
-      "Укажите API-ключ и выберите ИИ в разделе «Профиль».",
+  if (!getKey()) {
+    appendChatMessage(
+      "Сначала выберите ИИ и добавьте API-ключ в разделе «Профиль».",
       "ai"
     );
     return;
   }
 
-  const context = buildRagContext();
+  const relevantNotes = findRelevantNotes(question);
 
-  if (!context) {
-    appendChatMsg(
-      "У вас пока нет заметок или записей дневника, по которым я мог бы ответить.",
+  if (!relevantNotes.length) {
+    appendChatMessage(
+      "У вас пока нет заметок. Сначала сохраните несколько мыслей на главной странице.",
       "ai"
     );
     return;
   }
 
-  appendChatMsg("Думаю…", "ai", "temp-loader");
+  appendChatMessage("Ищу ответ в ваших заметках…", "ai", [], "chat-thinking");
+
+  const context = buildChatContext(relevantNotes);
 
   const answer = await callAI(
-    `Ты — Second Brain пользователя. Отвечай только на основе контекста ниже. Если ответа нет в контексте, честно скажи об этом. Не выдумывай факты. Пиши кратко, на русском языке.\n\nКОНТЕКСТ:\n${context}`,
+    `Ты Second Brain пользователя. Отвечай только по заметкам из контекста. Не придумывай факты. Если точного ответа нет, скажи это прямо. Пиши на русском, кратко и понятно. При необходимости ссылайся на номера заметок в формате [1], [2].
+
+КОНТЕКСТ:
+${context}`,
     question
   );
 
-  document.getElementById("temp-loader")?.remove();
+  document.getElementById("chat-thinking")?.remove();
 
-  appendChatMsg(
-    answer || "Не удалось получить ответ. Попробуйте ещё раз.",
-    "ai"
+  appendChatMessage(
+    answer || "Я не смог сформировать ответ. Попробуйте ещё раз.",
+    "ai",
+    relevantNotes
   );
 }
 
@@ -878,12 +774,174 @@ function handleChatKey(event) {
   }
 }
 
-/* ─────────────────────────────────────────────────────────────
-   Файлы и папки
-───────────────────────────────────────────────────────────── */
+/* ───────── Карточка полной заметки ───────── */
+function openNoteDetails(note) {
+  document.getElementById("note-details-overlay")?.remove();
+
+  const overlay = document.createElement("div");
+  overlay.id = "note-details-overlay";
+  overlay.className = "note-details-overlay";
+
+  overlay.innerHTML = `
+    <section class="note-details-card" role="dialog" aria-modal="true">
+      <button class="note-details-close" type="button" aria-label="Закрыть">×</button>
+      <div class="note-details-date">${esc(
+        new Date(note.date || Date.now()).toLocaleString("ru-RU", {
+          dateStyle: "medium",
+          timeStyle: "short"
+        })
+      )}</div>
+      <h2>${esc(note.title || "Заметка")}</h2>
+      ${
+        note.tags?.length
+          ? `<div class="note-details-tags">${note.tags
+              .map((tag) => `<span>#${esc(tag)}</span>`)
+              .join("")}</div>`
+          : ""
+      }
+      <div class="note-details-text">${esc(note.text || "").replaceAll("\n", "<br>")}</div>
+    </section>
+  `;
+
+  overlay.addEventListener("click", (event) => {
+    if (
+      event.target === overlay ||
+      event.target.closest(".note-details-close")
+    ) {
+      overlay.remove();
+    }
+  });
+
+  document.body.appendChild(overlay);
+}
+
+/* ───────── Нейронная карта ───────── */
+function buildBrainLinks(notes) {
+  const pairs = new Map();
+
+  for (let i = 0; i < notes.length; i += 1) {
+    for (let j = i + 1; j < notes.length; j += 1) {
+      const firstTags = new Set(
+        (notes[i].tags || []).map((tag) => tag.toLowerCase())
+      );
+
+      const commonTags = (notes[j].tags || []).filter((tag) =>
+        firstTags.has(tag.toLowerCase())
+      );
+
+      if (commonTags.length) {
+        pairs.set(`${notes[i].id}|${notes[j].id}`, {
+          source: `note_${notes[i].id}`,
+          target: `note_${notes[j].id}`,
+          strength: commonTags.length,
+          tags: commonTags
+        });
+      }
+    }
+  }
+
+  const degree = {};
+  const links = [];
+
+  [...pairs.values()]
+    .sort((a, b) => b.strength - a.strength)
+    .forEach((link) => {
+      if ((degree[link.source] || 0) >= 3) return;
+      if ((degree[link.target] || 0) >= 3) return;
+
+      degree[link.source] = (degree[link.source] || 0) + 1;
+      degree[link.target] = (degree[link.target] || 0) + 1;
+      links.push(link);
+    });
+
+  return links;
+}
+
+function openBrainMap() {
+  const modal = document.getElementById("brainMapModal");
+  const container = document.getElementById("3d-graph");
+
+  modal.classList.add("active");
+  container.innerHTML = "";
+
+  const notes = localDB.notes;
+
+  if (!notes.length) {
+    container.innerHTML =
+      '<p class="brain-empty-message">Добавьте несколько заметок, а ИИ создаст для них теги и связи.</p>';
+    return;
+  }
+
+  if (typeof window.ForceGraph3D !== "function") {
+    container.innerHTML =
+      '<p class="brain-empty-message">Не удалось загрузить карту мыслей.</p>';
+    return;
+  }
+
+  const nodes = notes.map((note) => ({
+    id: `note_${note.id}`,
+    note,
+    name: note.title || "Заметка",
+    color: "#5b8cff",
+    val: 3 + Math.min((note.tags || []).length, 5),
+    description: cleanText(note.text).slice(0, 180),
+    tags: note.tags || []
+  }));
+
+  const links = buildBrainLinks(notes);
+
+  const graph = window
+    .ForceGraph3D()(container)
+    .graphData({ nodes, links })
+    .backgroundColor("#020204")
+    .nodeColor("color")
+    .nodeVal("val")
+    .nodeOpacity(0.95)
+    .nodeLabel(
+      (node) => `
+        <div style="max-width:260px;padding:8px 10px;font-family:Arial,sans-serif;">
+          <strong>${esc(node.name)}</strong>
+          <div style="margin-top:5px;color:#b6b6c7;font-size:12px;">${esc(node.description)}</div>
+          ${
+            node.tags.length
+              ? `<div style="margin-top:7px;color:#76a0ff;font-size:11px;">${node.tags
+                  .map((tag) => `#${esc(tag)}`)
+                  .join(" ")}</div>`
+              : ""
+          }
+        </div>
+      `
+    )
+    .linkColor((link) =>
+      link.strength > 1
+        ? "rgba(160,120,255,0.72)"
+        : "rgba(91,140,255,0.42)"
+    )
+    .linkWidth((link) => 0.8 + link.strength * 0.7)
+    .linkOpacity(0.65)
+    .linkDirectionalParticles((link) => (link.strength > 1 ? 2 : 1))
+    .linkDirectionalParticleWidth(1.6)
+    .linkDirectionalParticleSpeed(0.004)
+    .onNodeClick((node) => {
+      openNoteDetails(node.note);
+    })
+    .onNodeHover((node) => {
+      container.style.cursor = node ? "pointer" : "grab";
+    });
+
+  graph.d3Force("charge")?.strength(-120);
+  graph.d3Force("link")?.distance(95);
+
+  setTimeout(() => graph.zoomToFit(700, 60), 250);
+}
+
+function closeBrainMap() {
+  document.getElementById("brainMapModal")?.classList.remove("active");
+}
+
+/* ───────── Папки ───────── */
 function updateTopbar() {
   const bar = document.getElementById("filesTopbar");
-  if (!bar) return;
 
   if (activeFolder === null) {
     bar.innerHTML = '<span class="files-topbar-title">Папки</span>';
@@ -894,7 +952,7 @@ function updateTopbar() {
 
   bar.innerHTML = `
     <button class="icon-btn" type="button" onclick="closeFolder()" aria-label="Назад">
-      <svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true">
+      <svg class="svg-icon" viewBox="0 0 24 24">
         <polyline points="15 18 9 12 15 6"></polyline>
       </svg>
     </button>
@@ -904,21 +962,19 @@ function updateTopbar() {
 
 function renderFolderGrid() {
   const grid = document.getElementById("folderGrid");
-  if (!grid) return;
-
-  const allItems = getAllItems();
+  const items = allItems();
 
   grid.innerHTML = folders
     .map((folder) => {
-      const count = allItems.filter((item) =>
+      const count = items.filter((item) =>
         folder.autoTypes.includes(item.type)
       ).length;
 
       return `
-        <button class="folder-card" type="button" onclick="openFolder('${esc(folder.id)}')">
-          <span class="folder-card-icon" style="background:${esc(folder.bg)}">${folder.emoji}</span>
+        <button class="folder-card" type="button" onclick="openFolder('${folder.id}')">
+          <span class="folder-card-icon" style="background:${folder.bg}">${folder.emoji}</span>
           <span class="folder-card-name">${esc(folder.name)}</span>
-          <span class="folder-card-count">${count} ${count === 1 ? "элемент" : "элементов"}</span>
+          <span class="folder-card-count">${count} шт.</span>
         </button>
       `;
     })
@@ -929,31 +985,23 @@ function renderFolderContents() {
   const gallery = document.getElementById("folderGallery");
   const folder = folders.find((item) => item.id === activeFolder);
 
-  if (!gallery || !folder) return;
+  if (!folder) return;
 
-  const query = searchQuery.trim().toLowerCase();
+  const query = searchQuery.toLowerCase();
 
-  const files = getAllItems().filter((file) => {
+  const files = allItems().filter((file) => {
     if (!folder.autoTypes.includes(file.type)) return false;
 
-    if (!query) return true;
-
-    const haystack = [
-      file.title,
-      file.text,
-      file.name,
-      ...(Array.isArray(file.tags) ? file.tags : [])
-    ]
-      .filter(Boolean)
-      .join(" ")
-      .toLowerCase();
-
-    return haystack.includes(query);
+    return !query || cleanText(
+      `${file.title || ""} ${file.text || ""} ${(file.tags || []).join(" ")}`
+    )
+      .toLowerCase()
+      .includes(query);
   });
 
   if (!files.length) {
     gallery.innerHTML =
-      '<div style="grid-column:1/-1;padding:24px;color:var(--text-muted);text-align:center;">Ничего не найдено</div>';
+      '<div class="empty-files">Здесь пока ничего нет.</div>';
     return;
   }
 
@@ -961,48 +1009,30 @@ function renderFolderContents() {
 
   files.forEach((file) => {
     const card = document.createElement("div");
-    card.className = `grid-item ${file.type || "document"}`;
+    card.className = `grid-item ${file.type}`;
 
     if (file.type === "smart_note") {
       card.innerHTML = `
         <div class="text-card-body">
-          <strong style="color:var(--blue);font-family:Outfit,sans-serif;">
-            ${esc(file.title || "Заметка")}
-          </strong>
+          <strong>${esc(file.title)}</strong>
           <br><br>
-          ${esc(file.text || "")}
+          ${esc(file.text)}
         </div>
       `;
 
-      card.addEventListener("click", () => {
-        if (tg?.showAlert) {
-          tg.showAlert(file.text || "");
-        } else {
-          showToast(file.text || "Заметка пуста");
-        }
-      });
+      card.addEventListener("click", () => openNoteDetails(file));
     } else if (file.type === "photo" && safeUrl(file.url)) {
       const image = document.createElement("img");
       image.src = safeUrl(file.url);
-      image.alt = file.title || "Изображение";
       image.loading = "lazy";
-
+      image.alt = file.title || "Фото";
       card.appendChild(image);
-      card.addEventListener("click", () => openModal(file));
-    } else if (file.type === "video" && safeUrl(file.url)) {
-      const video = document.createElement("video");
-      video.src = safeUrl(file.url);
-      video.muted = true;
-      video.playsInline = true;
-      video.preload = "metadata";
-
-      card.appendChild(video);
       card.addEventListener("click", () => openModal(file));
     } else {
       card.innerHTML = `
-        <div class="text-card-body" style="display:flex;align-items:center;justify-content:center;text-align:center;">
-          ${esc(file.title || file.type || "Файл")}
-        </div>
+        <div class="text-card-body file-card-label">${esc(
+          file.title || file.type || "Файл"
+        )}</div>
       `;
     }
 
@@ -1027,13 +1057,10 @@ function renderFilesView() {
   }
 }
 
-function openFolder(folderId) {
-  activeFolder = folderId;
+function openFolder(id) {
+  activeFolder = id;
   searchQuery = "";
-
-  const search = document.getElementById("searchInput");
-  if (search) search.value = "";
-
+  document.getElementById("searchInput").value = "";
   renderFilesView();
   haptic();
 }
@@ -1041,275 +1068,156 @@ function openFolder(folderId) {
 function closeFolder() {
   activeFolder = null;
   searchQuery = "";
-
-  const search = document.getElementById("searchInput");
-  if (search) search.value = "";
-
+  document.getElementById("searchInput").value = "";
   renderFilesView();
   haptic();
 }
 
 function handleSearch() {
-  searchQuery = document.getElementById("searchInput")?.value || "";
-
-  if (activeFolder !== null) {
-    renderFolderContents();
-  }
+  searchQuery = document.getElementById("searchInput").value || "";
+  if (activeFolder !== null) renderFolderContents();
 }
 
-/* ─────────────────────────────────────────────────────────────
-   Карта мыслей
-───────────────────────────────────────────────────────────── */
-function openBrainMap() {
-  const modal = document.getElementById("brainMapModal");
-  const container = document.getElementById("3d-graph");
-
-  modal?.classList.add("active");
-
-  if (!container) return;
-  container.innerHTML = "";
-
-  if (!localDB.notes.length) {
-    container.innerHTML =
-      '<p style="padding:50vh 20px 0;color:white;text-align:center;">Добавьте несколько заметок, чтобы построить карту мыслей.</p>';
-    return;
-  }
-
-  if (typeof window.ForceGraph3D !== "function") {
-    container.innerHTML =
-      '<p style="padding:50vh 20px 0;color:white;text-align:center;">Не удалось загрузить библиотеку карты мыслей.</p>';
-    return;
-  }
-
-  const nodes = [];
-  const links = [];
-  const tagIds = new Set();
-
-  localDB.notes.forEach((note) => {
-    const noteId = `note_${note.id}`;
-
-    nodes.push({
-      id: noteId,
-      name: note.title || "Заметка",
-      val: 3,
-      color: "#5b8cff"
-    });
-
-    (note.tags || []).forEach((tag) => {
-      const tagId = `tag_${tag.toLowerCase()}`;
-
-      if (!tagIds.has(tagId)) {
-        tagIds.add(tagId);
-
-        nodes.push({
-          id: tagId,
-          name: `#${tag}`,
-          val: 1.5,
-          color: "#00d98a"
-        });
-      }
-
-      links.push({ source: noteId, target: tagId });
-    });
-  });
-
-  window
-    .ForceGraph3D()(container)
-    .graphData({ nodes, links })
-    .nodeLabel("name")
-    .nodeColor("color")
-    .nodeVal("val")
-    .backgroundColor("#020204")
-    .linkColor(() => "rgba(255,255,255,0.18)");
-}
-
-function closeBrainMap() {
-  document.getElementById("brainMapModal")?.classList.remove("active");
-}
-
-/* ─────────────────────────────────────────────────────────────
-   Окно медиа
-───────────────────────────────────────────────────────────── */
+/* ───────── Медиа ───────── */
 function openModal(file) {
   const modal = document.getElementById("mediaModal");
   const content = document.getElementById("modalContent");
   const url = safeUrl(file.url);
 
-  if (!modal || !content || !url) return;
+  if (!url) return;
 
   content.innerHTML = "";
 
-  if (file.type === "video") {
-    const video = document.createElement("video");
-    video.src = url;
-    video.controls = true;
-    video.autoplay = true;
-    video.playsInline = true;
-    content.appendChild(video);
-  } else {
-    const image = document.createElement("img");
-    image.src = url;
-    image.alt = file.title || "Изображение";
-    content.appendChild(image);
-  }
+  const image = document.createElement("img");
+  image.src = url;
+  image.alt = file.title || "Изображение";
+  content.appendChild(image);
 
   modal.classList.add("active");
 }
 
 function closeModal() {
-  const modal = document.getElementById("mediaModal");
-  const content = document.getElementById("modalContent");
-
-  modal?.classList.remove("active");
-
-  if (content) content.innerHTML = "";
+  document.getElementById("mediaModal")?.classList.remove("active");
+  document.getElementById("modalContent").innerHTML = "";
 }
 
-/* ─────────────────────────────────────────────────────────────
-   Экспорт и импорт
-───────────────────────────────────────────────────────────── */
+/* ───────── Импорт и экспорт ───────── */
 function exportData() {
-  const data = JSON.stringify(localDB, null, 2);
-  const blob = new Blob([data], { type: "application/json" });
+  const blob = new Blob([JSON.stringify(localDB, null, 2)], {
+    type: "application/json"
+  });
+
   const url = URL.createObjectURL(blob);
-
   const link = document.createElement("a");
-  link.href = url;
-  link.download = `infinity-backup-${new Date()
-    .toISOString()
-    .slice(0, 10)}.json`;
 
+  link.href = url;
+  link.download = `infinity-backup-${new Date().toISOString().slice(0, 10)}.json`;
   document.body.appendChild(link);
   link.click();
   link.remove();
 
   URL.revokeObjectURL(url);
-  showToast("Резервная копия скачана");
+  showToast("Бэкап скачан");
 }
 
 function importData(event) {
   const file = event.target.files?.[0];
-
   if (!file) return;
 
   const reader = new FileReader();
 
   reader.onload = () => {
     try {
-      const imported = JSON.parse(String(reader.result));
+      const data = JSON.parse(String(reader.result));
 
-      if (!imported || typeof imported !== "object") {
-        throw new Error("Некорректный файл");
+      if (!data || typeof data !== "object") {
+        throw new Error("Неверный JSON");
       }
 
       localDB = {
-        ...structuredClone(defaultDatabase),
-        ...imported,
-        stats: {
-          ...structuredClone(defaultDatabase.stats),
-          ...(imported.stats || {})
-        },
-        settings: {
-          ...structuredClone(defaultDatabase.settings),
-          ...(imported.settings || {})
-        }
+        ...clone(defaultDB),
+        ...data,
+        stats: { ...clone(defaultDB.stats), ...(data.stats || {}) },
+        settings: { ...clone(defaultDB.settings), ...(data.settings || {}) }
       };
 
       localDB.notes = Array.isArray(localDB.notes) ? localDB.notes : [];
-      localDB.journal = Array.isArray(localDB.journal)
-        ? localDB.journal
-        : [];
+      localDB.journal = Array.isArray(localDB.journal) ? localDB.journal : [];
       localDB.settings.apiKeys ||= {};
 
       if (
         localDB.settings.togetherApiKey &&
         !localDB.settings.apiKeys.together
       ) {
-        localDB.settings.apiKeys.together =
-          localDB.settings.togetherApiKey;
+        localDB.settings.apiKeys.together = localDB.settings.togetherApiKey;
       }
 
-      saveLocalDB();
+      saveDB();
       loadSettingsUI();
       renderJournalFeed();
       renderFilesView();
 
-      showToast("Данные успешно восстановлены");
-    } catch (error) {
-      console.error("Ошибка импорта:", error);
-      showToast("Не удалось импортировать этот JSON-файл");
+      showToast("Данные восстановлены");
+    } catch (_) {
+      showToast("Не удалось импортировать JSON");
     }
   };
-
-  reader.onerror = () => showToast("Не удалось прочитать файл");
 
   reader.readAsText(file);
   event.target.value = "";
 }
 
-/* ─────────────────────────────────────────────────────────────
-   Навигация и уведомления
-───────────────────────────────────────────────────────────── */
-function switchTab(tabId, navButton) {
-  const nextTab = document.getElementById(`tab-${tabId}`);
+/* ───────── Навигация ───────── */
+function switchTab(tabId, button) {
+  document.querySelectorAll(".tab-content").forEach((tab) => {
+    tab.classList.remove("active");
+  });
 
-  if (!nextTab) return;
+  document.getElementById(`tab-${tabId}`)?.classList.add("active");
 
-  document
-    .querySelectorAll(".tab-content")
-    .forEach((tab) => tab.classList.remove("active"));
+  document.querySelectorAll(".nav-item").forEach((item) => {
+    item.classList.remove("active");
+  });
 
-  nextTab.classList.add("active");
-
-  document
-    .querySelectorAll(".nav-item")
-    .forEach((button) => button.classList.remove("active"));
-
-  navButton?.classList.add("active");
+  button?.classList.add("active");
 
   window.scrollTo({ top: 0, behavior: "smooth" });
   haptic();
 }
 
-function showToast(message) {
+function showToast(text) {
   const box = document.getElementById("toast-box");
-  if (!box) return;
-
   const toast = document.createElement("div");
-  toast.className = "toast";
-  toast.textContent = message;
 
+  toast.className = "toast";
+  toast.textContent = text;
   box.appendChild(toast);
 
-  window.setTimeout(() => toast.remove(), 3000);
+  setTimeout(() => toast.remove(), 3000);
 }
 
-/* ─────────────────────────────────────────────────────────────
-   Запуск
-───────────────────────────────────────────────────────────── */
+/* ───────── Запуск ───────── */
 async function initApp() {
   const name = telegramUser?.first_name || "Пользователь";
-  const avatar = document.getElementById("userAvatar");
-  const userName = document.getElementById("userName");
 
-  if (userName) userName.textContent = name;
-  if (avatar) avatar.textContent = name.charAt(0).toUpperCase();
+  document.getElementById("userName").textContent = name;
+  document.getElementById("userAvatar").textContent = name[0].toUpperCase();
 
   document
     .getElementById("aiProvider")
-    ?.addEventListener("change", onProviderChange);
-
-  document.getElementById("aiModel")?.addEventListener("change", () => {
-    localDB.settings.aiModel = document.getElementById("aiModel").value;
-  });
+    .addEventListener("change", changeProvider);
 
   document
     .getElementById("saveSettingsBtn")
-    ?.addEventListener("click", saveSettings);
+    .addEventListener("click", saveSettings);
 
   document
     .getElementById("toggleApiKey")
-    ?.addEventListener("click", toggleApiKeyVisibility);
+    .addEventListener("click", toggleApiKeyVisibility);
+
+  document.getElementById("aiModel").addEventListener("change", (event) => {
+    localDB.settings.aiModel = event.target.value;
+  });
 
   loadSettingsUI();
   updateStreak();
@@ -1322,7 +1230,7 @@ async function initApp() {
   updateStatsUI();
   updateStorageUI();
 
-  window.setTimeout(() => {
+  setTimeout(() => {
     document.getElementById("app-loader")?.classList.add("hidden");
   }, 350);
 }
