@@ -1,8 +1,6 @@
 "use strict";
 
-/* ───────── Telegram ───────── */
 const tg = window.Telegram?.WebApp || null;
-
 try {
   tg?.ready?.();
   tg?.expand?.();
@@ -11,15 +9,6 @@ try {
 } catch (_) {}
 
 const telegramUser = tg?.initDataUnsafe?.user || null;
-
-function haptic(kind = "selection") {
-  try {
-    if (kind === "impact") tg?.HapticFeedback?.impactOccurred?.("medium");
-    else tg?.HapticFeedback?.selectionChanged?.();
-  } catch (_) {}
-}
-
-/* ───────── Настройки ИИ ───────── */
 const API_URL = "https://galaxylab.i234.me:8443/api/files";
 
 const AI_PROVIDERS = {
@@ -35,36 +24,23 @@ const AI_PROVIDERS = {
     title: "OpenAI",
     models: [
       ["gpt-4o-mini", "GPT-4o mini"],
-      ["gpt-4.1-mini", "GPT-4.1 mini"],
-      ["gpt-4o", "GPT-4o"]
+      ["gpt-4.1-mini", "GPT-4.1 mini"]
     ]
   },
   anthropic: {
     title: "Anthropic",
-    models: [
-      ["claude-3-5-haiku-latest", "Claude 3.5 Haiku"],
-      ["claude-3-5-sonnet-latest", "Claude 3.5 Sonnet"]
-    ]
+    models: [["claude-3-5-haiku-latest", "Claude 3.5 Haiku"]]
   },
   google: {
     title: "Google Gemini",
-    models: [
-      ["gemini-2.0-flash", "Gemini 2.0 Flash"],
-      ["gemini-1.5-flash", "Gemini 1.5 Flash"],
-      ["gemini-1.5-pro", "Gemini 1.5 Pro"]
-    ]
+    models: [["gemini-2.0-flash", "Gemini 2.0 Flash"]]
   }
 };
 
-/* ───────── Данные ───────── */
 const defaultDB = {
   notes: [],
   journal: [],
-  stats: {
-    streak: 0,
-    lastLogin: null,
-    wordsWritten: 0
-  },
+  stats: { streak: 0, lastLogin: null, wordsWritten: 0 },
   settings: {
     aiProvider: "together",
     aiModel: "meta-llama/Llama-3.3-70B-Instruct-Turbo",
@@ -73,79 +49,20 @@ const defaultDB = {
   }
 };
 
-function clone(value) {
-  return JSON.parse(JSON.stringify(value));
-}
+const folders = [
+  { id: "smart_notes", name: "Smart Notes", emoji: "🧠", bg: "rgba(255,152,0,.1)", autoTypes: ["smart_note"] },
+  { id: "texts", name: "Texts", emoji: "📝", bg: "rgba(160,120,255,.1)", autoTypes: ["text"] },
+  { id: "documents", name: "Documents", emoji: "📄", bg: "rgba(91,140,255,.1)", autoTypes: ["document", "audio", "voice"] },
+  { id: "media", name: "Media", emoji: "🖼️", bg: "rgba(0,217,138,.1)", autoTypes: ["photo", "video", "animation", "video_note"] }
+];
 
-function loadDB() {
-  try {
-    const saved = JSON.parse(localStorage.getItem("infinityLocalDB"));
-
-    if (!saved || typeof saved !== "object") return clone(defaultDB);
-
-    const db = {
-      ...clone(defaultDB),
-      ...saved,
-      stats: { ...clone(defaultDB.stats), ...(saved.stats || {}) },
-      settings: { ...clone(defaultDB.settings), ...(saved.settings || {}) }
-    };
-
-    db.notes = Array.isArray(db.notes) ? db.notes : [];
-    db.journal = Array.isArray(db.journal) ? db.journal : [];
-    db.settings.apiKeys ||= {};
-
-    /* Совместимость со старым ключом Together AI */
-    if (db.settings.togetherApiKey && !db.settings.apiKeys.together) {
-      db.settings.apiKeys.together = db.settings.togetherApiKey;
-    }
-
-    return db;
-  } catch (_) {
-    return clone(defaultDB);
-  }
-}
-
-let localDB = loadDB();
 let globalFiles = [];
 let activeFolder = null;
 let searchQuery = "";
 let currentMood = "😐";
 
-const folders = [
-  {
-    id: "smart_notes",
-    name: "Smart Notes",
-    emoji: "🧠",
-    bg: "rgba(255,152,0,.1)",
-    autoTypes: ["smart_note"]
-  },
-  {
-    id: "texts",
-    name: "Texts",
-    emoji: "📝",
-    bg: "rgba(160,120,255,.1)",
-    autoTypes: ["text"]
-  },
-  {
-    id: "documents",
-    name: "Documents",
-    emoji: "📄",
-    bg: "rgba(91,140,255,.1)",
-    autoTypes: ["document", "audio", "voice"]
-  },
-  {
-    id: "media",
-    name: "Media",
-    emoji: "🖼️",
-    bg: "rgba(0,217,138,.1)",
-    autoTypes: ["photo", "video", "animation", "video_note"]
-  }
-];
-
-function saveDB() {
-  localStorage.setItem("infinityLocalDB", JSON.stringify(localDB));
-  updateStatsUI();
-  updateStorageUI();
+function clone(value) {
+  return JSON.parse(JSON.stringify(value));
 }
 
 function esc(text = "") {
@@ -161,12 +78,54 @@ function cleanText(text = "") {
   return String(text).replace(/\s+/g, " ").trim();
 }
 
-function words(text = "") {
+function splitWords(text = "") {
   return cleanText(text)
     .toLowerCase()
     .replace(/[^\p{L}\p{N}\s-]/gu, " ")
     .split(/\s+/)
     .filter((word) => word.length > 1);
+}
+
+function haptic(type = "selection") {
+  try {
+    type === "impact"
+      ? tg?.HapticFeedback?.impactOccurred?.("medium")
+      : tg?.HapticFeedback?.selectionChanged?.();
+  } catch (_) {}
+}
+
+function loadDB() {
+  try {
+    const saved = JSON.parse(localStorage.getItem("infinityLocalDB"));
+    if (!saved || typeof saved !== "object") return clone(defaultDB);
+
+    const db = {
+      ...clone(defaultDB),
+      ...saved,
+      stats: { ...clone(defaultDB.stats), ...(saved.stats || {}) },
+      settings: { ...clone(defaultDB.settings), ...(saved.settings || {}) }
+    };
+
+    db.notes = Array.isArray(db.notes) ? db.notes : [];
+    db.journal = Array.isArray(db.journal) ? db.journal : [];
+    db.settings.apiKeys ||= {};
+
+    if (db.settings.togetherApiKey && !db.settings.apiKeys.together) {
+      db.settings.apiKeys.together = db.settings.togetherApiKey;
+    }
+
+    return db;
+  } catch (_) {
+    return clone(defaultDB);
+  }
+}
+
+let localDB = loadDB();
+
+function saveDB() {
+  localStorage.setItem("infinityLocalDB", JSON.stringify(localDB));
+  updateStatsUI();
+  updateStorageUI();
 }
 
 function safeUrl(value) {
@@ -176,6 +135,30 @@ function safeUrl(value) {
   } catch (_) {
     return "";
   }
+}
+
+function bytesOf(file) {
+  const direct = [
+    file.size,
+    file.file_size,
+    file.fileSize,
+    file.bytes,
+    file.content_length,
+    file.contentLength,
+    file.document?.file_size,
+    file.photo?.file_size,
+    file.video?.file_size,
+    file.audio?.file_size
+  ];
+
+  const size = direct.find((item) => Number(item) > 0);
+  if (size) return Number(size);
+
+  if (typeof file.base64 === "string") {
+    return Math.ceil((file.base64.length * 3) / 4);
+  }
+
+  return 0;
 }
 
 function allItems() {
@@ -200,16 +183,14 @@ function getProvider() {
 }
 
 function getModel() {
-  const provider = getProvider();
-  const models = AI_PROVIDERS[provider].models;
-  const saved = localDB.settings.aiModel;
-
-  return models.some(([id]) => id === saved) ? saved : models[0][0];
+  const models = AI_PROVIDERS[getProvider()].models;
+  return models.some(([model]) => model === localDB.settings.aiModel)
+    ? localDB.settings.aiModel
+    : models[0][0];
 }
 
 function getKey() {
   const provider = getProvider();
-
   return (
     localDB.settings.apiKeys?.[provider] ||
     (provider === "together" ? localDB.settings.togetherApiKey : "") ||
@@ -217,56 +198,121 @@ function getKey() {
   ).trim();
 }
 
-/* ───────── UI настроек ───────── */
+/* ───────── Память ───────── */
+
+function formatBytes(bytes) {
+  if (bytes < 1024) return `${bytes} Б`;
+  if (bytes < 1024 ** 2) return `${(bytes / 1024).toFixed(1)} КБ`;
+  if (bytes < 1024 ** 3) return `${(bytes / 1024 ** 2).toFixed(1)} МБ`;
+  return `${(bytes / 1024 ** 3).toFixed(2)} ГБ`;
+}
+
+function updateStorageUI() {
+  const items = allItems();
+  const total = items.reduce((sum, item) => sum + bytesOf(item), 0);
+
+  const photos = items.filter((item) =>
+    ["photo", "video", "animation", "video_note"].includes(item.type)
+  ).length;
+
+  const documents = items.filter((item) =>
+    ["document", "audio", "voice"].includes(item.type)
+  ).length;
+
+  const notes = items.filter((item) => item.type === "smart_note").length;
+
+  document.getElementById("dataUsedText").textContent =
+    `${formatBytes(total)} · ${notes} заметок · ${photos} медиа · ${documents} файлов`;
+
+  /*
+    Шкала визуальная: слева 0 Б, справа ∞.
+    Она не ограничивает реальную память, но заполняется логарифмически.
+  */
+  const visualPercent = total
+    ? Math.min(8 + Math.log10(total + 1) * 11, 96)
+    : 0;
+
+  document.getElementById("dataUsedFill").style.width = `${visualPercent}%`;
+  document.getElementById("storageRangeDot").style.left = `${visualPercent}%`;
+  document
+    .querySelector(".storage-range")
+    ?.setAttribute("aria-valuenow", String(Math.round(visualPercent)));
+}
+
+function updateStatsUI() {
+  document.getElementById("streakCounter").textContent =
+    `🔥 ${localDB.stats.streak || 0}`;
+
+  document.getElementById("wordsCount").textContent =
+    localDB.stats.wordsWritten || 0;
+
+  document.getElementById("totalFilesCount").textContent = allItems().length;
+}
+
+function updateStreak() {
+  const today = new Date().toDateString();
+  if (localDB.stats.lastLogin === today) return;
+
+  const yesterday = new Date(Date.now() - 86400000).toDateString();
+
+  localDB.stats.streak =
+    localDB.stats.lastLogin === yesterday
+      ? Number(localDB.stats.streak || 0) + 1
+      : 1;
+
+  localDB.stats.lastLogin = today;
+  saveDB();
+}
+
+/* ───────── Настройки ИИ ───────── */
+
 function renderModels(provider, selected = "") {
   const select = document.getElementById("aiModel");
-  const models = AI_PROVIDERS[provider]?.models || [];
+  const models = AI_PROVIDERS[provider].models;
 
   select.innerHTML = models
     .map(([value, label]) => `<option value="${esc(value)}">${esc(label)}</option>`)
     .join("");
 
-  const valid = models.some(([value]) => value === selected)
+  const result = models.some(([value]) => value === selected)
     ? selected
-    : models[0]?.[0] || "";
+    : models[0][0];
 
-  select.value = valid;
-  return valid;
+  select.value = result;
+  return result;
 }
 
 function loadSettingsUI() {
   const provider = getProvider();
-  const providerSelect = document.getElementById("aiProvider");
-  const keyInput = document.getElementById("togetherApiKey");
-
-  providerSelect.value = provider;
+  document.getElementById("aiProvider").value = provider;
   localDB.settings.aiModel = renderModels(provider, localDB.settings.aiModel);
-  keyInput.value = localDB.settings.apiKeys?.[provider] || "";
+  document.getElementById("togetherApiKey").value =
+    localDB.settings.apiKeys?.[provider] || "";
 }
 
 function changeProvider() {
-  const previousProvider = getProvider();
+  const oldProvider = getProvider();
   const nextProvider = document.getElementById("aiProvider").value;
-  const keyInput = document.getElementById("togetherApiKey");
+  const input = document.getElementById("togetherApiKey");
 
   localDB.settings.apiKeys ||= {};
-  localDB.settings.apiKeys[previousProvider] = keyInput.value.trim();
+  localDB.settings.apiKeys[oldProvider] = input.value.trim();
   localDB.settings.aiProvider = nextProvider;
-  localDB.settings.aiModel = renderModels(nextProvider, "");
-
-  keyInput.value = localDB.settings.apiKeys[nextProvider] || "";
+  localDB.settings.aiModel = renderModels(nextProvider);
+  input.value = localDB.settings.apiKeys[nextProvider] || "";
 }
 
 function saveSettings() {
   const provider = document.getElementById("aiProvider").value;
-  const model = document.getElementById("aiModel").value;
-  const key = document.getElementById("togetherApiKey").value.trim();
 
   localDB.settings.apiKeys ||= {};
   localDB.settings.aiProvider = provider;
-  localDB.settings.aiModel = model;
-  localDB.settings.apiKeys[provider] = key;
-  localDB.settings.togetherApiKey = localDB.settings.apiKeys.together || "";
+  localDB.settings.aiModel = document.getElementById("aiModel").value;
+  localDB.settings.apiKeys[provider] =
+    document.getElementById("togetherApiKey").value.trim();
+
+  localDB.settings.togetherApiKey =
+    localDB.settings.apiKeys.together || "";
 
   saveDB();
   showToast("Настройки ИИ сохранены");
@@ -277,8 +323,7 @@ function toggleApiKeyVisibility() {
   input.type = input.type === "password" ? "text" : "password";
 }
 
-/* ───────── API ИИ ───────── */
-async function apiError(response) {
+async function getApiError(response) {
   try {
     const data = await response.json();
     return data?.error?.message || data?.message || `Ошибка ${response.status}`;
@@ -293,7 +338,7 @@ async function callAI(system, prompt) {
   const key = getKey();
 
   if (!key) {
-    showToast(`Введите API-ключ ${AI_PROVIDERS[provider].title}`);
+    showToast(`Введите ключ ${AI_PROVIDERS[provider].title}`);
     return null;
   }
 
@@ -302,32 +347,30 @@ async function callAI(system, prompt) {
     let answer = "";
 
     if (provider === "together" || provider === "openai") {
-      const endpoint =
+      response = await fetch(
         provider === "together"
           ? "https://api.together.xyz/v1/chat/completions"
-          : "https://api.openai.com/v1/chat/completions";
+          : "https://api.openai.com/v1/chat/completions",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${key}`,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            model,
+            temperature: 0.35,
+            max_tokens: 900,
+            messages: [
+              { role: "system", content: system },
+              { role: "user", content: prompt }
+            ]
+          })
+        }
+      );
 
-      response = await fetch(endpoint, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${key}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          model,
-          temperature: 0.35,
-          max_tokens: 900,
-          messages: [
-            { role: "system", content: system },
-            { role: "user", content: prompt }
-          ]
-        })
-      });
-
-      if (!response.ok) throw new Error(await apiError(response));
-
-      const data = await response.json();
-      answer = data?.choices?.[0]?.message?.content || "";
+      if (!response.ok) throw new Error(await getApiError(response));
+      answer = (await response.json())?.choices?.[0]?.message?.content || "";
     }
 
     if (provider === "anthropic") {
@@ -346,10 +389,8 @@ async function callAI(system, prompt) {
         })
       });
 
-      if (!response.ok) throw new Error(await apiError(response));
-
-      const data = await response.json();
-      answer = data?.content?.[0]?.text || "";
+      if (!response.ok) throw new Error(await getApiError(response));
+      answer = (await response.json())?.content?.[0]?.text || "";
     }
 
     if (provider === "google") {
@@ -360,126 +401,35 @@ async function callAI(system, prompt) {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             system_instruction: { parts: [{ text: system }] },
-            contents: [{ role: "user", parts: [{ text: prompt }] }],
-            generationConfig: {
-              temperature: 0.35,
-              maxOutputTokens: 900
-            }
+            contents: [{ role: "user", parts: [{ text: prompt }] }]
           })
         }
       );
 
-      if (!response.ok) throw new Error(await apiError(response));
-
-      const data = await response.json();
-      answer = data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
+      if (!response.ok) throw new Error(await getApiError(response));
+      answer = (await response.json())?.candidates?.[0]?.content?.parts?.[0]?.text || "";
     }
 
-    if (!answer.trim()) throw new Error("Пустой ответ от модели");
-
+    if (!answer.trim()) throw new Error("Пустой ответ");
     return answer.trim();
   } catch (error) {
-    console.error("AI error:", error);
-    const message = error instanceof Error ? error.message : "";
-
-    if (/401|403|key|auth|unauthorized/i.test(message)) {
-      showToast("Проверьте API-ключ и доступ к этой модели");
-    } else {
-      showToast("ИИ сейчас недоступен. Попробуйте ещё раз");
-    }
-
+    console.error(error);
+    showToast("ИИ недоступен. Проверьте ключ или попробуйте позже");
     return null;
   }
 }
 
-/* ───────── Статистика ───────── */
-function formatBytes(bytes) {
-  if (bytes < 1024) return `${bytes} Б`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} КБ`;
-  return `${(bytes / 1024 / 1024).toFixed(1)} МБ`;
+/* ───────── Заметки ───────── */
+
+function updateNoteCounter() {
+  const input = document.getElementById("smartNoteInput");
+  const counter = document.getElementById("noteCharCounter");
+  counter.textContent = `${input.value.length} / ${input.maxLength}`;
 }
 
-function updateStatsUI() {
-  document.getElementById("streakCounter").textContent =
-    `🔥 ${localDB.stats.streak || 0}`;
-
-  document.getElementById("wordsCount").textContent =
-    localDB.stats.wordsWritten || 0;
-
-  document.getElementById("totalFilesCount").textContent = allItems().length;
-}
-
-function updateStorageUI() {
-  const serverSize = globalFiles.reduce(
-    (total, file) => total + Number(file.size || file.file_size || 0),
-    0
-  );
-
-  const notesSize = localDB.notes.reduce(
-    (total, note) => total + new Blob([note.text || ""]).size,
-    0
-  );
-
-  const size = serverSize + notesSize;
-  document.getElementById("dataUsedText").textContent = formatBytes(size);
-
-  const percent = Math.min(size / (100 * 1024 * 1024) * 100, 100);
-  document.getElementById("dataUsedFill").style.width = `${percent}%`;
-}
-
-function updateStreak() {
-  const today = new Date().toDateString();
-  if (localDB.stats.lastLogin === today) return;
-
-  const yesterday = new Date(Date.now() - 86400000).toDateString();
-
-  localDB.stats.streak =
-    localDB.stats.lastLogin === yesterday
-      ? (localDB.stats.streak || 0) + 1
-      : 1;
-
-  localDB.stats.lastLogin = today;
-  saveDB();
-}
-
-/* ───────── Загрузка серверных файлов ───────── */
-async function fetchServerFiles() {
-  const userId = telegramUser?.id || "browser-user";
-
+function parseNoteAnalysis(text) {
   try {
-    const response = await fetch(
-      `${API_URL}?user_id=${encodeURIComponent(userId)}&limit=100`
-    );
-
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-
-    const data = await response.json();
-
-    globalFiles = (Array.isArray(data?.files) ? data.files : []).map(
-      (file, index) => ({
-        ...file,
-        internalId: `server_${file.id || index}`,
-        type: file.type || file.file_type || "document",
-        title: file.title || file.name || file.file_name || "Файл",
-        text: file.text || file.caption || "",
-        url: file.url || file.file_url || "",
-        size: Number(file.size || file.file_size || 0)
-      })
-    );
-  } catch (error) {
-    console.warn("Файлы сервера не загружены:", error);
-    globalFiles = [];
-  }
-
-  updateStatsUI();
-  updateStorageUI();
-}
-
-/* ───────── Умные заметки ───────── */
-function parseNoteAnalysis(answer) {
-  try {
-    const json = answer.match(/\{[\s\S]*\}/)?.[0];
-    const data = JSON.parse(json);
+    const data = JSON.parse(text.match(/\{[\s\S]*\}/)?.[0]);
 
     return {
       title: String(data.title || "Заметка").slice(0, 90),
@@ -501,102 +451,62 @@ async function saveSmartNote() {
 
   if (!text) {
     input.focus();
-    showToast("Напишите заметку");
+    showToast("Напишите мысль");
     return;
   }
 
-  haptic("impact");
   input.value = "";
+  updateNoteCounter();
+  haptic("impact");
 
-  let data = {
-    title: text.slice(0, 55),
-    tags: []
-  };
+  let info = { title: text.slice(0, 60), tags: [] };
 
   if (getKey()) {
-    showToast("ИИ анализирует заметку…");
+    showToast("ИИ обрабатывает мысль…");
 
     const answer = await callAI(
-      "Верни только валидный JSON без Markdown: {\"title\":\"краткий заголовок\",\"tags\":[\"тег1\",\"тег2\"]}. Не более 6 тегов. Язык ответа — русский.",
+      "Верни только JSON: {\"title\":\"краткий заголовок\",\"tags\":[\"тег1\",\"тег2\"]}. Максимум 6 тегов. Русский язык.",
       text
     );
 
-    if (answer) data = parseNoteAnalysis(answer);
+    if (answer) info = parseNoteAnalysis(answer);
   }
 
   localDB.notes.unshift({
     id: Date.now(),
-    title: data.title,
+    title: info.title,
     text,
-    tags: data.tags,
+    tags: info.tags,
     date: new Date().toISOString()
   });
 
-  localDB.stats.wordsWritten += words(text).length;
-
+  localDB.stats.wordsWritten += splitWords(text).length;
   saveDB();
   renderFilesView();
+
   showToast("Заметка сохранена");
 }
 
-/* ───────── Дневник ───────── */
+/* ───────── Дневник и календарь ───────── */
+
 function setMood(mood) {
   currentMood = mood;
-
-  const labels = {
-    "😢": "Грустно",
-    "😐": "Нейтрально",
-    "😊": "Хорошо",
-    "🤩": "Отлично"
+  const names = {
+    "😞": "Грустно",
+    "😐": "Спокойно",
+    "🙂": "Хорошо",
+    "😄": "Отлично"
   };
 
   document.querySelectorAll(".journal-mood-selector button").forEach((button) => {
-    button.classList.toggle(
-      "selected",
-      button.getAttribute("aria-label") === labels[mood]
-    );
+    button.classList.toggle("selected", button.getAttribute("aria-label") === names[mood]);
   });
 
   haptic();
 }
 
-function renderJournalFeed() {
-  const feed = document.getElementById("journalFeed");
-
-  if (!localDB.journal.length) {
-    feed.innerHTML =
-      '<div class="journal-entry" style="text-align:center;color:var(--text-muted)">Записей пока нет.</div>';
-    return;
-  }
-
-  feed.innerHTML = localDB.journal
-    .map((entry) => {
-      const date = new Date(entry.date);
-
-      return `
-        <article class="journal-entry">
-          <div class="journal-entry-header">
-            <span>${esc(date.toLocaleDateString("ru-RU"))} · ${esc(
-              date.toLocaleTimeString("ru-RU", {
-                hour: "2-digit",
-                minute: "2-digit"
-              })
-            )}</span>
-            <span>${esc(entry.mood || "😐")}</span>
-          </div>
-          <div>${esc(entry.text || "")}</div>
-          ${
-            entry.aiComment
-              ? `<div class="journal-ai-comment">✨ ${esc(entry.aiComment)}</div>`
-              : ""
-          }
-        </article>
-      `;
-    })
-    .join("");
-}
-
-async function saveJournal() {
+/* Дневник сохраняется без автоматического ответа ИИ. */
+function saveJournal() {
   const input = document.getElementById("journalInput");
   const text = input.value.trim();
 
@@ -607,85 +517,133 @@ async function saveJournal() {
   }
 
   input.value = "";
-  haptic("impact");
-
-  let aiComment = "Запись сохранена. Вернитесь к ней позже и посмотрите на мысли со стороны.";
-
-  if (getKey()) {
-    showToast("ИИ готовит рефлексию…");
-
-    const answer = await callAI(
-      "Ты бережный помощник по рефлексии. Дай короткий поддерживающий комментарий: максимум 2 предложения. Не ставь диагнозов и не используй медицинские утверждения.",
-      `Настроение: ${currentMood}\n\nЗапись пользователя:\n${text}`
-    );
-
-    if (answer) aiComment = answer;
-  }
-
   localDB.journal.unshift({
     id: Date.now(),
     text,
     mood: currentMood,
-    aiComment,
     date: new Date().toISOString()
   });
 
-  localDB.stats.wordsWritten += words(text).length;
-
+  localDB.stats.wordsWritten += splitWords(text).length;
   saveDB();
-  renderJournalFeed();
+  haptic("impact");
   showToast("Запись сохранена");
 }
 
-/* ───────── Умный RAG-чат ───────── */
-function noteRelevance(note, questionWords) {
-  const noteWords = words(
-    `${note.title || ""} ${note.text || ""} ${(note.tags || []).join(" ")}`
-  );
+function dateKey(date) {
+  const value = new Date(date);
+  return `${value.getFullYear()}-${String(value.getMonth() + 1).padStart(2, "0")}-${String(value.getDate()).padStart(2, "0")}`;
+}
 
-  const uniqueNoteWords = new Set(noteWords);
+function openJournalCalendar() {
+  document.getElementById("journal-calendar-overlay")?.remove();
+
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth();
+  const entryDays = new Set(localDB.journal.map((entry) => dateKey(entry.date)));
+
+  const firstDay = new Date(year, month, 1);
+  const days = new Date(year, month + 1, 0).getDate();
+  const start = (firstDay.getDay() + 6) % 7;
+  const today = dateKey(now);
+
+  let cells = "";
+
+  for (let blank = 0; blank < start; blank += 1) {
+    cells += '<span class="calendar-day calendar-day-empty"></span>';
+  }
+
+  for (let day = 1; day <= days; day += 1) {
+    const key = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+    const hasEntry = entryDays.has(key);
+
+    cells += `
+      <button
+        type="button"
+        class="calendar-day ${hasEntry ? "has-entry" : "no-entry"} ${key === today ? "today" : ""}"
+        data-date="${key}"
+        title="${hasEntry ? "Есть запись" : "Нет записи"}"
+      >
+        ${day}
+      </button>
+    `;
+  }
+
+  const overlay = document.createElement("div");
+  overlay.id = "journal-calendar-overlay";
+  overlay.className = "calendar-overlay";
+
+  overlay.innerHTML = `
+    <section class="calendar-card" role="dialog" aria-modal="true">
+      <button class="calendar-close" type="button" aria-label="Закрыть">×</button>
+      <h2>${now.toLocaleDateString("ru-RU", { month: "long", year: "numeric" })}</h2>
+      <p>Зелёный — есть запись · жёлтый — записи нет</p>
+      <div class="calendar-weekdays">
+        <span>Пн</span><span>Вт</span><span>Ср</span><span>Чт</span><span>Пт</span><span>Сб</span><span>Вс</span>
+      </div>
+      <div class="calendar-grid">${cells}</div>
+      <div class="calendar-entry-preview" id="calendarEntryPreview">
+        Нажмите на зелёный день, чтобы прочитать запись.
+      </div>
+    </section>
+  `;
+
+  overlay.addEventListener("click", (event) => {
+    if (event.target === overlay || event.target.closest(".calendar-close")) {
+      overlay.remove();
+      return;
+    }
+
+    const day = event.target.closest(".calendar-day.has-entry");
+    if (!day) return;
+
+    const entries = localDB.journal.filter((entry) => dateKey(entry.date) === day.dataset.date);
+
+    document.getElementById("calendarEntryPreview").innerHTML = entries
+      .map(
+        (entry) => `
+          <div class="calendar-preview-entry">
+            <span>${esc(entry.mood || "😐")}</span>
+            <p>${esc(entry.text)}</p>
+          </div>
+        `
+      )
+      .join("");
+  });
+
+  document.body.appendChild(overlay);
+}
+
+/* ───────── ИИ-чат ───────── */
+
+function scoreNote(note, questionWords) {
+  const noteWords = new Set(splitWords(
+    `${note.title || ""} ${note.text || ""} ${(note.tags || []).join(" ")}`
+  ));
+
   let score = 0;
 
   questionWords.forEach((word) => {
-    if (uniqueNoteWords.has(word)) score += 3;
+    if (noteWords.has(word)) score += 3;
     if ((note.tags || []).some((tag) => tag.toLowerCase() === word)) score += 5;
   });
 
-  const ageDays = Math.max(
-    0,
-    (Date.now() - new Date(note.date || Date.now()).getTime()) / 86400000
-  );
-
-  score += Math.max(0, 0.8 - ageDays / 1000);
   return score;
 }
 
-function findRelevantNotes(question) {
-  const questionWords = words(question);
+function relevantNotes(question) {
+  const query = splitWords(question);
 
   return localDB.notes
-    .map((note) => ({
-      ...note,
-      relevance: noteRelevance(note, questionWords)
-    }))
-    .sort((a, b) => b.relevance - a.relevance)
+    .map((note) => ({ ...note, score: scoreNote(note, query) }))
+    .sort((a, b) => b.score - a.score)
     .slice(0, 6);
-}
-
-function buildChatContext(notes) {
-  return notes
-    .map(
-      (note, index) =>
-        `[${index + 1}] ЗАГОЛОВОК: ${note.title || "Без названия"}\nТЕГИ: ${(note.tags || []).join(", ") || "нет"}\nТЕКСТ: ${(note.text || "").slice(0, 2500)}`
-    )
-    .join("\n\n---\n\n")
-    .slice(0, 14500);
 }
 
 function appendChatMessage(text, sender, sources = [], id = "") {
   const container = document.getElementById("chatContainer");
   const message = document.createElement("div");
-
   message.className = `chat-msg ${sender}`;
   if (id) message.id = id;
 
@@ -694,25 +652,20 @@ function appendChatMessage(text, sender, sources = [], id = "") {
   message.appendChild(body);
 
   if (sources.length) {
-    const sourceWrap = document.createElement("div");
-    sourceWrap.className = "chat-sources";
-
-    const title = document.createElement("div");
-    title.className = "chat-sources-title";
-    title.textContent = "Источники:";
-    sourceWrap.appendChild(title);
+    const sourceBox = document.createElement("div");
+    sourceBox.className = "chat-sources";
+    sourceBox.innerHTML = '<div class="chat-sources-title">Источники</div>';
 
     sources.forEach((note) => {
       const button = document.createElement("button");
-      button.type = "button";
       button.className = "chat-source";
+      button.type = "button";
       button.textContent = note.title || "Заметка";
-
       button.addEventListener("click", () => openNoteDetails(note));
-      sourceWrap.appendChild(button);
+      sourceBox.appendChild(button);
     });
 
-    message.appendChild(sourceWrap);
+    message.appendChild(sourceBox);
   }
 
   container.appendChild(message);
@@ -722,49 +675,51 @@ function appendChatMessage(text, sender, sources = [], id = "") {
 async function sendChatMessage() {
   const input = document.getElementById("chatInput");
   const question = input.value.trim();
-
   if (!question) return;
 
   input.value = "";
   appendChatMessage(question, "user");
 
   if (!getKey()) {
-    appendChatMessage(
-      "Сначала выберите ИИ и добавьте API-ключ в разделе «Профиль».",
-      "ai"
-    );
+    appendChatMessage("Откройте настройки ИИ в профиле и добавьте API-ключ.", "ai");
     return;
   }
 
-  const relevantNotes = findRelevantNotes(question);
+  const notes = relevantNotes(question);
+  const today = dateKey(new Date());
 
-  if (!relevantNotes.length) {
-    appendChatMessage(
-      "У вас пока нет заметок. Сначала сохраните несколько мыслей на главной странице.",
-      "ai"
-    );
+  const journals = localDB.journal
+    .filter((entry) => dateKey(entry.date) === today)
+    .slice(0, 4);
+
+  if (!notes.length && !journals.length) {
+    appendChatMessage("Пока не нашёл записей, на которые можно опереться.", "ai");
     return;
   }
 
-  appendChatMessage("Ищу ответ в ваших заметках…", "ai", [], "chat-thinking");
+  const noteContext = notes
+    .map((note, index) => `[${index + 1}] ${note.title}\n${note.text.slice(0, 2200)}`)
+    .join("\n\n---\n\n");
 
-  const context = buildChatContext(relevantNotes);
+  const journalContext = journals
+    .map((entry) => `ДНЕВНИК: ${entry.text}`)
+    .join("\n\n");
+
+  appendChatMessage("Ищу ответ в ваших записях…", "ai", [], "chat-thinking");
 
   const answer = await callAI(
-    `Ты Second Brain пользователя. Отвечай только по заметкам из контекста. Не придумывай факты. Если точного ответа нет, скажи это прямо. Пиши на русском, кратко и понятно. При необходимости ссылайся на номера заметок в формате [1], [2].
+    `Ты Second Brain пользователя. Используй только контекст. Не выдумывай факты. Отвечай кратко и по-русски.
 
-КОНТЕКСТ:
-${context}`,
+ЗАМЕТКИ:
+${noteContext}
+
+ДНЕВНИК:
+${journalContext}`,
     question
   );
 
   document.getElementById("chat-thinking")?.remove();
-
-  appendChatMessage(
-    answer || "Я не смог сформировать ответ. Попробуйте ещё раз.",
-    "ai",
-    relevantNotes
-  );
+  appendChatMessage(answer || "Не удалось получить ответ.", "ai", notes);
 }
 
 function handleChatKey(event) {
@@ -774,7 +729,8 @@ function handleChatKey(event) {
   }
 }
 
-/* ───────── Карточка полной заметки ───────── */
+/* ───────── Нейронная карта ───────── */
+
 function openNoteDetails(note) {
   document.getElementById("note-details-overlay")?.remove();
 
@@ -785,18 +741,11 @@ function openNoteDetails(note) {
   overlay.innerHTML = `
     <section class="note-details-card" role="dialog" aria-modal="true">
       <button class="note-details-close" type="button" aria-label="Закрыть">×</button>
-      <div class="note-details-date">${esc(
-        new Date(note.date || Date.now()).toLocaleString("ru-RU", {
-          dateStyle: "medium",
-          timeStyle: "short"
-        })
-      )}</div>
+      <div class="note-details-date">${esc(new Date(note.date || Date.now()).toLocaleString("ru-RU"))}</div>
       <h2>${esc(note.title || "Заметка")}</h2>
       ${
         note.tags?.length
-          ? `<div class="note-details-tags">${note.tags
-              .map((tag) => `<span>#${esc(tag)}</span>`)
-              .join("")}</div>`
+          ? `<div class="note-details-tags">${note.tags.map((tag) => `<span>#${esc(tag)}</span>`).join("")}</div>`
           : ""
       }
       <div class="note-details-text">${esc(note.text || "").replaceAll("\n", "<br>")}</div>
@@ -804,10 +753,7 @@ function openNoteDetails(note) {
   `;
 
   overlay.addEventListener("click", (event) => {
-    if (
-      event.target === overlay ||
-      event.target.closest(".note-details-close")
-    ) {
+    if (event.target === overlay || event.target.closest(".note-details-close")) {
       overlay.remove();
     }
   });
@@ -815,46 +761,36 @@ function openNoteDetails(note) {
   document.body.appendChild(overlay);
 }
 
-/* ───────── Нейронная карта ───────── */
 function buildBrainLinks(notes) {
-  const pairs = new Map();
+  const candidateLinks = [];
+  const degree = {};
 
   for (let i = 0; i < notes.length; i += 1) {
     for (let j = i + 1; j < notes.length; j += 1) {
-      const firstTags = new Set(
-        (notes[i].tags || []).map((tag) => tag.toLowerCase())
-      );
+      const tagsA = new Set((notes[i].tags || []).map((tag) => tag.toLowerCase()));
+      const common = (notes[j].tags || []).filter((tag) => tagsA.has(tag.toLowerCase()));
 
-      const commonTags = (notes[j].tags || []).filter((tag) =>
-        firstTags.has(tag.toLowerCase())
-      );
-
-      if (commonTags.length) {
-        pairs.set(`${notes[i].id}|${notes[j].id}`, {
+      if (common.length) {
+        candidateLinks.push({
           source: `note_${notes[i].id}`,
           target: `note_${notes[j].id}`,
-          strength: commonTags.length,
-          tags: commonTags
+          strength: common.length
         });
       }
     }
   }
 
-  const degree = {};
-  const links = [];
-
-  [...pairs.values()]
+  return candidateLinks
     .sort((a, b) => b.strength - a.strength)
-    .forEach((link) => {
-      if ((degree[link.source] || 0) >= 3) return;
-      if ((degree[link.target] || 0) >= 3) return;
+    .filter((link) => {
+      if ((degree[link.source] || 0) >= 3 || (degree[link.target] || 0) >= 3) {
+        return false;
+      }
 
       degree[link.source] = (degree[link.source] || 0) + 1;
       degree[link.target] = (degree[link.target] || 0) + 1;
-      links.push(link);
+      return true;
     });
-
-  return links;
 }
 
 function openBrainMap() {
@@ -864,67 +800,47 @@ function openBrainMap() {
   modal.classList.add("active");
   container.innerHTML = "";
 
-  const notes = localDB.notes;
-
-  if (!notes.length) {
-    container.innerHTML =
-      '<p class="brain-empty-message">Добавьте несколько заметок, а ИИ создаст для них теги и связи.</p>';
+  if (!localDB.notes.length) {
+    container.innerHTML = '<p class="brain-empty-message">Добавьте несколько заметок с тегами — и между ними появятся связи.</p>';
     return;
   }
 
   if (typeof window.ForceGraph3D !== "function") {
-    container.innerHTML =
-      '<p class="brain-empty-message">Не удалось загрузить карту мыслей.</p>';
+    container.innerHTML = '<p class="brain-empty-message">Не удалось загрузить карту нейронов.</p>';
     return;
   }
 
-  const nodes = notes.map((note) => ({
+  const nodes = localDB.notes.map((note) => ({
     id: `note_${note.id}`,
     note,
     name: note.title || "Заметка",
-    color: "#5b8cff",
-    val: 3 + Math.min((note.tags || []).length, 5),
     description: cleanText(note.text).slice(0, 180),
-    tags: note.tags || []
+    tags: note.tags || [],
+    color: "#5b8cff",
+    val: 3 + Math.min((note.tags || []).length, 5)
   }));
-
-  const links = buildBrainLinks(notes);
 
   const graph = window
     .ForceGraph3D()(container)
-    .graphData({ nodes, links })
+    .graphData({ nodes, links: buildBrainLinks(localDB.notes) })
     .backgroundColor("#020204")
     .nodeColor("color")
     .nodeVal("val")
-    .nodeOpacity(0.95)
     .nodeLabel(
       (node) => `
-        <div style="max-width:260px;padding:8px 10px;font-family:Arial,sans-serif;">
-          <strong>${esc(node.name)}</strong>
-          <div style="margin-top:5px;color:#b6b6c7;font-size:12px;">${esc(node.description)}</div>
-          ${
-            node.tags.length
-              ? `<div style="margin-top:7px;color:#76a0ff;font-size:11px;">${node.tags
-                  .map((tag) => `#${esc(tag)}`)
-                  .join(" ")}</div>`
-              : ""
-          }
+        <div style="max-width:260px;padding:8px 10px">
+          <b>${esc(node.name)}</b>
+          <div style="margin-top:5px;color:#c7c7d5;font-size:12px">${esc(node.description)}</div>
+          <div style="margin-top:7px;color:#8eafff;font-size:11px">${node.tags.map((tag) => `#${esc(tag)}`).join(" ")}</div>
         </div>
       `
     )
-    .linkColor((link) =>
-      link.strength > 1
-        ? "rgba(160,120,255,0.72)"
-        : "rgba(91,140,255,0.42)"
-    )
+    .linkColor((link) => link.strength > 1 ? "rgba(160,120,255,.72)" : "rgba(91,140,255,.42)")
     .linkWidth((link) => 0.8 + link.strength * 0.7)
-    .linkOpacity(0.65)
-    .linkDirectionalParticles((link) => (link.strength > 1 ? 2 : 1))
-    .linkDirectionalParticleWidth(1.6)
+    .linkDirectionalParticles((link) => link.strength > 1 ? 2 : 1)
+    .linkDirectionalParticleWidth(1.5)
     .linkDirectionalParticleSpeed(0.004)
-    .onNodeClick((node) => {
-      openNoteDetails(node.note);
-    })
+    .onNodeClick((node) => openNoteDetails(node.note))
     .onNodeHover((node) => {
       container.style.cursor = node ? "pointer" : "grab";
     });
@@ -932,18 +848,45 @@ function openBrainMap() {
   graph.d3Force("charge")?.strength(-120);
   graph.d3Force("link")?.distance(95);
 
-  setTimeout(() => graph.zoomToFit(700, 60), 250);
+  setTimeout(() => graph.zoomToFit(700, 65), 200);
 }
 
 function closeBrainMap() {
   document.getElementById("brainMapModal")?.classList.remove("active");
 }
 
-/* ───────── Папки ───────── */
+/* ───────── Файлы ───────── */
+
+async function fetchServerFiles() {
+  try {
+    const userId = telegramUser?.id || "browser-user";
+    const response = await fetch(`${API_URL}?user_id=${encodeURIComponent(userId)}&limit=100`);
+
+    if (!response.ok) throw new Error();
+
+    const data = await response.json();
+
+    globalFiles = (Array.isArray(data?.files) ? data.files : []).map((file, index) => ({
+      ...file,
+      internalId: `server_${file.id || index}`,
+      type: file.type || file.file_type || "document",
+      title: file.title || file.name || file.file_name || "Файл",
+      text: file.text || file.caption || "",
+      url: file.url || file.file_url || "",
+      size: bytesOf(file)
+    }));
+  } catch (_) {
+    globalFiles = [];
+  }
+
+  updateStatsUI();
+  updateStorageUI();
+}
+
 function updateTopbar() {
   const bar = document.getElementById("filesTopbar");
 
-  if (activeFolder === null) {
+  if (!activeFolder) {
     bar.innerHTML = '<span class="files-topbar-title">Папки</span>';
     return;
   }
@@ -952,56 +895,43 @@ function updateTopbar() {
 
   bar.innerHTML = `
     <button class="icon-btn" type="button" onclick="closeFolder()" aria-label="Назад">
-      <svg class="svg-icon" viewBox="0 0 24 24">
-        <polyline points="15 18 9 12 15 6"></polyline>
-      </svg>
+      <svg class="svg-icon" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg>
     </button>
     <span class="files-topbar-title">${esc(folder?.name || "Папка")}</span>
   `;
 }
 
 function renderFolderGrid() {
-  const grid = document.getElementById("folderGrid");
   const items = allItems();
 
-  grid.innerHTML = folders
-    .map((folder) => {
-      const count = items.filter((item) =>
-        folder.autoTypes.includes(item.type)
-      ).length;
+  document.getElementById("folderGrid").innerHTML = folders.map((folder) => {
+    const count = items.filter((item) => folder.autoTypes.includes(item.type)).length;
 
-      return `
-        <button class="folder-card" type="button" onclick="openFolder('${folder.id}')">
-          <span class="folder-card-icon" style="background:${folder.bg}">${folder.emoji}</span>
-          <span class="folder-card-name">${esc(folder.name)}</span>
-          <span class="folder-card-count">${count} шт.</span>
-        </button>
-      `;
-    })
-    .join("");
+    return `
+      <button class="folder-card" type="button" onclick="openFolder('${folder.id}')">
+        <span class="folder-card-icon" style="background:${folder.bg}">${folder.emoji}</span>
+        <span class="folder-card-name">${esc(folder.name)}</span>
+        <span class="folder-card-count">${count} шт.</span>
+      </button>
+    `;
+  }).join("");
 }
 
 function renderFolderContents() {
-  const gallery = document.getElementById("folderGallery");
   const folder = folders.find((item) => item.id === activeFolder);
-
-  if (!folder) return;
-
+  const gallery = document.getElementById("folderGallery");
   const query = searchQuery.toLowerCase();
 
   const files = allItems().filter((file) => {
-    if (!folder.autoTypes.includes(file.type)) return false;
+    if (!folder?.autoTypes.includes(file.type)) return false;
 
-    return !query || cleanText(
-      `${file.title || ""} ${file.text || ""} ${(file.tags || []).join(" ")}`
-    )
+    return !query || cleanText(`${file.title} ${file.text} ${(file.tags || []).join(" ")}`)
       .toLowerCase()
       .includes(query);
   });
 
   if (!files.length) {
-    gallery.innerHTML =
-      '<div class="empty-files">Здесь пока ничего нет.</div>';
+    gallery.innerHTML = '<div class="empty-files">Здесь пока ничего нет.</div>';
     return;
   }
 
@@ -1012,28 +942,17 @@ function renderFolderContents() {
     card.className = `grid-item ${file.type}`;
 
     if (file.type === "smart_note") {
-      card.innerHTML = `
-        <div class="text-card-body">
-          <strong>${esc(file.title)}</strong>
-          <br><br>
-          ${esc(file.text)}
-        </div>
-      `;
-
+      card.innerHTML = `<div class="text-card-body"><strong>${esc(file.title)}</strong><br><br>${esc(file.text)}</div>`;
       card.addEventListener("click", () => openNoteDetails(file));
     } else if (file.type === "photo" && safeUrl(file.url)) {
       const image = document.createElement("img");
       image.src = safeUrl(file.url);
       image.loading = "lazy";
-      image.alt = file.title || "Фото";
+      image.alt = file.title;
       card.appendChild(image);
       card.addEventListener("click", () => openModal(file));
     } else {
-      card.innerHTML = `
-        <div class="text-card-body file-card-label">${esc(
-          file.title || file.type || "Файл"
-        )}</div>
-      `;
+      card.innerHTML = `<div class="text-card-body file-card-label">${esc(file.title || file.type)}</div>`;
     }
 
     gallery.appendChild(card);
@@ -1041,18 +960,18 @@ function renderFolderContents() {
 }
 
 function renderFilesView() {
-  const gridView = document.getElementById("folderGridView");
-  const contentsView = document.getElementById("folderContentsView");
+  const grid = document.getElementById("folderGridView");
+  const contents = document.getElementById("folderContentsView");
 
   updateTopbar();
 
-  if (activeFolder === null) {
-    gridView.hidden = false;
-    contentsView.hidden = true;
+  if (!activeFolder) {
+    grid.hidden = false;
+    contents.hidden = true;
     renderFolderGrid();
   } else {
-    gridView.hidden = true;
-    contentsView.hidden = false;
+    grid.hidden = true;
+    contents.hidden = false;
     renderFolderContents();
   }
 }
@@ -1075,25 +994,22 @@ function closeFolder() {
 
 function handleSearch() {
   searchQuery = document.getElementById("searchInput").value || "";
-  if (activeFolder !== null) renderFolderContents();
+  if (activeFolder) renderFolderContents();
 }
 
-/* ───────── Медиа ───────── */
 function openModal(file) {
-  const modal = document.getElementById("mediaModal");
-  const content = document.getElementById("modalContent");
   const url = safeUrl(file.url);
-
   if (!url) return;
 
+  const content = document.getElementById("modalContent");
   content.innerHTML = "";
 
   const image = document.createElement("img");
   image.src = url;
-  image.alt = file.title || "Изображение";
+  image.alt = file.title || "Файл";
   content.appendChild(image);
 
-  modal.classList.add("active");
+  document.getElementById("mediaModal").classList.add("active");
 }
 
 function closeModal() {
@@ -1101,12 +1017,81 @@ function closeModal() {
   document.getElementById("modalContent").innerHTML = "";
 }
 
-/* ───────── Импорт и экспорт ───────── */
-function exportData() {
-  const blob = new Blob([JSON.stringify(localDB, null, 2)], {
-    type: "application/json"
-  });
+/* ───────── Профиль ───────── */
 
+function renderActivityChart() {
+  const chart = document.getElementById("activityChart");
+  const total = document.getElementById("activityTotal");
+  const now = new Date();
+  const days = [];
+
+  for (let offset = 6; offset >= 0; offset -= 1) {
+    const day = new Date(now);
+    day.setDate(now.getDate() - offset);
+
+    const key = dateKey(day);
+    const count =
+      localDB.notes.filter((note) => dateKey(note.date) === key).length +
+      localDB.journal.filter((entry) => dateKey(entry.date) === key).length;
+
+    days.push({
+      label: day.toLocaleDateString("ru-RU", { weekday: "short" }).slice(0, 2),
+      count
+    });
+  }
+
+  const max = Math.max(1, ...days.map((day) => day.count));
+  total.textContent = days.reduce((sum, day) => sum + day.count, 0);
+
+  chart.innerHTML = days
+    .map(
+      (day) => `
+        <div class="activity-bar-wrap">
+          <span class="activity-value">${day.count || ""}</span>
+          <div class="activity-bar" style="height:${Math.max(8, day.count / max * 100)}%"></div>
+          <span class="activity-label">${esc(day.label)}</span>
+        </div>
+      `
+    )
+    .join("");
+}
+
+async function generateDailyInsight() {
+  const area = document.getElementById("dailyInsightContent");
+  const today = dateKey(new Date());
+
+  const notes = localDB.notes.filter((note) => dateKey(note.date) === today);
+  const journal = localDB.journal.filter((entry) => dateKey(entry.date) === today);
+
+  if (!notes.length && !journal.length) {
+    area.textContent = "Сегодня ещё нет заметок или записей дневника.";
+    return;
+  }
+
+  if (!getKey()) {
+    area.textContent = "Откройте настройки ИИ и добавьте API-ключ.";
+    return;
+  }
+
+  area.textContent = "ИИ анализирует сегодняшние записи…";
+
+  const context = [
+    ...notes.map((note) => `ЗАМЕТКА: ${note.title}\n${note.text}`),
+    ...journal.map((entry) => `ДНЕВНИК (${entry.mood}): ${entry.text}`)
+  ].join("\n\n---\n\n");
+
+  const answer = await callAI(
+    "Ты внимательный помощник. По сегодняшним заметкам пользователя сформируй очень краткий портрет дня: что он, вероятно, чувствует, о чём думает и что ему может быть полезно сделать. Не ставь диагнозов, не говори категорично. До 5 предложений, на русском.",
+    context.slice(0, 12000)
+  );
+
+  area.textContent = answer || "Не удалось создать портрет дня.";
+}
+
+/* ───────── Данные и навигация ───────── */
+
+function exportData() {
+  const blob = new Blob([JSON.stringify(localDB, null, 2)], { type: "application/json" });
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
 
@@ -1130,10 +1115,6 @@ function importData(event) {
     try {
       const data = JSON.parse(String(reader.result));
 
-      if (!data || typeof data !== "object") {
-        throw new Error("Неверный JSON");
-      }
-
       localDB = {
         ...clone(defaultDB),
         ...data,
@@ -1145,18 +1126,14 @@ function importData(event) {
       localDB.journal = Array.isArray(localDB.journal) ? localDB.journal : [];
       localDB.settings.apiKeys ||= {};
 
-      if (
-        localDB.settings.togetherApiKey &&
-        !localDB.settings.apiKeys.together
-      ) {
+      if (localDB.settings.togetherApiKey && !localDB.settings.apiKeys.together) {
         localDB.settings.apiKeys.together = localDB.settings.togetherApiKey;
       }
 
       saveDB();
       loadSettingsUI();
-      renderJournalFeed();
       renderFilesView();
-
+      renderActivityChart();
       showToast("Данные восстановлены");
     } catch (_) {
       showToast("Не удалось импортировать JSON");
@@ -1167,66 +1144,58 @@ function importData(event) {
   event.target.value = "";
 }
 
-/* ───────── Навигация ───────── */
 function switchTab(tabId, button) {
-  document.querySelectorAll(".tab-content").forEach((tab) => {
-    tab.classList.remove("active");
-  });
-
+  document.querySelectorAll(".tab-content").forEach((tab) => tab.classList.remove("active"));
   document.getElementById(`tab-${tabId}`)?.classList.add("active");
 
-  document.querySelectorAll(".nav-item").forEach((item) => {
-    item.classList.remove("active");
-  });
-
+  document.querySelectorAll(".nav-item").forEach((item) => item.classList.remove("active"));
   button?.classList.add("active");
+
+  if (tabId === "profile") renderActivityChart();
 
   window.scrollTo({ top: 0, behavior: "smooth" });
   haptic();
 }
 
 function showToast(text) {
-  const box = document.getElementById("toast-box");
   const toast = document.createElement("div");
-
   toast.className = "toast";
   toast.textContent = text;
-  box.appendChild(toast);
 
+  document.getElementById("toast-box").appendChild(toast);
   setTimeout(() => toast.remove(), 3000);
 }
 
-/* ───────── Запуск ───────── */
+/* ───────── Старт ───────── */
+
 async function initApp() {
-  const name = telegramUser?.first_name || "Пользователь";
+  const userName = telegramUser?.first_name || "Пользователь";
 
-  document.getElementById("userName").textContent = name;
-  document.getElementById("userAvatar").textContent = name[0].toUpperCase();
+  document.getElementById("userName").textContent = userName;
+  document.getElementById("userAvatar").textContent = userName[0].toUpperCase();
 
-  document
-    .getElementById("aiProvider")
-    .addEventListener("change", changeProvider);
+  document.getElementById("smartNoteInput").addEventListener("input", updateNoteCounter);
+  document.getElementById("aiProvider").addEventListener("change", changeProvider);
+  document.getElementById("saveSettingsBtn").addEventListener("click", saveSettings);
+  document.getElementById("toggleApiKey").addEventListener("click", toggleApiKeyVisibility);
 
-  document
-    .getElementById("saveSettingsBtn")
-    .addEventListener("click", saveSettings);
-
-  document
-    .getElementById("toggleApiKey")
-    .addEventListener("click", toggleApiKeyVisibility);
-
-  document.getElementById("aiModel").addEventListener("change", (event) => {
-    localDB.settings.aiModel = event.target.value;
+  document.getElementById("toggleAISettings").addEventListener("click", () => {
+    const panel = document.getElementById("aiSettingsPanel");
+    const button = document.getElementById("toggleAISettings");
+    panel.hidden = !panel.hidden;
+    button.setAttribute("aria-expanded", String(!panel.hidden));
+    button.classList.toggle("open", !panel.hidden);
   });
 
   loadSettingsUI();
+  updateNoteCounter();
   updateStreak();
   setMood(currentMood);
-  renderJournalFeed();
 
   await fetchServerFiles();
 
   renderFilesView();
+  renderActivityChart();
   updateStatsUI();
   updateStorageUI();
 
