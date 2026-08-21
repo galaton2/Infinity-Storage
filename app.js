@@ -1,11 +1,17 @@
 /* ── Telegram init ── */
-const tg = window.Telegram.WebApp;
-tg.expand(); tg.ready();
-try { tg.setHeaderColor('#020204'); tg.setBackgroundColor('#020204'); tg.setBottomBarColor('#020204'); } catch(e){}
+const tg = window.Telegram?.WebApp || {};
+if (tg.expand) tg.expand();
+if (tg.ready) tg.ready();
+
+try { 
+  if (tg.setHeaderColor) tg.setHeaderColor('#020204'); 
+  if (tg.setBackgroundColor) tg.setBackgroundColor('#020204'); 
+  if (tg.setBottomBarColor) tg.setBottomBarColor('#020204'); 
+} catch(e) {
+  console.warn("Telegram API styles error:", e);
+}
 
 const user = tg.initDataUnsafe?.user;
-document.getElementById('userName').innerText   = user?.first_name || 'Bekhruz';
-document.getElementById('userAvatar').innerText = (user?.first_name || 'B').charAt(0);
 
 /* ── Constants & State ── */
 const API_URL  = 'https://galaxylab.i234.me:8443/api/files';
@@ -53,12 +59,12 @@ async function callTogetherAI(systemPrompt, userPrompt) {
       })
     });
     
-    if (!res.ok) throw new Error("API Error");
+    if (!res.ok) throw new Error(`API Error: ${res.status}`);
     const data = await res.json();
     return data.choices[0].message.content;
   } catch (error) {
     console.error("AI Error:", error);
-    showToast("Ошибка ИИ. Проверьте API ключ.");
+    showToast("Ошибка ИИ. Проверьте API ключ или подключение.");
     return null;
   }
 }
@@ -71,14 +77,21 @@ let folders = [
   { id:'media',     name:'Media',     emoji:'🖼️', accent:'#00d98a', bg:'rgba(0,217,138,.1)',    protected:true,  autoTypes:['photo','video','animation','video_note'] }
 ];
 
-const esc = s => (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const esc = s => (s || '').toString().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 
 /* ══════════════════════════════════════════════════════════
    INIT & DATA LOADING
 ══════════════════════════════════════════════════════════ */
 async function initApp() {
+  // Установка данных пользователя
+  const userNameEl = document.getElementById('userName');
+  const userAvatarEl = document.getElementById('userAvatar');
+  if (userNameEl) userNameEl.innerText = user?.first_name || 'Bekhruz';
+  if (userAvatarEl) userAvatarEl.innerText = (user?.first_name || 'B').charAt(0);
+
   // Настройки
-  document.getElementById('togetherApiKey').value = localDB.settings.togetherApiKey || '';
+  const apiKeyInput = document.getElementById('togetherApiKey');
+  if (apiKeyInput) apiKeyInput.value = localDB.settings.togetherApiKey || '';
   
   // Геймификация стриков
   const today = new Date().toDateString();
@@ -98,21 +111,30 @@ async function initApp() {
   await fetchServerFiles();
   renderFilesView();
   renderJournalFeed();
-  setTimeout(()=>document.getElementById('app-loader').classList.add('hidden'), 400);
+  
+  const loader = document.getElementById('app-loader');
+  if (loader) {
+    setTimeout(() => loader.classList.add('hidden'), 400);
+  }
 }
 
 function updateStatsUI() {
-  document.getElementById('streakCounter').innerText = `🔥 ${localDB.stats.streak}`;
-  document.getElementById('wordsCount').innerText = localDB.stats.wordsWritten;
+  const streakEl = document.getElementById('streakCounter');
+  const wordsEl = document.getElementById('wordsCount');
+  if (streakEl) streakEl.innerText = `🔥 ${localDB.stats.streak}`;
+  if (wordsEl) wordsEl.innerText = localDB.stats.wordsWritten;
 }
 
 function saveSettings() {
-  localDB.settings.togetherApiKey = document.getElementById('togetherApiKey').value.trim();
-  saveLocalDB();
-  showToast("Настройки сохранены");
+  const apiKeyInput = document.getElementById('togetherApiKey');
+  if (apiKeyInput) {
+    localDB.settings.togetherApiKey = apiKeyInput.value.trim();
+    saveLocalDB();
+    showToast("Настройки сохранены");
+  }
 }
 
-/* ── Получение файлов с сервера (облегчено, без пагинации для простоты) ── */
+/* ── Получение файлов с сервера ── */
 async function fetchServerFiles() {
   const uid = user?.id || '123456789';
   try {
@@ -120,9 +142,13 @@ async function fetchServerFiles() {
     if (resp.ok) {
       const data = await resp.json();
       globalFiles = (data.files || []).map((f, i) => ({ ...f, internalId: `s_${i}` }));
-      document.getElementById('totalFilesCount').innerText = globalFiles.length + localDB.notes.length;
+      
+      const totalCountEl = document.getElementById('totalFilesCount');
+      if (totalCountEl) totalCountEl.innerText = globalFiles.length + localDB.notes.length;
     }
-  } catch(e) { console.error('Server error', e); }
+  } catch(e) { 
+    console.error('Server fetch error:', e); 
+  }
 }
 
 /* ── Получение ВСЕХ элементов (Сервер + LocalDB) ── */
@@ -138,10 +164,10 @@ function getAllItems() {
 ══════════════════════════════════════════════════════════ */
 async function saveSmartNote() {
   const input = document.getElementById('smartNoteInput');
-  const text = input.value.trim();
+  const text = input?.value.trim();
   if (!text) return;
   
-  tg.HapticFeedback.impactOccurred('medium');
+  if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
   input.value = '';
   showToast("Анализируем мысль...");
   
@@ -157,15 +183,25 @@ async function saveSmartNote() {
       text
     );
     try {
-      const parsed = JSON.parse(aiResp.match(/\{[\s\S]*\}/)[0]);
-      title = parsed.title || title;
-      tags = parsed.tags || [];
-    } catch(e) { console.error("Parse error", e); }
+      if (aiResp) {
+        const jsonMatch = aiResp.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          const parsed = JSON.parse(jsonMatch[0]);
+          title = parsed.title || title;
+          tags = parsed.tags || [];
+        }
+      }
+    } catch(e) { 
+      console.error("AI Parse error", e); 
+    }
   }
 
   localDB.notes.unshift({ id: Date.now(), text, title, tags, date: new Date().toISOString() });
   saveLocalDB();
-  document.getElementById('totalFilesCount').innerText = getAllItems().length;
+  
+  const totalCountEl = document.getElementById('totalFilesCount');
+  if (totalCountEl) totalCountEl.innerText = getAllItems().length;
+  
   showToast("Заметка сохранена!");
   if (activeFolder === 'smart_notes') renderFolderContents();
 }
@@ -177,17 +213,18 @@ let currentMood = '😐';
 function setMood(m) {
   currentMood = m;
   document.querySelectorAll('.journal-mood-selector button').forEach(b => {
-    b.classList.toggle('selected', b.innerText === m);
+    b.classList.toggle('selected', b.innerText.trim() === m);
   });
-  tg.HapticFeedback.selectionChanged();
+  if (tg.HapticFeedback) tg.HapticFeedback.selectionChanged();
 }
 
 async function saveJournal() {
-  const text = document.getElementById('journalInput').value.trim();
+  const input = document.getElementById('journalInput');
+  const text = input?.value.trim();
   if (!text) return;
   
-  tg.HapticFeedback.impactOccurred('medium');
-  document.getElementById('journalInput').value = '';
+  if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
+  input.value = '';
   showToast("Генерируем рефлексию...");
   
   localDB.stats.wordsWritten += text.split(/\s+/).length;
@@ -208,6 +245,8 @@ async function saveJournal() {
 
 function renderJournalFeed() {
   const feed = document.getElementById('journalFeed');
+  if (!feed) return;
+  
   feed.innerHTML = localDB.journal.map(j => `
     <div class="journal-entry">
       <div class="journal-entry-header">
@@ -225,18 +264,17 @@ function renderJournalFeed() {
 ══════════════════════════════════════════════════════════ */
 async function sendChatMessage() {
   const input = document.getElementById('chatInput');
-  const q = input.value.trim();
+  const q = input?.value.trim();
   if (!q) return;
   input.value = '';
   
   appendChatMsg(q, 'user');
   
   if (!localDB.settings.togetherApiKey) {
-    appendChatMsg("Для работы чата укажите API ключ в профиле.", 'ai');
+    appendChatMsg("Для работы чата укажите API ключ в настройках профиля.", 'ai');
     return;
   }
 
-  // Простой RAG: берем все тексты заметок и дневника как контекст (в реальности можно сделать TF-IDF, но для локальной базы сойдет склейка последних)
   const contextData = [
     ...localDB.notes.slice(0, 10).map(n => `ЗАМЕТКА: ${n.title} - ${n.text}`),
     ...localDB.journal.slice(0, 5).map(j => `ДНЕВНИК: ${j.text}`)
@@ -248,28 +286,37 @@ async function sendChatMessage() {
   
   const resp = await callTogetherAI(system, q);
   
-  document.getElementById('temp-loader')?.remove();
-  appendChatMsg(resp || "Произошла ошибка генерации ответа.", 'ai');
+  const loader = document.getElementById('temp-loader');
+  if (loader) loader.remove();
+  
+  appendChatMsg(resp ? esc(resp) : "Произошла ошибка генерации ответа.", 'ai');
 }
 
 function appendChatMsg(text, sender, id = '') {
   const c = document.getElementById('chatContainer');
+  if (!c) return;
   const div = document.createElement('div');
   div.className = `chat-msg ${sender}`;
   if (id) div.id = id;
-  div.innerHTML = text; // allow basic HTML for italics
+  // Используем innerHTML для поддержки курсива загрузки, но для ответов ИИ экранируем текст
+  div.innerHTML = text; 
   c.appendChild(div);
   c.scrollTop = c.scrollHeight;
 }
 
-function handleChatKey(e) { if(e.key === 'Enter') sendChatMessage(); }
+function handleChatKey(e) { 
+  if(e.key === 'Enter') sendChatMessage(); 
+}
 
 /* ══════════════════════════════════════════════════════════
    3D BRAIN MAP (Карта мыслей)
 ══════════════════════════════════════════════════════════ */
 function openBrainMap() {
-  document.getElementById('brainMapModal').classList.add('active');
+  const modal = document.getElementById('brainMapModal');
   const container = document.getElementById('3d-graph');
+  if (!modal || !container) return;
+  
+  modal.classList.add('active');
   container.innerHTML = '';
   
   if (localDB.notes.length === 0) {
@@ -277,7 +324,6 @@ function openBrainMap() {
     return;
   }
 
-  // Создаем граф связей по тегам
   const nodes = [];
   const links = [];
   
@@ -293,17 +339,22 @@ function openBrainMap() {
     });
   });
 
-  const Graph = ForceGraph3D()(container)
-    .graphData({ nodes, links })
-    .nodeLabel('name')
-    .nodeColor('color')
-    .nodeVal('val')
-    .backgroundColor('#020204')
-    .linkColor(() => 'rgba(255,255,255,0.2)');
+  if (typeof ForceGraph3D === 'function') {
+    ForceGraph3D()(container)
+      .graphData({ nodes, links })
+      .nodeLabel('name')
+      .nodeColor('color')
+      .nodeVal('val')
+      .backgroundColor('#020204')
+      .linkColor(() => 'rgba(255,255,255,0.2)');
+  } else {
+    container.innerHTML = "<div style='color:white; text-align:center; padding-top: 50vh;'>Библиотека 3D Graph не загружена.</div>";
+  }
 }
 
 function closeBrainMap() {
-  document.getElementById('brainMapModal').classList.remove('active');
+  const modal = document.getElementById('brainMapModal');
+  if (modal) modal.classList.remove('active');
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -326,10 +377,12 @@ function importData(event) {
     try {
       const imported = JSON.parse(e.target.result);
       if (imported.notes) {
-        localDB = imported;
+        localDB = { ...localDB, ...imported }; // Сохраняем структуру
         saveLocalDB();
         showToast("База данных восстановлена!");
         setTimeout(() => location.reload(), 1000);
+      } else {
+        showToast("Неверный формат файла");
       }
     } catch (err) {
       showToast("Ошибка импорта файла");
@@ -339,37 +392,46 @@ function importData(event) {
 }
 
 /* ══════════════════════════════════════════════════════════
-   UI FILES & FOLDERS (Переработано для поддержки getAllItems)
+   UI FILES & FOLDERS
 ══════════════════════════════════════════════════════════ */
 function renderFilesView() {
   updateTopbar();
+  const gridView = document.getElementById('folderGridView');
+  const contentsView = document.getElementById('folderContentsView');
+  
+  if (!gridView || !contentsView) return;
+
   if (activeFolder === null) {
-    document.getElementById('folderGridView').style.display = '';
-    document.getElementById('folderContentsView').style.display = 'none';
+    gridView.style.display = '';
+    contentsView.style.display = 'none';
     renderFolderGrid();
   } else {
-    document.getElementById('folderGridView').style.display = 'none';
-    document.getElementById('folderContentsView').style.display = '';
+    gridView.style.display = 'none';
+    contentsView.style.display = '';
     renderFolderContents();
   }
 }
 
 function updateTopbar() {
   const bar = document.getElementById('filesTopbar');
+  if (!bar) return;
+  
   if (activeFolder === null) {
     bar.innerHTML = `<span class="files-topbar-title">Folders</span>`;
   } else {
-    const fd = folders.find(f=>f.id===activeFolder);
+    const fd = folders.find(f => f.id === activeFolder);
     bar.innerHTML = `
       <button class="icon-btn" style="width:34px;height:34px;" onclick="closeFolder()">
         <svg class="svg-icon" viewBox="0 0 24 24" style="width:18px;"><polyline points="15 18 9 12 15 6"/></svg>
       </button>
-      <span class="files-topbar-title">${esc(fd?.name||'Folder')}</span>`;
+      <span class="files-topbar-title">${esc(fd?.name || 'Folder')}</span>`;
   }
 }
 
 function renderFolderGrid() {
   const grid = document.getElementById('folderGrid');
+  if (!grid) return;
+  
   const items = getAllItems();
   grid.innerHTML = folders.map(fd => {
     const count = items.filter(i => fd.autoTypes.includes(i.type)).length;
@@ -384,7 +446,11 @@ function renderFolderGrid() {
 
 function renderFolderContents() {
   const gallery = document.getElementById('folderGallery');
-  const fd = folders.find(x=>x.id===activeFolder);
+  if (!gallery) return;
+  
+  const fd = folders.find(x => x.id === activeFolder);
+  if (!fd) return;
+  
   const q = searchQuery.toLowerCase();
   
   const files = getAllItems().filter(f => {
@@ -398,13 +464,14 @@ function renderFolderContents() {
   files.forEach(f => {
     const card = document.createElement('div');
     card.className = `grid-item ${f.type}`;
+    
     if (f.type === 'smart_note') {
       card.style.background = 'linear-gradient(145deg, #14121f, #09080f)';
       card.innerHTML = `<div class="text-card-body">
         <b style="color:var(--blue);font-family:'Outfit',sans-serif;">${esc(f.title)}</b><br><br>
         ${esc(f.text)}
       </div>`;
-      card.onclick = () => tg.showAlert(f.text);
+      card.onclick = () => { if (tg.showAlert) tg.showAlert(f.text); else alert(f.text); };
     } else if (f.type === 'photo' && f.url) {
       card.innerHTML = `<img src="${f.url}" loading="lazy">`;
       card.onclick = () => openModal(f);
@@ -417,28 +484,74 @@ function renderFolderContents() {
   });
 }
 
-function openFolder(fid) { activeFolder=fid; renderFilesView(); tg.HapticFeedback.selectionChanged(); }
-function closeFolder() { activeFolder=null; renderFilesView(); tg.HapticFeedback.selectionChanged(); }
-function handleSearch() { searchQuery = document.getElementById('searchInput').value; if(activeFolder!==null) renderFolderContents(); }
+function openFolder(fid) { 
+  activeFolder = fid; 
+  renderFilesView(); 
+  if (tg.HapticFeedback) tg.HapticFeedback.selectionChanged(); 
+}
+
+function closeFolder() { 
+  activeFolder = null; 
+  renderFilesView(); 
+  if (tg.HapticFeedback) tg.HapticFeedback.selectionChanged(); 
+}
+
+function handleSearch() { 
+  const searchInput = document.getElementById('searchInput');
+  if (searchInput) searchQuery = searchInput.value; 
+  if (activeFolder !== null) renderFolderContents(); 
+}
 
 /* ── Навигация и утилиты ── */
 function switchTab(tabId, navBtn) {
-  document.querySelectorAll('.tab-content').forEach(el=>el.classList.remove('active'));
-  document.getElementById('tab-'+tabId).classList.add('active');
-  if(navBtn){ document.querySelectorAll('.nav-item').forEach(el=>el.classList.remove('active')); navBtn.classList.add('active'); }
-  window.scrollTo(0,0);
-  tg.HapticFeedback.selectionChanged();
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+  const tab = document.getElementById('tab-' + tabId);
+  if (tab) tab.classList.add('active');
+  
+  if (navBtn) { 
+    document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active')); 
+    navBtn.classList.add('active'); 
+  }
+  window.scrollTo(0, 0);
+  if (tg.HapticFeedback) tg.HapticFeedback.selectionChanged();
 }
 
 function openModal(file) {
-  document.getElementById('modalContent').innerHTML = `<img src="${esc(file.url)}" style="max-width:100%; border-radius:14px;">`;
-  document.getElementById('mediaModal').classList.add('active');
-}
-function closeModal() { document.getElementById('mediaModal').classList.remove('active'); }
-function showToast(msg) {
-  const box=document.getElementById('toast-box');
-  const t=document.createElement('div'); t.className='toast'; t.textContent=msg;
-  box.appendChild(t); setTimeout(()=>t.remove(),3000);
+  const content = document.getElementById('modalContent');
+  const modal = document.getElementById('mediaModal');
+  if (!content || !modal) return;
+  
+  content.innerHTML = `<img src="${esc(file.url)}" style="max-width:100%; border-radius:14px;">`;
+  modal.classList.add('active');
 }
 
-window.onload = initApp;
+function closeModal() { 
+  const modal = document.getElementById('mediaModal');
+  if (modal) modal.classList.remove('active'); 
+}
+
+function showToast(msg) {
+  const box = document.getElementById('toast-box');
+  if (!box) return;
+  const t = document.createElement('div'); 
+  t.className = 'toast'; 
+  t.textContent = msg;
+  box.appendChild(t); 
+  setTimeout(() => t.remove(), 3000);
+}
+
+/* ── Заглушки для UI-элементов из HTML, которые вызывали ошибки ── */
+function msBatchMove() { showToast("Функция перемещения в разработке"); }
+function msBatchDelete() { showToast("Функция удаления в разработке"); }
+function exitMultiSelect() { 
+  const ms = document.getElementById('multiselectBar');
+  if(ms) ms.style.display = 'none'; 
+}
+function closeSheet() {
+  const sheet = document.getElementById('actionSheet');
+  const overlay = document.getElementById('sheetOverlay');
+  if(sheet) sheet.classList.remove('active');
+  if(overlay) overlay.classList.remove('active');
+}
+
+window.addEventListener('DOMContentLoaded', initApp);
