@@ -7,9 +7,11 @@
     content="width=device-width, initial-scale=1, viewport-fit=cover"
   >
   <meta name="theme-color" content="#020204">
+
   <title>Infinity Data Base</title>
 
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style (1).css">
+
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script src="https://unpkg.com/3d-force-graph"></script>
 </head>
@@ -24,6 +26,7 @@
   <div class="ambient-glow secondary"></div>
 
   <main class="container">
+    <!-- Главная -->
     <section id="tab-home" class="tab-content active">
       <header class="header-top">
         <h1 class="app-title">Infinity Data Base</h1>
@@ -33,6 +36,7 @@
           type="button"
           onclick="openBrainMap()"
           aria-label="Открыть карту мыслей"
+          title="Карта мыслей"
         >
           <svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true">
             <circle cx="12" cy="12" r="10"></circle>
@@ -46,7 +50,7 @@
         <h2 class="cd-hero-title heading">Личное облако</h2>
 
         <div class="storage-labels">
-          <span class="storage-used" id="dataUsedText">0 MB</span>
+          <span class="storage-used" id="dataUsedText">0 Б</span>
           <span class="storage-infinity" id="streakCounter">🔥 0</span>
         </div>
 
@@ -60,15 +64,15 @@
           <div class="hero-progress-fill" id="dataUsedFill"></div>
         </div>
 
-        <p class="storage-subtext">Локальные заметки · доступ с любого устройства</p>
+        <p class="storage-subtext">Заметки, идеи и личная база знаний</p>
       </div>
 
       <div class="smart-note-box">
         <textarea
           id="smartNoteInput"
           rows="2"
-          maxlength="5000"
-          placeholder="О чём вы думаете? ИИ создаст заголовок и теги…"
+          maxlength="10000"
+          placeholder="Запишите мысль — ИИ даст ей заголовок и теги…"
           aria-label="Новая умная заметка"
         ></textarea>
 
@@ -76,6 +80,7 @@
           type="button"
           onclick="saveSmartNote()"
           aria-label="Сохранить заметку"
+          title="Сохранить"
         >
           <svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true">
             <line x1="22" y1="2" x2="11" y2="13"></line>
@@ -87,18 +92,19 @@
       <div class="status-grid">
         <div class="status-card">
           <div>
-            <div class="status-title">Всего материалов</div>
+            <div class="status-title">Материалов</div>
             <div class="status-value" id="totalFilesCount">0</div>
           </div>
 
           <div>
-            <div class="status-title">Написано слов</div>
+            <div class="status-title">Слов написано</div>
             <div class="status-value" id="wordsCount">0</div>
           </div>
         </div>
       </div>
     </section>
 
+    <!-- Файлы -->
     <section id="tab-files" class="tab-content">
       <div class="files-topbar" id="filesTopbar"></div>
 
@@ -110,11 +116,11 @@
 
         <input
           type="search"
-          class="search-input"
           id="searchInput"
+          class="search-input"
           placeholder="Поиск по заметкам…"
-          oninput="handleSearch()"
           autocomplete="off"
+          oninput="handleSearch()"
         >
       </div>
 
@@ -124,14 +130,14 @@
 
       <div id="folderContentsView" hidden>
         <div class="grid-gallery" id="folderGallery"></div>
-        <div id="load-sentinel"></div>
       </div>
     </section>
 
+    <!-- Чат -->
     <section id="tab-chat" class="tab-content chat-tab">
       <div class="tab-heading">
         <h1 class="heading tab-page-title">Второй мозг</h1>
-        <p>Спросите что угодно по вашим заметкам и дневнику.</p>
+        <p>ИИ отвечает по вашим заметкам и показывает использованные источники.</p>
       </div>
 
       <div
@@ -139,27 +145,35 @@
         id="chatContainer"
         aria-live="polite"
         aria-label="Диалог с ИИ"
-      ></div>
+      >
+        <div class="chat-msg ai">
+          Привет! Спросите меня о своих заметках, идеях или планах.
+        </div>
+      </div>
 
       <div class="chat-input-area">
         <input
           type="text"
           id="chatInput"
-          placeholder="Например: что я думал о проекте?"
-          onkeydown="handleChatKey(event)"
+          placeholder="Например: о чём я думал вчера?"
           autocomplete="off"
+          onkeydown="handleChatKey(event)"
         >
-        <button type="button" onclick="sendChatMessage()">Отправить</button>
+
+        <button type="button" onclick="sendChatMessage()">
+          Отправить
+        </button>
       </div>
     </section>
 
+    <!-- Дневник -->
     <section id="tab-journal" class="tab-content">
       <div class="tab-heading">
         <h1 class="heading tab-page-title">Дневник</h1>
-        <p>Фиксируйте мысли и получайте короткую рефлексию от ИИ.</p>
+        <p>Зафиксируйте день и получите короткую рефлексию от ИИ.</p>
       </div>
 
-      <div class="journal-mood-selector" role="group" aria-label="Ваше настроение">
+      <div class="journal-mood-selector" role="group" aria-label="Выберите настроение">
         <button type="button" onclick="setMood('😢')" aria-label="Грустно">😢</button>
         <button type="button" onclick="setMood('😐')" aria-label="Нейтрально">😐</button>
         <button type="button" onclick="setMood('😊')" aria-label="Хорошо">😊</button>
@@ -167,20 +181,21 @@
       </div>
 
       <textarea
-        class="journal-input"
         id="journalInput"
+        class="journal-input"
         rows="6"
         maxlength="10000"
-        placeholder="Как прошёл день? Запишите свои мысли…"
+        placeholder="Как прошёл день? Что было важным?"
       ></textarea>
 
-      <button class="journal-btn" type="button" onclick="saveJournal()">
-        Сохранить и получить анализ
+      <button type="button" class="journal-btn" onclick="saveJournal()">
+        Сохранить запись
       </button>
 
       <div id="journalFeed" class="journal-feed"></div>
     </section>
 
+    <!-- Профиль -->
     <section id="tab-profile" class="tab-content">
       <div class="tab-heading">
         <h1 class="heading tab-page-title">Профиль и настройки</h1>
@@ -192,9 +207,9 @@
       </div>
 
       <div class="settings-group">
-        <h3 class="settings-title">ИИ-провайдер</h3>
+        <h3 class="settings-title">Настройки ИИ</h3>
 
-        <label class="field-label" for="aiProvider">Сервис</label>
+        <label class="field-label" for="aiProvider">Провайдер</label>
         <select id="aiProvider" class="settings-select">
           <option value="together">Together AI</option>
           <option value="openai">OpenAI</option>
@@ -203,32 +218,23 @@
         </select>
 
         <label class="field-label" for="aiModel">Модель</label>
-        <select id="aiModel" class="settings-select">
-          <option value="meta-llama/Llama-3.3-70B-Instruct-Turbo">
-            Llama 3.3 70B
-          </option>
-          <option value="meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo">
-            Llama 3.1 8B
-          </option>
-          <option value="Qwen/Qwen2.5-72B-Instruct-Turbo">
-            Qwen 2.5 72B
-          </option>
-        </select>
+        <select id="aiModel" class="settings-select"></select>
 
         <label class="field-label" for="togetherApiKey">API-ключ</label>
         <div class="api-key-row">
           <input
-            type="password"
             id="togetherApiKey"
             class="settings-input"
+            type="password"
             placeholder="Вставьте API-ключ"
             autocomplete="off"
+            spellcheck="false"
           >
 
           <button
+            id="toggleApiKey"
             class="icon-btn key-toggle-btn"
             type="button"
-            id="toggleApiKey"
             aria-label="Показать или скрыть API-ключ"
           >
             <svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true">
@@ -239,10 +245,10 @@
         </div>
 
         <p class="settings-hint">
-          Ключ хранится только в браузере, в Local Storage.
+          Ключ сохраняется только в этом браузере. Для каждого провайдера можно сохранить отдельный ключ.
         </p>
 
-        <button class="sheet-btn primary-btn" type="button" id="saveSettingsBtn">
+        <button id="saveSettingsBtn" class="sheet-btn primary-btn" type="button">
           Сохранить настройки ИИ
         </button>
       </div>
@@ -254,22 +260,30 @@
           💾 Экспортировать JSON
         </button>
 
-        <label class="sheet-btn import-btn">
+        <label class="sheet-btn" for="importFile">
           📂 Импортировать JSON
-          <input
-            type="file"
-            accept=".json,application/json"
-            onchange="importData(event)"
-            hidden
-          >
         </label>
+
+        <input
+          id="importFile"
+          type="file"
+          accept=".json,application/json"
+          hidden
+          onchange="importData(event)"
+        >
       </div>
     </section>
   </main>
 
+  <!-- Нижняя навигация -->
   <nav class="nav-container" aria-label="Основная навигация">
     <div class="nav-bar">
-      <button class="nav-item active" id="nav-home" type="button" onclick="switchTab('home', this)">
+      <button
+        class="nav-item active"
+        id="nav-home"
+        type="button"
+        onclick="switchTab('home', this)"
+      >
         <svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true">
           <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
           <polyline points="9 22 9 12 15 12 15 22"></polyline>
@@ -277,21 +291,36 @@
         <span>Главная</span>
       </button>
 
-      <button class="nav-item" id="nav-files" type="button" onclick="switchTab('files', this)">
+      <button
+        class="nav-item"
+        id="nav-files"
+        type="button"
+        onclick="switchTab('files', this)"
+      >
         <svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true">
           <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
         </svg>
         <span>Файлы</span>
       </button>
 
-      <button class="nav-item" id="nav-chat" type="button" onclick="switchTab('chat', this)">
+      <button
+        class="nav-item"
+        id="nav-chat"
+        type="button"
+        onclick="switchTab('chat', this)"
+      >
         <svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true">
           <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
         </svg>
         <span>Чат</span>
       </button>
 
-      <button class="nav-item" id="nav-journal" type="button" onclick="switchTab('journal', this)">
+      <button
+        class="nav-item"
+        id="nav-journal"
+        type="button"
+        onclick="switchTab('journal', this)"
+      >
         <svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true">
           <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
           <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
@@ -299,7 +328,12 @@
         <span>Дневник</span>
       </button>
 
-      <button class="nav-item" id="nav-profile" type="button" onclick="switchTab('profile', this)">
+      <button
+        class="nav-item"
+        id="nav-profile"
+        type="button"
+        onclick="switchTab('profile', this)"
+      >
         <svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true">
           <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
           <circle cx="12" cy="7" r="4"></circle>
@@ -309,8 +343,20 @@
     </div>
   </nav>
 
-  <div class="modal" id="brainMapModal" role="dialog" aria-modal="true" aria-label="Карта мыслей">
-    <button class="icon-btn modal-close" type="button" onclick="closeBrainMap()" aria-label="Закрыть">
+  <!-- Карта нейронов -->
+  <div
+    class="modal"
+    id="brainMapModal"
+    role="dialog"
+    aria-modal="true"
+    aria-label="Карта мыслей"
+  >
+    <button
+      class="icon-btn modal-close"
+      type="button"
+      onclick="closeBrainMap()"
+      aria-label="Закрыть карту"
+    >
       <svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true">
         <line x1="18" y1="6" x2="6" y2="18"></line>
         <line x1="6" y1="6" x2="18" y2="18"></line>
@@ -320,8 +366,20 @@
     <div id="3d-graph"></div>
   </div>
 
-  <div class="modal" id="mediaModal" role="dialog" aria-modal="true" aria-label="Просмотр файла">
-    <button class="icon-btn modal-close" type="button" onclick="closeModal()" aria-label="Закрыть">
+  <!-- Просмотр медиа -->
+  <div
+    class="modal"
+    id="mediaModal"
+    role="dialog"
+    aria-modal="true"
+    aria-label="Просмотр файла"
+  >
+    <button
+      class="icon-btn modal-close"
+      type="button"
+      onclick="closeModal()"
+      aria-label="Закрыть просмотр"
+    >
       <svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true">
         <line x1="18" y1="6" x2="6" y2="18"></line>
         <line x1="6" y1="6" x2="18" y2="18"></line>
