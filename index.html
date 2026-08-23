@@ -7,7 +7,7 @@
     content="width=device-width, initial-scale=1, viewport-fit=cover"
   >
   <meta name="theme-color" content="#020204">
-  <title>Infinity AI</title>
+  <title>Infinity Data Base</title>
 
   <link rel="stylesheet" href="style.css">
 
@@ -28,15 +28,14 @@
     <!-- Home -->
     <section id="tab-home" class="tab-content active">
       <header class="header-top">
-        <h1 class="app-title">Infinity AI</h1>
+        <h1 class="app-title">Infinity Data Base</h1>
 
         <div class="header-actions">
           <button
             class="streak-pill"
             type="button"
             onclick="showStreakInfo()"
-            title="View your current streak"
-            aria-label="View your current streak"
+            aria-label="View your streak"
           >
             <svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true">
               <path d="M12 22c4 0 7-2.8 7-7.1 0-3.3-2.2-5.2-4.2-7.4.1 2-1 3.6-2.7 4.7.3-3.4-1.4-6.5-4.1-9.2.2 4.2-3 6.6-3 11.4C5 18.9 8 22 12 22z"></path>
@@ -62,7 +61,7 @@
 
       <div class="storage-hero">
         <div class="storage-labels">
-          <span class="storage-used">Data <strong id="dataUsedText">0</strong></span>
+          <span class="storage-used">Data Used <strong id="dataUsedText">0</strong></span>
           <span class="storage-infinity">∞</span>
         </div>
 
@@ -85,7 +84,7 @@
             id="smartNoteInput"
             rows="3"
             maxlength="2500"
-            placeholder="Capture a thought…"
+            placeholder="Write a thought…"
             aria-label="New note"
           ></textarea>
 
@@ -151,25 +150,24 @@
       </div>
     </section>
 
-    <!-- Infinity AI -->
+    <!-- AI Chat -->
     <section id="tab-chat" class="tab-content chat-tab">
-      <div class="ai-chat-heading">
-        <div class="ai-orbit" aria-hidden="true">
-          <span></span>
-          <span></span>
-          <span></span>
+      <div class="chat-header">
+        <div class="chat-header-icon">
+          <svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 2l1.8 5.5L19 9l-5.2 1.5L12 16l-1.8-5.5L5 9l5.2-1.5z"></path>
+            <path d="M19 15l.8 2.4L22 18l-2.2.6L19 21l-.8-2.4L16 18l2.2-.6z"></path>
+          </svg>
         </div>
-
-        <div>
-          <p class="ai-eyebrow">YOUR SECOND BRAIN</p>
-          <h1><span>Infinity</span> <strong>AI</strong></h1>
-          <p class="ai-subtitle">Ask about your notes, ideas, and journal.</p>
+        <div class="chat-header-text">
+          <h1 class="chat-title">Infinity AI</h1>
+          <p class="chat-subtitle">Ask about your notes, thoughts, or journal entries</p>
         </div>
       </div>
 
       <div class="chat-container" id="chatContainer" aria-live="polite">
         <div class="chat-msg ai">
-          Hi, I’m Infinity AI. What would you like to explore?
+          Ask me about your notes, thoughts, or journal.
         </div>
       </div>
 
@@ -178,12 +176,12 @@
           type="text"
           id="chatInput"
           maxlength="1000"
-          placeholder="Ask Infinity AI…"
+          placeholder="Your question…"
           autocomplete="off"
           onkeydown="handleChatKey(event)"
         >
 
-        <button type="button" onclick="sendChatMessage()" aria-label="Send message">
+        <button type="button" onclick="sendChatMessage()" aria-label="Send">
           <svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true">
             <line x1="22" y1="2" x2="11" y2="13"></line>
             <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
@@ -193,15 +191,9 @@
     </section>
 
     <!-- Journal -->
-    <section id="tab-journal" class="tab-content">
-      <div class="journal-layout">
-        <div class="journal-heading">
-          <p class="journal-eyebrow">REFLECT & GROW</p>
-          <h1>My Journal</h1>
-          <p>Save today’s thoughts, feelings, and important moments.</p>
-        </div>
-
-        <div class="journal-mood-selector" role="group" aria-label="Choose your mood">
+    <section id="tab-journal" class="tab-content journal-tab">
+      <div class="journal-center-wrap">
+        <div class="journal-mood-selector" role="group" aria-label="Select mood">
           <button type="button" onclick="setMood('sad')" aria-label="Sad">
             <svg class="mood-icon" viewBox="0 0 24 24" aria-hidden="true">
               <circle cx="12" cy="12" r="9"></circle>
@@ -237,11 +229,11 @@
           class="journal-input"
           rows="6"
           maxlength="5000"
-          placeholder="What is on your mind today?"
+          placeholder="Journal entry…"
         ></textarea>
 
         <button type="button" class="journal-btn" onclick="saveJournal()">
-          Save entry
+          Save Entry
         </button>
 
         <button
@@ -255,8 +247,13 @@
             <line x1="8" y1="2" x2="8" y2="6"></line>
             <line x1="3" y1="10" x2="21" y2="10"></line>
           </svg>
-          View entries
+          Calendar
         </button>
+      </div>
+
+      <div class="journal-entries-section">
+        <h3 class="journal-entries-title">Recent Entries</h3>
+        <div class="journal-entries-list" id="journalEntriesList"></div>
       </div>
     </section>
 
@@ -286,7 +283,7 @@
         </div>
 
         <div id="dailyInsightContent" class="daily-insight-content">
-          Choose a period and generate your insight.
+          Choose a period and generate an insight.
         </div>
 
         <button
@@ -294,7 +291,7 @@
           class="sheet-btn primary-btn"
           onclick="generateDailyInsight()"
         >
-          Generate insight
+          Generate Insight
         </button>
       </section>
 
@@ -306,8 +303,8 @@
           aria-expanded="false"
         >
           <span>
-            <strong>AI settings</strong>
-            <small>Provider, model, and API key</small>
+            <strong>Infinity AI Settings</strong>
+            <small>Provider, model, key</small>
           </span>
 
           <svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true">
@@ -327,13 +324,13 @@
           <label class="field-label" for="aiModel">Model</label>
           <select id="aiModel" class="settings-select"></select>
 
-          <label class="field-label" for="togetherApiKey">API key</label>
+          <label class="field-label" for="togetherApiKey">API Key</label>
           <div class="api-key-row">
             <input
               id="togetherApiKey"
               class="settings-input"
               type="password"
-              placeholder="API key"
+              placeholder="API Key"
               autocomplete="off"
               spellcheck="false"
             >
@@ -352,7 +349,7 @@
           </div>
 
           <button id="saveSettingsBtn" class="sheet-btn primary-btn" type="button">
-            Save settings
+            Save
           </button>
         </div>
       </section>
@@ -395,7 +392,7 @@
         </svg>
       </button>
 
-      <button class="nav-item" id="nav-chat" type="button" onclick="switchTab('chat', this)" aria-label="Infinity AI">
+      <button class="nav-item" id="nav-chat" type="button" onclick="switchTab('chat', this)" aria-label="AI Chat">
         <svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true">
           <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
         </svg>
@@ -419,7 +416,7 @@
     </div>
   </nav>
 
-  <!-- Neural map -->
+  <!-- Neural Map -->
   <div class="modal brain-modal" id="brainMapModal" role="dialog" aria-modal="true">
     <div class="brain-toolbar">
       <div class="brain-search">
@@ -427,7 +424,7 @@
           <circle cx="11" cy="11" r="8"></circle>
           <path d="M21 21l-4.35-4.35"></path>
         </svg>
-        <input id="brainSearchInput" type="search" placeholder="Find a note" autocomplete="off">
+        <input id="brainSearchInput" type="search" placeholder="Search notes" autocomplete="off">
       </div>
 
       <button class="icon-btn brain-help-btn" type="button" onclick="toggleBrainHelp()" aria-label="Help">
@@ -447,13 +444,13 @@
     </div>
 
     <div id="brainHelp" class="brain-help" hidden>
-      Drag with one finger to explore and pinch to zoom. Hover or zoom in to preview a neuron. Tap a neuron to open its full note.
+      On mobile: drag with one finger to rotate, pinch with two fingers to zoom. Hover or zoom in close to a neuron to see its info, tap it to open the full note.
     </div>
 
     <div id="3d-graph"></div>
   </div>
 
-  <!-- Media preview -->
+  <!-- Media viewer -->
   <div class="modal" id="mediaModal" role="dialog" aria-modal="true">
     <button class="icon-btn modal-close" type="button" onclick="closeModal()" aria-label="Close">
       <svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true">
