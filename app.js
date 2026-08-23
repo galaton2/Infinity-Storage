@@ -1,6 +1,4 @@
-Полностью замените содержимое `app.js` на это. Бэкенд не меняется: используется тот же `API_URL` и тот же запрос файлов.
 
-```js
 "use strict";
 
 const tg = window.Telegram?.WebApp || null;
@@ -1921,4 +1919,3 @@ async function init() {
 }
 
 document.addEventListener("DOMContentLoaded", init);
-```
