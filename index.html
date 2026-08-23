@@ -1,12 +1,10 @@
+
 <!DOCTYPE html>
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1, viewport-fit=cover"
-  >
-  <meta name="theme-color" content="#020204">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#070b12">
   <title>Infinity Data Base</title>
 
   <link rel="stylesheet" href="style.css">
@@ -16,9 +14,80 @@
 </head>
 
 <body>
+  <!-- Набор иконок -->
+  <svg class="icon-sprite" aria-hidden="true">
+    <symbol id="i-home" viewBox="0 0 24 24">
+      <path d="m3 10 9-7 9 7v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+      <path d="M9 22v-8h6v8"/>
+    </symbol>
+    <symbol id="i-folder" viewBox="0 0 24 24">
+      <path d="M3 6.5A2.5 2.5 0 0 1 5.5 4H10l2 2.5h6.5A2.5 2.5 0 0 1 21 9v8.5a2.5 2.5 0 0 1-2.5 2.5h-13A2.5 2.5 0 0 1 3 17.5z"/>
+      <path d="M3 10h18"/>
+    </symbol>
+    <symbol id="i-folder-plus" viewBox="0 0 24 24">
+      <path d="M3 6.5A2.5 2.5 0 0 1 5.5 4H10l2 2.5h6.5A2.5 2.5 0 0 1 21 9v8.5a2.5 2.5 0 0 1-2.5 2.5h-13A2.5 2.5 0 0 1 3 17.5z"/>
+      <path d="M12 11v5M9.5 13.5h5"/>
+    </symbol>
+    <symbol id="i-sparkles" viewBox="0 0 24 24">
+      <path d="m12 3 1.35 4.65L18 9l-4.65 1.35L12 15l-1.35-4.65L6 9l4.65-1.35z"/>
+      <path d="m19 14 .7 2.3L22 17l-2.3.7L19 20l-.7-2.3L16 17l2.3-.7z"/>
+      <path d="m5 15 .7 2.3L8 18l-2.3.7L5 21l-.7-2.3L2 18l2.3-.7z"/>
+    </symbol>
+    <symbol id="i-send" viewBox="0 0 24 24">
+      <path d="m21 3-7.2 18-3.3-7.5L3 10.2z"/>
+      <path d="m10.5 13.5 4.8-4.8"/>
+    </symbol>
+    <symbol id="i-search" viewBox="0 0 24 24">
+      <circle cx="10.8" cy="10.8" r="6.8"/>
+      <path d="m16 16 5 5"/>
+    </symbol>
+    <symbol id="i-calendar" viewBox="0 0 24 24">
+      <rect x="3" y="5" width="18" height="16" rx="2"/>
+      <path d="M7 3v4M17 3v4M3 10h18"/>
+    </symbol>
+    <symbol id="i-brain" viewBox="0 0 24 24">
+      <path d="M9 4.2A3.5 3.5 0 0 0 4.5 7.5 3.5 3.5 0 0 0 5 14.2 3.5 3.5 0 0 0 9.5 19v1.5"/>
+      <path d="M15 4.2a3.5 3.5 0 0 1 4.5 3.3 3.5 3.5 0 0 1-.5 6.7 3.5 3.5 0 0 1-4.5 4.8v1.5"/>
+      <path d="M12 3v18M7 9h5M12 14h5"/>
+    </symbol>
+    <symbol id="i-network" viewBox="0 0 24 24">
+      <circle cx="6" cy="6" r="2.5"/>
+      <circle cx="18" cy="6" r="2.5"/>
+      <circle cx="12" cy="18" r="2.5"/>
+      <path d="m8 7.5 2.7 8M16 7.5l-2.7 8M8.5 6h7"/>
+    </symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24">
+      <path d="M12 5v14M5 12h14"/>
+    </symbol>
+    <symbol id="i-arrow-left" viewBox="0 0 24 24">
+      <path d="m15 18-6-6 6-6"/>
+    </symbol>
+    <symbol id="i-close" viewBox="0 0 24 24">
+      <path d="m6 6 12 12M18 6 6 18"/>
+    </symbol>
+    <symbol id="i-chevron-left" viewBox="0 0 24 24">
+      <path d="m15 18-6-6 6-6"/>
+    </symbol>
+    <symbol id="i-chevron-right" viewBox="0 0 24 24">
+      <path d="m9 18 6-6-6-6"/>
+    </symbol>
+    <symbol id="i-user" viewBox="0 0 24 24">
+      <circle cx="12" cy="7.5" r="3.5"/>
+      <path d="M4.5 21a7.5 7.5 0 0 1 15 0"/>
+    </symbol>
+    <symbol id="i-more" viewBox="0 0 24 24">
+      <circle cx="5" cy="12" r="1"/>
+      <circle cx="12" cy="12" r="1"/>
+      <circle cx="19" cy="12" r="1"/>
+    </symbol>
+    <symbol id="i-check" viewBox="0 0 24 24">
+      <path d="m5 12 4.2 4.2L19 6.5"/>
+    </symbol>
+  </svg>
+
   <div id="app-loader" class="app-loader" aria-live="polite">
     <div class="loader-spinner"></div>
-    <div class="loader-text">Загрузка…</div>
+    <span>Загрузка пространства…</span>
   </div>
 
   <div class="ambient-glow"></div>
@@ -28,113 +97,117 @@
     <!-- Главная -->
     <section id="tab-home" class="tab-content active">
       <header class="header-top">
-        <h1 class="app-title">Infinity Data Base</h1>
+        <div>
+          <p class="eyebrow">ВАШЕ ПРОСТРАНСТВО</p>
+          <h1 class="app-title">Infinity</h1>
+        </div>
 
         <div class="header-actions">
-          <div class="streak-pill" title="Серия дней">
-            <svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M12 22c4 0 7-2.8 7-7.1 0-3.3-2.2-5.2-4.2-7.4.1 2-1 3.6-2.7 4.7.3-3.4-1.4-6.5-4.1-9.2.2 4.2-3 6.6-3 11.4C5 18.9 8 22 12 22z"></path>
-            </svg>
+          <div class="streak-pill" title="Серия активных дней">
+            <span class="streak-dot"></span>
             <span id="streakCounter">0</span>
+            <span>дней</span>
           </div>
 
-          <button
-            class="icon-btn"
-            type="button"
-            onclick="openBrainMap()"
-            aria-label="Открыть карту нейронов"
-          >
-            <svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true">
-              <circle cx="6" cy="6" r="2.5"></circle>
-              <circle cx="18" cy="6" r="2.5"></circle>
-              <circle cx="12" cy="18" r="2.5"></circle>
-              <path d="M8 7.4l2.7 8M16 7.4l-2.7 8M8.5 6h7"></path>
-            </svg>
+          <button class="icon-btn" type="button" onclick="openBrainMap()" aria-label="Открыть карту нейронов">
+            <svg class="svg-icon"><use href="#i-network"></use></svg>
           </button>
         </div>
       </header>
 
-      <div class="storage-hero">
+      <section class="storage-hero">
         <div class="storage-labels">
-          <span class="storage-used">Данные <strong id="dataUsedText">0</strong></span>
+          <div>
+            <span class="storage-caption">Хранилище</span>
+            <strong id="dataUsedText">14 байт</strong>
+          </div>
           <span class="storage-infinity">∞</span>
         </div>
 
-        <div
-          class="hero-progress-track storage-range"
-          role="progressbar"
-          aria-label="Использование данных"
-          aria-valuemin="0"
-          aria-valuemax="100"
-          aria-valuenow="0"
-        >
+        <div class="hero-progress-track storage-range" role="progressbar" aria-label="Использование данных" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
           <div class="hero-progress-fill" id="dataUsedFill"></div>
           <span class="storage-range-dot" id="storageRangeDot"></span>
         </div>
-      </div>
 
-      <div class="smart-note-box">
-        <div class="smart-note-content">
-          <textarea
-            id="smartNoteInput"
-            rows="3"
-            maxlength="2500"
-            placeholder="Запишите мысль…"
-            aria-label="Новая заметка"
-          ></textarea>
+        <span class="storage-hint">Безлимитное личное хранилище</span>
+      </section>
 
-          <div class="smart-note-footer">
-            <span>ИИ добавит заголовок и теги</span>
-            <span id="noteCharCounter">0 / 2500</span>
+      <section class="home-note-section">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">БЫСТРАЯ ЗАПИСЬ</p>
+            <h2>Запишите мысль</h2>
           </div>
+          <svg class="heading-icon"><use href="#i-sparkles"></use></svg>
         </div>
 
-        <button
-          type="button"
-          onclick="saveSmartNote()"
-          aria-label="Сохранить заметку"
-        >
-          <svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true">
-            <line x1="22" y1="2" x2="11" y2="13"></line>
-            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-          </svg>
-        </button>
-      </div>
+        <div class="smart-note-box">
+          <div class="smart-note-content">
+            <textarea id="smartNoteInput" rows="4" maxlength="2500" placeholder="Идея, задача, ссылка или важная мысль…" aria-label="Новая заметка"></textarea>
 
-      <div class="status-grid">
-        <div class="status-card">
+            <div class="smart-note-footer">
+              <span><svg class="tiny-icon"><use href="#i-sparkles"></use></svg> ИИ подберёт заголовок и теги</span>
+              <span id="noteCharCounter">0 / 2500</span>
+            </div>
+          </div>
+
+          <button class="send-note-btn" type="button" onclick="saveSmartNote()" aria-label="Сохранить заметку">
+            <svg class="svg-icon"><use href="#i-send"></use></svg>
+          </button>
+        </div>
+      </section>
+
+      <section class="status-grid">
+        <article class="status-card">
+          <div class="status-icon files">
+            <svg class="svg-icon"><use href="#i-folder"></use></svg>
+          </div>
           <div>
             <div class="status-title">Материалов</div>
             <div class="status-value" id="totalFilesCount">0</div>
           </div>
+        </article>
 
+        <article class="status-card">
+          <div class="status-icon words">Аа</div>
           <div>
             <div class="status-title">Слов</div>
             <div class="status-value" id="wordsCount">0</div>
           </div>
+        </article>
+      </section>
+
+      <section class="home-ai-card" onclick="switchTab('chat', document.getElementById('nav-chat'))" role="button" tabindex="0">
+        <div class="ai-orb"><svg class="svg-icon"><use href="#i-sparkles"></use></svg></div>
+        <div>
+          <p class="eyebrow">INFINITY AI</p>
+          <h3>Ваш помощник по знаниям</h3>
+          <p>Найдёт идеи, кратко объяснит заметки и поможет связать мысли.</p>
         </div>
-      </div>
+        <span class="card-arrow">→</span>
+      </section>
     </section>
 
     <!-- Файлы -->
     <section id="tab-files" class="tab-content">
+      <header class="files-page-header">
+        <div>
+          <p class="eyebrow">БИБЛИОТЕКА</p>
+          <h1 class="tab-page-title">Мои материалы</h1>
+        </div>
+
+        <button class="create-folder-btn" type="button" onclick="openCreateFolderModal()">
+          <svg class="svg-icon"><use href="#i-folder-plus"></use></svg>
+          <span>Папка</span>
+        </button>
+      </header>
+
       <div class="files-topbar" id="filesTopbar"></div>
 
-      <div class="search-box">
-        <svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true">
-          <circle cx="11" cy="11" r="8"></circle>
-          <path d="M21 21l-4.35-4.35"></path>
-        </svg>
-
-        <input
-          type="search"
-          id="searchInput"
-          class="search-input"
-          placeholder="Поиск"
-          autocomplete="off"
-          oninput="handleSearch()"
-        >
-      </div>
+      <label class="search-box">
+        <svg class="svg-icon"><use href="#i-search"></use></svg>
+        <input type="search" id="searchInput" class="search-input" placeholder="Поиск по материалам" autocomplete="off" oninput="handleSearch()">
+      </label>
 
       <div id="folderGridView">
         <div class="folder-grid" id="folderGrid"></div>
@@ -145,98 +218,123 @@
       </div>
     </section>
 
-    <!-- ИИ-чат -->
+    <!-- ИИ -->
     <section id="tab-chat" class="tab-content chat-tab">
+      <header class="ai-page-header">
+        <div class="ai-header-orb"><svg class="svg-icon"><use href="#i-sparkles"></use></svg></div>
+        <div>
+          <p class="eyebrow">INFINITY AI</p>
+          <h1 class="tab-page-title">Помощник по знаниям</h1>
+          <p>Работает с вашими заметками, дневником и материалами.</p>
+        </div>
+      </header>
+
+      <div id="aiSuggestions" class="ai-suggestions">
+        <button type="button" onclick="askAiSuggestion('Какие главные идеи есть в моих заметках?')">Главные идеи</button>
+        <button type="button" onclick="askAiSuggestion('Найди похожие заметки и связи между ними')">Найти связи</button>
+        <button type="button" onclick="askAiSuggestion('Сделай краткое резюме моих последних записей')">Сделать резюме</button>
+      </div>
+
       <div class="chat-container" id="chatContainer" aria-live="polite">
-        <div class="chat-msg ai">
-          Спросите о заметках, мыслях или дневнике.
+        <div class="chat-welcome">
+          <div class="chat-welcome-icon"><svg class="svg-icon"><use href="#i-brain"></use></svg></div>
+          <h2>О чём думаем?</h2>
+          <p>Я могу помочь разобраться в ваших материалах и заметках.</p>
         </div>
       </div>
 
       <div class="chat-input-area">
-        <input
-          type="text"
-          id="chatInput"
-          maxlength="1000"
-          placeholder="Ваш вопрос…"
-          autocomplete="off"
-          onkeydown="handleChatKey(event)"
-        >
-
-        <button type="button" onclick="sendChatMessage()" aria-label="Отправить">
-          <svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true">
-            <line x1="22" y1="2" x2="11" y2="13"></line>
-            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-          </svg>
+        <input type="text" id="chatInput" maxlength="1000" placeholder="Спросите о своих заметках…" autocomplete="off" onkeydown="handleChatKey(event)">
+        <button type="button" onclick="sendChatMessage()" aria-label="Отправить сообщение">
+          <svg class="svg-icon"><use href="#i-send"></use></svg>
         </button>
       </div>
     </section>
 
     <!-- Дневник -->
-    <section id="tab-journal" class="tab-content">
-      <div class="journal-mood-selector" role="group" aria-label="Выберите настроение">
-        <button type="button" onclick="setMood('sad')" aria-label="Грустно">
-          <svg class="mood-icon" viewBox="0 0 24 24" aria-hidden="true">
-            <circle cx="12" cy="12" r="9"></circle>
-            <path d="M8.5 16c1-1.5 2.1-2.2 3.5-2.2S14.5 14.5 15.5 16"></path>
-            <path d="M8 9h.01M16 9h.01"></path>
-          </svg>
-        </button>
+    <section id="tab-journal" class="tab-content journal-tab">
+      <header class="journal-header">
+        <p class="eyebrow">ЛИЧНОЕ</p>
+        <h1 class="tab-page-title">Дневник</h1>
+        <p class="journal-date-label" id="journalCurrentDate">Сегодня</p>
+      </header>
 
-        <button type="button" onclick="setMood('calm')" aria-label="Спокойно">
-          <svg class="mood-icon" viewBox="0 0 24 24" aria-hidden="true">
-            <circle cx="12" cy="12" r="9"></circle>
-            <path d="M8 14h8M8 9h.01M16 9h.01"></path>
-          </svg>
-        </button>
+      <div class="journal-layout">
+        <section class="journal-editor-card">
+          <div class="journal-card-title">
+            <div>
+              <span class="journal-step">01</span>
+              <h2>Как вы себя чувствуете?</h2>
+            </div>
+          </div>
 
-        <button type="button" onclick="setMood('good')" aria-label="Хорошо">
-          <svg class="mood-icon" viewBox="0 0 24 24" aria-hidden="true">
-            <circle cx="12" cy="12" r="9"></circle>
-            <path d="M8 13c1.2 1.7 2.5 2.5 4 2.5s2.8-.8 4-2.5M8 9h.01M16 9h.01"></path>
-          </svg>
-        </button>
+          <div class="journal-mood-selector" role="group" aria-label="Выберите настроение">
+            <button type="button" class="mood-btn" onclick="setMood('sad')" data-mood="sad" aria-label="Грустно">
+              <span>😔</span><small>Грустно</small>
+            </button>
+            <button type="button" class="mood-btn" onclick="setMood('calm')" data-mood="calm" aria-label="Спокойно">
+              <span>😌</span><small>Спокойно</small>
+            </button>
+            <button type="button" class="mood-btn" onclick="setMood('good')" data-mood="good" aria-label="Хорошо">
+              <span>🙂</span><small>Хорошо</small>
+            </button>
+            <button type="button" class="mood-btn" onclick="setMood('great')" data-mood="great" aria-label="Отлично">
+              <span>🤩</span><small>Отлично</small>
+            </button>
+          </div>
 
-        <button type="button" onclick="setMood('great')" aria-label="Отлично">
-          <svg class="mood-icon" viewBox="0 0 24 24" aria-hidden="true">
-            <circle cx="12" cy="12" r="9"></circle>
-            <path d="M7.5 12.5c1.4 2.3 2.9 3.3 4.5 3.3s3.1-1 4.5-3.3M8 9h.01M16 9h.01"></path>
-          </svg>
-        </button>
+          <div class="journal-card-title journal-write-title">
+            <div>
+              <span class="journal-step">02</span>
+              <h2>Что произошло сегодня?</h2>
+            </div>
+          </div>
+
+          <textarea id="journalInput" class="journal-input" rows="7" maxlength="5000" placeholder="Опишите день, свои мысли, маленькие победы или то, что осталось в голове…"></textarea>
+
+          <div class="journal-actions">
+            <span id="journalCharCounter">0 / 5000</span>
+            <button type="button" class="journal-btn" onclick="saveJournal()">
+              <svg class="svg-icon"><use href="#i-check"></use></svg>
+              Сохранить запись
+            </button>
+          </div>
+        </section>
+
+        <section class="journal-calendar-card">
+          <div class="calendar-card-header">
+            <div>
+              <p class="eyebrow">АРХИВ ЗАПИСЕЙ</p>
+              <h2 id="calendarMonthTitle">Календарь</h2>
+            </div>
+            <button type="button" class="calendar-open-btn" onclick="openJournalCalendar()" aria-label="Открыть календарь">
+              <svg class="svg-icon"><use href="#i-calendar"></use></svg>
+            </button>
+          </div>
+
+          <div class="mini-calendar" id="journalCalendarPreview"></div>
+
+          <p class="calendar-legend">
+            <span><i class="legend-dot saved"></i> Есть запись</span>
+            <span><i class="legend-dot today"></i> Сегодня</span>
+          </p>
+
+          <button type="button" class="journal-calendar-btn" onclick="openJournalCalendar()">
+            Открыть календарь
+            <svg class="svg-icon"><use href="#i-chevron-right"></use></svg>
+          </button>
+        </section>
       </div>
-
-      <textarea
-        id="journalInput"
-        class="journal-input"
-        rows="6"
-        maxlength="5000"
-        placeholder="Запись дневника…"
-      ></textarea>
-
-      <button type="button" class="journal-btn" onclick="saveJournal()">
-        Сохранить
-      </button>
-
-      <button
-        type="button"
-        class="journal-calendar-btn"
-        onclick="openJournalCalendar()"
-      >
-        <svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true">
-          <rect x="3" y="4" width="18" height="17" rx="2"></rect>
-          <line x1="16" y1="2" x2="16" y2="6"></line>
-          <line x1="8" y1="2" x2="8" y2="6"></line>
-          <line x1="3" y1="10" x2="21" y2="10"></line>
-        </svg>
-        Календарь
-      </button>
     </section>
 
     <!-- Профиль -->
     <section id="tab-profile" class="tab-content">
       <div class="profile-header">
         <div class="profile-avatar" id="userAvatar">U</div>
-        <h1 class="heading tab-page-title" id="userName">Пользователь</h1>
+        <div>
+          <p class="eyebrow">ПРОФИЛЬ</p>
+          <h1 class="heading tab-page-title" id="userName">Пользователь</h1>
+        </div>
       </div>
 
       <section class="profile-card">
@@ -250,7 +348,6 @@
       <section class="profile-card insight-card">
         <div class="profile-card-head">
           <h2>Портрет</h2>
-
           <div class="insight-period-toggle" role="group" aria-label="Период портрета">
             <button type="button" class="active" data-insight-period="day">День</button>
             <button type="button" data-insight-period="week">Неделя</button>
@@ -258,33 +355,19 @@
         </div>
 
         <div id="dailyInsightContent" class="daily-insight-content">
-          Выберите период и создайте портрет.
+          Создайте портрет, чтобы увидеть краткий итог вашей активности.
         </div>
 
-        <button
-          type="button"
-          class="sheet-btn primary-btn"
-          onclick="generateDailyInsight()"
-        >
-          Создать портрет
-        </button>
+        <button type="button" class="sheet-btn primary-btn" onclick="generateDailyInsight()">Создать портрет</button>
       </section>
 
       <section class="profile-card settings-toggle-card">
-        <button
-          id="toggleAISettings"
-          type="button"
-          class="settings-toggle"
-          aria-expanded="false"
-        >
+        <button id="toggleAISettings" type="button" class="settings-toggle" aria-expanded="false">
           <span>
             <strong>Настройки ИИ</strong>
-            <small>Провайдер, модель, ключ</small>
+            <small>Провайдер, модель, API-ключ</small>
           </span>
-
-          <svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true">
-            <polyline points="6 9 12 15 18 9"></polyline>
-          </svg>
+          <span>⌄</span>
         </button>
 
         <div id="aiSettingsPanel" class="ai-settings-panel" hidden>
@@ -301,125 +384,130 @@
 
           <label class="field-label" for="togetherApiKey">API-ключ</label>
           <div class="api-key-row">
-            <input
-              id="togetherApiKey"
-              class="settings-input"
-              type="password"
-              placeholder="API-ключ"
-              autocomplete="off"
-              spellcheck="false"
-            >
-
-            <button
-              id="toggleApiKey"
-              class="icon-btn key-toggle-btn"
-              type="button"
-              aria-label="Показать или скрыть API-ключ"
-            >
-              <svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"></path>
-                <circle cx="12" cy="12" r="3"></circle>
-              </svg>
-            </button>
+            <input id="togetherApiKey" class="settings-input" type="password" placeholder="Введите API-ключ" autocomplete="off" spellcheck="false">
+            <button id="toggleApiKey" class="icon-btn key-toggle-btn" type="button" aria-label="Показать или скрыть API-ключ">◉</button>
           </div>
 
-          <button id="saveSettingsBtn" class="sheet-btn primary-btn" type="button">
-            Сохранить
-          </button>
+          <button id="saveSettingsBtn" class="sheet-btn primary-btn" type="button">Сохранить</button>
         </div>
       </section>
 
       <section class="profile-card data-card">
         <h2>Данные</h2>
-
-        <button class="sheet-btn" type="button" onclick="exportData()">
-          Экспорт JSON
-        </button>
-
-        <label class="sheet-btn" for="importFile">
-          Импорт JSON
-        </label>
-
-        <input
-          id="importFile"
-          type="file"
-          accept=".json,application/json"
-          hidden
-          onchange="importData(event)"
-        >
+        <button class="sheet-btn" type="button" onclick="exportData()">Экспорт JSON</button>
+        <label class="sheet-btn" for="importFile">Импорт JSON</label>
+        <input id="importFile" type="file" accept=".json,application/json" hidden onchange="importData(event)">
       </section>
     </section>
   </main>
 
-  <!-- Навигация: только качественные SVG-иконки -->
+  <!-- Нижняя навигация -->
   <nav class="nav-container" aria-label="Навигация">
     <div class="nav-bar">
       <button class="nav-item active" id="nav-home" type="button" onclick="switchTab('home', this)" aria-label="Главная">
-        <svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-          <polyline points="9 22 9 12 15 12 15 22"></polyline>
-        </svg>
+        <svg class="svg-icon"><use href="#i-home"></use></svg>
+        <span>Главная</span>
       </button>
-
-      <button class="nav-item" id="nav-files" type="button" onclick="switchTab('files', this)" aria-label="Файлы">
-        <svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
-        </svg>
+      <button class="nav-item" id="nav-files" type="button" onclick="switchTab('files', this)" aria-label="Материалы">
+        <svg class="svg-icon"><use href="#i-folder"></use></svg>
+        <span>Файлы</span>
       </button>
-
-      <button class="nav-item" id="nav-chat" type="button" onclick="switchTab('chat', this)" aria-label="ИИ-чат">
-        <svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
-        </svg>
+      <button class="nav-item nav-ai" id="nav-chat" type="button" onclick="switchTab('chat', this)" aria-label="ИИ-помощник">
+        <svg class="svg-icon"><use href="#i-sparkles"></use></svg>
+        <span>ИИ</span>
       </button>
-
       <button class="nav-item" id="nav-journal" type="button" onclick="switchTab('journal', this)" aria-label="Дневник">
-        <svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true">
-          <rect x="3" y="4" width="18" height="17" rx="2"></rect>
-          <line x1="16" y1="2" x2="16" y2="6"></line>
-          <line x1="8" y1="2" x2="8" y2="6"></line>
-          <line x1="3" y1="10" x2="21" y2="10"></line>
-        </svg>
+        <svg class="svg-icon"><use href="#i-calendar"></use></svg>
+        <span>Дневник</span>
       </button>
-
       <button class="nav-item" id="nav-profile" type="button" onclick="switchTab('profile', this)" aria-label="Профиль">
-        <svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true">
-          <circle cx="12" cy="7" r="4"></circle>
-          <path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"></path>
-        </svg>
+        <svg class="svg-icon"><use href="#i-user"></use></svg>
+        <span>Профиль</span>
       </button>
     </div>
   </nav>
 
+  <!-- Создание папки -->
+  <div class="modal sheet-modal" id="createFolderModal" role="dialog" aria-modal="true" aria-labelledby="createFolderTitle">
+    <section class="sheet-card">
+      <button class="icon-btn modal-close" type="button" onclick="closeCreateFolderModal()" aria-label="Закрыть">
+        <svg class="svg-icon"><use href="#i-close"></use></svg>
+      </button>
+
+      <div class="sheet-icon folder-sheet-icon">
+        <svg class="svg-icon"><use href="#i-folder-plus"></use></svg>
+      </div>
+      <h2 id="createFolderTitle">Новая папка</h2>
+      <p>Создайте отдельное место для ваших материалов.</p>
+
+      <label class="field-label" for="newFolderName">Название папки</label>
+      <input id="newFolderName" class="settings-input" type="text" maxlength="40" placeholder="Например, Учёба" autocomplete="off">
+
+      <button class="sheet-btn primary-btn" type="button" onclick="createFolder()">Создать папку</button>
+    </section>
+  </div>
+
+  <!-- Полный календарь -->
+  <div class="modal sheet-modal" id="journalCalendarModal" role="dialog" aria-modal="true" aria-labelledby="fullCalendarTitle">
+    <section class="sheet-card calendar-sheet">
+      <button class="icon-btn modal-close" type="button" onclick="closeJournalCalendar()" aria-label="Закрыть">
+        <svg class="svg-icon"><use href="#i-close"></use></svg>
+      </button>
+
+      <div class="calendar-modal-head">
+        <button type="button" class="calendar-nav-btn" onclick="changeCalendarMonth(-1)" aria-label="Предыдущий месяц">
+          <svg class="svg-icon"><use href="#i-chevron-left"></use></svg>
+        </button>
+        <h2 id="fullCalendarTitle">Календарь</h2>
+        <button type="button" class="calendar-nav-btn" onclick="changeCalendarMonth(1)" aria-label="Следующий месяц">
+          <svg class="svg-icon"><use href="#i-chevron-right"></use></svg>
+        </button>
+      </div>
+
+      <div class="calendar-weekdays">
+        <span>Пн</span><span>Вт</span><span>Ср</span><span>Чт</span><span>Пт</span><span>Сб</span><span>Вс</span>
+      </div>
+      <div class="calendar-grid" id="fullJournalCalendar"></div>
+
+      <p class="calendar-modal-hint">Нажмите на зелёную дату, чтобы открыть сохранённую запись.</p>
+    </section>
+  </div>
+
+  <!-- Просмотр записи дневника -->
+  <div class="modal sheet-modal" id="journalEntryModal" role="dialog" aria-modal="true" aria-labelledby="journalEntryTitle">
+    <section class="sheet-card journal-entry-sheet">
+      <button class="icon-btn modal-close" type="button" onclick="closeJournalEntry()" aria-label="Закрыть">
+        <svg class="svg-icon"><use href="#i-close"></use></svg>
+      </button>
+
+      <p class="eyebrow" id="journalEntryDate">ДНЕВНИК</p>
+      <h2 id="journalEntryTitle">Запись</h2>
+      <div class="journal-entry-mood" id="journalEntryMood"></div>
+      <p class="journal-entry-text" id="journalEntryText"></p>
+    </section>
+  </div>
+
   <!-- Карта нейронов -->
   <div class="modal brain-modal" id="brainMapModal" role="dialog" aria-modal="true">
     <div class="brain-toolbar">
+      <div class="brain-title">
+        <svg class="svg-icon"><use href="#i-network"></use></svg>
+        <span>Карта мыслей</span>
+      </div>
+
       <div class="brain-search">
-        <svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true">
-          <circle cx="11" cy="11" r="8"></circle>
-          <path d="M21 21l-4.35-4.35"></path>
-        </svg>
+        <svg class="svg-icon"><use href="#i-search"></use></svg>
         <input id="brainSearchInput" type="search" placeholder="Найти заметку" autocomplete="off">
       </div>
 
-      <button class="icon-btn brain-help-btn" type="button" onclick="toggleBrainHelp()" aria-label="Помощь">
-        <svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true">
-          <circle cx="12" cy="12" r="10"></circle>
-          <path d="M9.1 9a3 3 0 1 1 5.3 1.9c-.9 1-2.4 1.5-2.4 3.1"></path>
-          <path d="M12 17h.01"></path>
-        </svg>
-      </button>
-
       <button class="icon-btn modal-close brain-close-btn" type="button" onclick="closeBrainMap()" aria-label="Закрыть">
-        <svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true">
-          <line x1="18" y1="6" x2="6" y2="18"></line>
-          <line x1="6" y1="6" x2="18" y2="18"></line>
-        </svg>
+        <svg class="svg-icon"><use href="#i-close"></use></svg>
       </button>
     </div>
 
-    <div id="brainHelp" class="brain-help" hidden>
-      На телефоне: перетаскивайте одним пальцем, масштабируйте двумя пальцами. Нажмите нейрон, чтобы прочитать заметку. При сильном приближении появятся подписи.
+    <div class="brain-tip">
+      <svg class="tiny-icon"><use href="#i-sparkles"></use></svg>
+      При приближении к нейронам появятся названия заметок. Нажмите на нейрон, чтобы открыть материал.
     </div>
 
     <div id="3d-graph"></div>
@@ -428,12 +516,8 @@
   <!-- Просмотр медиа -->
   <div class="modal" id="mediaModal" role="dialog" aria-modal="true">
     <button class="icon-btn modal-close" type="button" onclick="closeModal()" aria-label="Закрыть">
-      <svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true">
-        <line x1="18" y1="6" x2="6" y2="18"></line>
-        <line x1="6" y1="6" x2="18" y2="18"></line>
-      </svg>
+      <svg class="svg-icon"><use href="#i-close"></use></svg>
     </button>
-
     <div id="modalContent" class="modal-media-container"></div>
   </div>
 
