@@ -424,7 +424,8 @@ async function loadFiles() {
         title: file.title || file.name || file.file_name || "File",
         text: file.text || file.caption || "",
         url: file.url || file.file_url || "",
-        size: fileSize(file)
+        size: fileSize(file),
+        aiCaption: file.ai_caption || file.blip_caption || file.caption_ai || ""
       };
 
       if (isTextFile(item)) {
@@ -450,20 +451,13 @@ function noteCounter() {
   document.getElementById("noteCharCounter").textContent = `${input.value.length} / ${input.maxLength}`;
 }
 
-async function saveSmartNote() {
-  const input = document.getElementById("smartNoteInput");
-  const text = input.value.trim();
-  if (!text) return toast("Write a thought first");
-
-  input.value = "";
-  noteCounter();
-
+async function createNote(text) {
   let title = text.slice(0, 60);
   let tags = [];
 
   if (key()) {
     const result = await ai(
-      "Return only JSON: {\"title\":\"short title\",\"tags\":[\"tag\"]}. Up to 5 tags.",
+      "Return only JSON: {\"title\":\"short title\",\"tags\":[\"tag\"]}. Up to 5 tags. Use the same language as the note.",
       text,
       180
     );
@@ -475,10 +469,23 @@ async function saveSmartNote() {
     } catch (_) {}
   }
 
-  db.notes.unshift({ id: Date.now(), title, text, tags, date: new Date().toISOString() });
+  const note = { id: Date.now(), title, text, tags, date: new Date().toISOString() };
+  db.notes.unshift(note);
   db.stats.wordsWritten += words(text).length;
   saveDB();
   renderFiles();
+  return note;
+}
+
+async function saveSmartNote() {
+  const input = document.getElementById("smartNoteInput");
+  const text = input.value.trim();
+  if (!text) return toast("Write a thought first");
+
+  input.value = "";
+  noteCounter();
+
+  await createNote(text);
   toast("Note saved");
 }
 
@@ -587,7 +594,7 @@ function renderFiles() {
   `;
 
   const items = allItems().filter((item) => {
-    const text = `${item.title} ${item.text} ${(item.tags || []).join(" ")}`.toLowerCase();
+    const text = `${item.title} ${item.text} ${item.aiCaption || ""} ${(item.tags || []).join(" ")}`.toLowerCase();
     return folder.types.includes(item.type) && (!searchQuery || text.includes(searchQuery));
   });
 
@@ -605,7 +612,11 @@ function renderFiles() {
     card.className = `grid-item ${item.type}`;
 
     if (item.type === "photo" && safeUrl(item.url)) {
-      card.innerHTML = `<img src="${safeUrl(item.url)}" alt="${esc(item.title)}">`;
+      const caption = clean(item.aiCaption || "");
+      card.innerHTML = `
+        <img src="${safeUrl(item.url)}" alt="${esc(item.title)}">
+        ${caption ? `<div class="grid-item-caption"><span class="cap-ai-tag">AI</span>${esc(caption)}</div>` : ""}
+      `;
       card.onclick = () => openMedia(item);
     } else {
       card.innerHTML = `
@@ -639,7 +650,16 @@ function handleSearch() {
   if (activeFolder) renderFiles();
 }
 
-/* Chat: only pulls up to 5 relevant entries to save tokens. */
+/* Chat: recognizes a "save a note" command, otherwise chats as a full assistant
+   using up to 5 relevant notes as optional context (not a hard restriction). */
+
+const NOTE_COMMAND_RE =
+  /^(?:save(?:\s+(?:a|this))?\s+note|remember\s+this|note\s+(?:this|it)\s+down|запиши(?:\s+(?:себе|мне))?(?:\s+заметку)?|сохрани(?:\s+(?:это|заметку))?)\s*[:\-–—]?\s*/i;
+
+function extractNoteCommand(text) {
+  if (!NOTE_COMMAND_RE.test(text)) return null;
+  return text.replace(NOTE_COMMAND_RE, "").trim();
+}
 
 function relevant(question) {
   const query = words(question);
@@ -653,14 +673,15 @@ function relevant(question) {
         0
       )
     }))
+    .filter((note) => note.score > 0)
     .sort((a, b) => b.score - a.score)
     .slice(0, 5);
 }
 
-function chatMessage(text, role, sources = []) {
+function chatMessage(text, role, sources = [], extraClass = "") {
   const box = document.getElementById("chatContainer");
   const item = document.createElement("div");
-  item.className = `chat-msg ${role}`;
+  item.className = `chat-msg ${role}${extraClass ? ` ${extraClass}` : ""}`;
   item.textContent = text;
 
   if (sources.length) {
@@ -683,6 +704,16 @@ function chatMessage(text, role, sources = []) {
   return item;
 }
 
+function showTyping() {
+  const box = document.getElementById("chatContainer");
+  const item = document.createElement("div");
+  item.className = "chat-typing";
+  item.innerHTML = "<span></span><span></span><span></span>";
+  box.appendChild(item);
+  box.scrollTop = box.scrollHeight;
+  return item;
+}
+
 async function sendChatMessage() {
   const input = document.getElementById("chatInput");
   const question = input.value.trim();
@@ -691,22 +722,39 @@ async function sendChatMessage() {
   input.value = "";
   chatMessage(question, "user");
 
-  const notes = relevant(question);
-  if (!notes.length) return chatMessage("No matching notes found.", "ai");
+  /* "Save a note" command — writes straight into Notes, visible in Files and synced to Telegram side. */
+  const noteText = extractNoteCommand(question);
+  if (noteText !== null) {
+    if (!noteText) {
+      chatMessage("Sure — what should I write down?", "ai");
+      return;
+    }
 
+    const typing = showTyping();
+    const note = await createNote(noteText);
+    typing.remove();
+    chatMessage(`Saved: "${note.title}"`, "ai", [], "note-confirm");
+    return;
+  }
+
+  const notes = relevant(question);
   const context = notes
     .map((note, index) => `[${index + 1}] ${note.title}\n${note.text.slice(0, 1000)}`)
     .join("\n\n");
 
-  const loading = chatMessage("Thinking…", "ai");
+  const typing = showTyping();
   const answer = await ai(
-    "Answer only from the context provided, briefly, in English. If there is no answer in the context, say so.",
-    context + `\n\nQUESTION:\n${question}`,
-    420
+    "You are Infinity AI, a friendly, capable assistant built into a personal notes app called Infinity Storage. " +
+      "Chat naturally about anything the user brings up, the same way any full-featured AI assistant would. " +
+      "If personal context (the user's own notes) is provided below, use it when relevant to answer questions about " +
+      "their notes, thoughts, or journal — but do not restrict yourself to it, and don't mention that context was or " +
+      "wasn't provided. Always reply in the same language the user is writing in. Keep answers clear and concise.",
+    (context ? `CONTEXT FROM USER'S NOTES:\n${context}\n\n` : "") + `USER MESSAGE:\n${question}`,
+    650
   );
 
-  loading.remove();
-  chatMessage(answer || "Couldn't generate an answer.", "ai", notes);
+  typing.remove();
+  chatMessage(answer || "Couldn't get a response. Check your AI settings.", "ai", notes);
 }
 
 function handleChatKey(event) {
