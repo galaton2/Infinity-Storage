@@ -31,8 +31,10 @@
 
   .screen{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
     background:radial-gradient(ellipse at 50% 30%,#23272c 0%,#14161a 70%,#0b0c0e 100%);
-    padding:16px;z-index:20;}
+    padding:calc(16px + var(--sat)) 16px calc(16px + env(safe-area-inset-bottom,0px));z-index:20;overflow-y:auto;
+    animation:screenIn .28s cubic-bezier(.2,.9,.2,1);}
   .hidden{display:none !important;}
+  @keyframes screenIn{from{opacity:0;transform:scale(.985)}to{opacity:1;transform:scale(1)}}
 
   .logo{font-weight:800;letter-spacing:4px;font-size:clamp(28px,7vw,52px);color:var(--toxic);
     text-shadow:0 0 18px rgba(139,212,80,.45),0 3px 0 #0006;margin-bottom:2px;text-align:center;}
@@ -46,6 +48,7 @@
     width:100%;padding:13px 16px;margin:7px 0;border-radius:10px;border:1px solid var(--line);
     background:linear-gradient(180deg,#2b3036,#202428);color:var(--text);font-size:15px;font-weight:700;
     letter-spacing:.5px;cursor:pointer;transition:transform .08s,filter .15s;font-family:var(--font-head);}
+  .btn:hover{filter:brightness(1.12);border-color:#69747b;transform:translateY(-1px);}
   .btn:active{transform:scale(.97);filter:brightness(1.15);}
   .btn.primary{background:linear-gradient(180deg,var(--toxic),var(--toxic-dark));color:#12210a;border-color:#6ea83a;}
   .btn.warn{background:linear-gradient(180deg,#e8823c,#b85f26);color:#2a1200;border-color:#a85a20;}
@@ -116,6 +119,7 @@
   .close-x{position:absolute;top:calc(12px + var(--sat));right:14px;width:36px;height:36px;border-radius:9px;background:#000a;
     border:1px solid var(--line);color:var(--text);display:flex;align-items:center;justify-content:center;cursor:pointer;}
   .close-x .ic{width:16px;height:16px;}
+  .close-x:hover{border-color:var(--danger);color:#fff;background:#4a2020;transform:rotate(90deg);}
 
   .over-stats{width:100%;margin:2px 0 8px;}
   .os-row{display:flex;justify-content:space-between;padding:6px 4px;border-bottom:1px dashed #33383e88;font-size:14px;color:var(--text-dim);}
@@ -128,6 +132,7 @@
   .lu-cards{display:flex;flex-direction:column;gap:10px;width:min(420px,94vw);margin-top:14px;}
   .lu-card{display:flex;align-items:center;gap:14px;padding:13px 14px;border-radius:12px;border:1px solid var(--line);
     background:linear-gradient(180deg,#23272c,#1a1d21);cursor:pointer;transition:transform .08s,border-color .15s;}
+  .lu-card:hover{border-color:var(--toxic);transform:translateX(4px);box-shadow:0 7px 20px #0007;}
   .lu-card:active{transform:scale(.97);}
   .lu-card .lu-ic{width:44px;height:44px;padding:9px;border-radius:10px;background:#0009;border:1px solid var(--line);}
   .lu-title{font-weight:800;font-size:15px;letter-spacing:.5px;}
@@ -141,7 +146,10 @@
   .toast.bad{border-color:var(--danger);}
 
   ::-webkit-scrollbar{width:6px;} ::-webkit-scrollbar-thumb{background:#3a3f45;border-radius:4px;}
-  @media (max-width:420px){ .logo{font-size:34px;} }
+  .map-alert{position:absolute;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);opacity:0;z-index:13;pointer-events:none;
+    color:#fff;background:#101215dc;border:1px solid var(--cyan);border-radius:999px;padding:8px 14px;font:bold 12px var(--font-mono);letter-spacing:1px;transition:.35s;white-space:nowrap;}
+  .map-alert.show{opacity:1;transform:translate(-50%,0);}
+  @media (max-width:420px){ .logo{font-size:34px;} .menu-card{margin-top:12px;padding:16px 14px;} .shop-grid{max-height:48vh;} .hud .top{gap:6px;padding:8px;} .lvl-wrap{min-width:52px;} .xp-bar{width:52px;} .hud .scoreline{font-size:10px;} .hud .scoreline b{font-size:14px;} .pausebtn{width:36px;height:36px;} .banner{max-width:90vw;font-size:20px;} }
 </style>
 </head>
 <body>
@@ -167,6 +175,7 @@
     </div>
     <button class="pausebtn" id="pauseBtn" data-icon="pause"></button>
     <div class="banner" id="banner"></div>
+    <div class="map-alert" id="mapAlert"></div>
   </div>
 
   <!-- ЗАГРУЗКА -->
@@ -416,6 +425,7 @@ const Audio_=(function(){
     click(){ tone(300,0.04,'square',0.08,300); },
     explode(){ noise(0.35,0.3,700); tone(90,0.3,'square',0.2,40); },
     boss(){ tone(80,0.5,'sawtooth',0.3,40); noise(0.4,0.2,500); },
+    sector(){ tone(330,0.11,'triangle',0.16,520); setTimeout(()=>tone(620,0.2,'triangle',0.16,840),80); },
     over(){ tone(220,0.3,'sawtooth',0.2,60); }
   };
 })();
@@ -509,7 +519,9 @@ const ENEMY_TYPES={
   runner: {hp:16, speed:118,dmg:5, color:'#c96a4f',dark:'#7c4028',xp:7, coin:1, r:12},
   brute:  {hp:110,speed:34, dmg:18,color:'#8a6a4a',dark:'#513e2a',xp:26,coin:3, r:22},
   shooter:{hp:20, speed:44, dmg:7, color:'#a066c9',dark:'#5f3a76',xp:16,coin:2, r:13,ranged:true},
-  boss:   {hp:520,speed:38, dmg:24,color:'#b04a3a',dark:'#6e2a20',xp:150,coin:25,r:34}
+  boss:   {hp:520,speed:38, dmg:24,color:'#b04a3a',dark:'#6e2a20',xp:150,coin:25,r:34},
+  warden: {hp:720,speed:30, dmg:30,color:'#7657b8',dark:'#3c2c66',xp:210,coin:35,r:39,ranged:true},
+  titan:  {hp:980,speed:24, dmg:38,color:'#ba7b31',dark:'#663a18',xp:280,coin:48,r:46}
 };
 
 /* ======================= DOM ======================= */
@@ -548,7 +560,7 @@ let camX=0,camY=0,worldTime=0,spawnTimer=0,pickupTimer=0;
 let waveLevel=1,lastWaveShown=1,score=0,coinsThisRun=0,killCount=0;
 let runXP=0,runLevel=1,runXPNeed=30,pendingLevels=0;
 let bannerTimer=0, eid=1;
-let nextBossWave=5, bossAlive=false;
+let nextBossWave=5, bossAlive=false, activeMapKey='wasteland', mapCycleTimer=0, mapCycleIndex=0;
 let revivedThisRun=false, doubledThisRun=false;
 let WSTATS=null;
 
@@ -604,8 +616,20 @@ function resetRun(){
   waveLevel=1;lastWaveShown=1;score=0;coinsThisRun=0;killCount=0;
   runXP=0;runLevel=1;runXPNeed=30;pendingLevels=0;levelupOpen=false;
   nextBossWave=5;bossAlive=false;
+  activeMapKey=SAVE.selectedMap; mapCycleTimer=52; mapCycleIndex=0;
   revivedThisRun=false;doubledThisRun=false;
-  decorations=buildDecorations(MAPS[SAVE.selectedMap].prop);
+  decorations=buildDecorations(MAPS[activeMapKey].prop);
+}
+
+function switchMapDuringRun(){
+  const current=MAP_ORDER.indexOf(activeMapKey);
+  activeMapKey=MAP_ORDER[(current+1+MAP_ORDER.length)%MAP_ORDER.length];
+  decorations=buildDecorations(MAPS[activeMapKey].prop);
+  const note=$('mapAlert'); note.textContent='НОВЫЙ СЕКТОР · '+MAPS[activeMapKey].name;
+  note.classList.remove('show'); void note.offsetWidth; note.classList.add('show');
+  setTimeout(()=>note.classList.remove('show'),2500);
+  spawnText(player.x,player.y-36,'СЕКТОР: '+MAPS[activeMapKey].name,'#6be6ff',14);
+  Audio_.sector();
 }
 
 function buildDecorations(kind){
@@ -698,17 +722,18 @@ function spawnEnemy(){
   });
 }
 function spawnBoss(){
-  const base=ENEMY_TYPES.boss;
+  const bossKinds=waveLevel>=12?['boss','warden','titan']:waveLevel>=8?['boss','warden']:['boss'];
+  const kind=pick(bossKinds), base=ENEMY_TYPES[kind];
   const ang=Math.random()*Math.PI*2;
   let x=clamp(player.x+Math.cos(ang)*560,60,World.w-60);
   let y=clamp(player.y+Math.sin(ang)*560,60,World.h-60);
   const scale=difficultyScale();
   enemies.push({
-    id:eid++,type:'boss',x,y,r:base.r,hp:base.hp*scale,hpMax:base.hp*scale,
+    id:eid++,type:kind,x,y,r:base.r,hp:base.hp*scale,hpMax:base.hp*scale,
     speed:base.speed,dmg:base.dmg,color:base.color,dark:base.dark,
     xp:base.xp,coin:base.coin,ranged:false,shootCd:0,hitFlash:0,walkT:0
   });
-  showBanner('⚠ БОСС!');
+  showBanner(kind==='warden'?'⚠ СТРАЖ СЕКТОРА!':kind==='titan'?'⚠ ТИТАН В ЗОНЕ!':'⚠ БОСС!');
   Audio_.boss();
 }
 function spawnPickup(){
@@ -790,6 +815,8 @@ function openLevelUp(){
   setGamePaused(true);
   gpStop();
   $('luLevel').textContent=runLevel;
+  Audio_.levelup();
+  showBanner('ВЫБЕРИ СИЛУ');
   showScreen('levelup');
   renderLevelCards();
 }
@@ -903,10 +930,10 @@ function killEnemy(idx){
   coinsThisRun+=Math.round(e.coin*player.coinMul);
   addXP(e.xp);
   killCount++;
-  if (e.type==='boss'){
+  if (['boss','warden','titan'].includes(e.type)){
     bossAlive=false;shake=10;
     spawnExplosion(e.x,e.y);spawnExplosion(e.x,e.y);
-    showBanner('БОСС УНИЧТОЖЕН!');
+    showBanner(e.type==='titan'?'ТИТАН УНИЧТОЖЕН!':'БОСС УНИЧТОЖЕН!');
   }
   enemies.splice(idx,1);
 }
@@ -1009,6 +1036,8 @@ function handleSpawns(dt){
   pickupTimer-=dt;
   if (pickupTimer<=0&&pickups.length<6){ pickupTimer=rand(4,7); spawnPickup(); }
   waveLevel=Math.max(waveLevel,1+Math.floor(worldTime/22));
+  mapCycleTimer-=dt;
+  if (mapCycleTimer<=0){ switchMapDuringRun(); mapCycleTimer=52; }
   if (waveLevel>=nextBossWave&&!bossAlive){ spawnBoss(); bossAlive=true; nextBossWave+=5; }
   if (waveLevel>lastWaveShown){ lastWaveShown=waveLevel; if (waveLevel>1) showBanner('ВОЛНА '+waveLevel); }
 }
@@ -1033,7 +1062,7 @@ function worldToScreen(x,y){
   return {x:(x-viewX)*DPR+canvas.width/2,y:(y-viewY)*DPR+canvas.height/2};
 }
 function drawBackground(){
-  const m=MAPS[SAVE.selectedMap];
+  const m=MAPS[activeMapKey];
   ctx2d.fillStyle=m.bg;
   ctx2d.fillRect(0,0,canvas.width,canvas.height);
   ctx2d.strokeStyle=m.line;ctx2d.lineWidth=1*DPR;ctx2d.globalAlpha=0.5;
@@ -1083,12 +1112,17 @@ function drawHumanoid(sx,sy,scale,facing,walkT,bodyColor,darkColor,aimAngle,gunC
   ctx2d.fillRect(2*s,2*s-legSwing*0.3,6*s,12*s);
   ctx2d.fillStyle=bodyColor;
   ctx2d.beginPath();ctx2d.ellipse(0,0,13*s,11*s,0,0,Math.PI*2);ctx2d.fill();
+  // разгрузка и бронепластина: силуэт читается даже в плотной толпе
+  ctx2d.fillStyle='#171a1e';ctx2d.fillRect(-14*s,-5*s,4*s,15*s);
+  ctx2d.fillStyle='rgba(255,255,255,.16)';ctx2d.fillRect(-8*s,-5*s,12*s,3*s);
   ctx2d.fillStyle=darkColor;ctx2d.globalAlpha=0.5;
   ctx2d.beginPath();ctx2d.ellipse(3*s,3*s,10*s,8*s,0,0,Math.PI*2);ctx2d.fill();ctx2d.globalAlpha=1;
   ctx2d.fillStyle=bodyColor;
   ctx2d.beginPath();ctx2d.arc(0,-13*s,8*s,0,Math.PI*2);ctx2d.fill();
   ctx2d.fillStyle='#131516';
   ctx2d.beginPath();ctx2d.arc(2*s,-13*s,4.2*s,0,Math.PI*2);ctx2d.fill();
+  ctx2d.fillStyle='#6be6ff';ctx2d.globalAlpha=.75;
+  ctx2d.fillRect(-1*s,-14*s,5*s,1.5*s);ctx2d.globalAlpha=1;
   if (aimAngle!==undefined){
     ctx2d.save();ctx2d.rotate(aimAngle);
     ctx2d.fillStyle='#20242a';
@@ -1115,8 +1149,8 @@ function drawEnemy(e){
   ctx2d.fillStyle=e.hitFlash>0?'#fff':e.dark;
   ctx2d.fillRect(-7*sc,2*sc+wob*0.3,5*sc,10*sc);
   ctx2d.fillRect(2*sc,2*sc-wob*0.3,5*sc,10*sc);
-  if (e.type==='boss'){
-    ctx2d.fillStyle=e.hitFlash>0?'#fff':'#513e2a';
+  if (['boss','warden','titan'].includes(e.type)){
+    ctx2d.fillStyle=e.hitFlash>0?'#fff':(e.type==='warden'?'#3c2c66':e.type==='titan'?'#663a18':'#513e2a');
     for(let i=0;i<9;i++){
       const a=i/9*Math.PI*2+e.walkT*0.15;
       ctx2d.save();ctx2d.rotate(a);
@@ -1129,8 +1163,14 @@ function drawEnemy(e){
   ctx2d.fillStyle=col;
   ctx2d.beginPath();ctx2d.ellipse(0,0,e.r*DPR,e.r*0.85*DPR,0,0,Math.PI*2);ctx2d.fill();
   ctx2d.beginPath();ctx2d.arc(0,-e.r*0.9*DPR,e.r*0.6*DPR,0,Math.PI*2);ctx2d.fill();
-  ctx2d.fillStyle=e.type==='boss'?'#ff4040':'#1a1a1a';
-  const er=(e.type==='boss'?0.17:0.14)*e.r*DPR;
+  if (e.type==='warden'){
+    ctx2d.strokeStyle='#c98bff';ctx2d.lineWidth=2.5*DPR;ctx2d.beginPath();ctx2d.arc(0,0,e.r*1.15*DPR,0,Math.PI*2);ctx2d.stroke();
+  } else if (e.type==='titan'){
+    ctx2d.fillStyle='#f2c94c';ctx2d.fillRect(-e.r*.55*DPR,-e.r*.15*DPR,e.r*1.1*DPR,e.r*.22*DPR);
+  }
+  const isBoss=['boss','warden','titan'].includes(e.type);
+  ctx2d.fillStyle=isBoss?'#ff4040':'#1a1a1a';
+  const er=(isBoss?0.17:0.14)*e.r*DPR;
   ctx2d.beginPath();ctx2d.arc(-e.r*0.22*DPR,-e.r*0.92*DPR,er,0,Math.PI*2);ctx2d.fill();
   ctx2d.beginPath();ctx2d.arc(e.r*0.26*DPR,-e.r*0.92*DPR,er,0,Math.PI*2);ctx2d.fill();
   if (e.ranged){
@@ -1141,10 +1181,10 @@ function drawEnemy(e){
     ctx2d.restore();
   }
   ctx2d.restore();
-  if (e.hp<e.hpMax||e.type==='boss'){
+  if (e.hp<e.hpMax||isBoss){
     const w=e.r*2.4*DPR,y=s.y-e.r*DPR-16*DPR;
     ctx2d.fillStyle='#000a';ctx2d.fillRect(s.x-w/2,y,w,6*DPR);
-    ctx2d.fillStyle=e.type==='boss'?'#e8823c':'#d64545';
+    ctx2d.fillStyle=isBoss?'#e8823c':'#d64545';
     ctx2d.fillRect(s.x-w/2,y,w*clamp(e.hp/e.hpMax,0,1),6*DPR);
   }
 }
@@ -1271,7 +1311,7 @@ requestAnimationFrame(loop);
 /* ======================= Жизненный цикл боя ======================= */
 function startRun(){
   resetRun();
-  state='playing';
+  state='playing';paused=false;levelupOpen=false;keys={};
   showScreen(null);hud.classList.remove('hidden');
   lastTime=performance.now();
   gpStart();
@@ -1311,7 +1351,7 @@ function doRevive(){
   for(let i=enemies.length-1;i>=0;i--){
     const e=enemies[i];
     if (dist2(e.x,e.y,player.x,player.y)<340*340){
-      if (e.type==='boss') bossAlive=false;
+      if (['boss','warden','titan'].includes(e.type)) bossAlive=false;
       spawnBlood(e.x,e.y,e.color);
       enemies.splice(i,1);
     }
