@@ -161,13 +161,13 @@
         </div>
         <div class="chat-header-text">
           <h1 class="chat-title">Infinity AI</h1>
-          <p class="chat-subtitle">Ask about your notes, thoughts, or journal entries</p>
+          <p class="chat-subtitle">Full AI chat — ask anything, or say "save a note"</p>
         </div>
       </div>
 
       <div class="chat-container" id="chatContainer" aria-live="polite">
         <div class="chat-msg ai">
-          Ask me about your notes, thoughts, or journal.
+          Hi! I'm a full AI assistant. Chat with me about anything, ask about your saved notes and files, or just tell me "save a note: …" and I'll write it straight to your notes — synced with Telegram too.
         </div>
       </div>
 
@@ -192,63 +192,65 @@
 
     <!-- Journal -->
     <section id="tab-journal" class="tab-content journal-tab">
-      <div class="journal-center-wrap">
-        <div class="journal-mood-selector" role="group" aria-label="Select mood">
-          <button type="button" onclick="setMood('sad')" aria-label="Sad">
-            <svg class="mood-icon" viewBox="0 0 24 24" aria-hidden="true">
-              <circle cx="12" cy="12" r="9"></circle>
-              <path d="M8.5 16c1-1.5 2.1-2.2 3.5-2.2S14.5 14.5 15.5 16"></path>
-              <path d="M8 9h.01M16 9h.01"></path>
-            </svg>
+      <div class="journal-hero">
+        <div class="journal-center-wrap">
+          <div class="journal-mood-selector" role="group" aria-label="Select mood">
+            <button type="button" onclick="setMood('sad')" aria-label="Sad">
+              <svg class="mood-icon" viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="12" cy="12" r="9"></circle>
+                <path d="M8.5 16c1-1.5 2.1-2.2 3.5-2.2S14.5 14.5 15.5 16"></path>
+                <path d="M8 9h.01M16 9h.01"></path>
+              </svg>
+            </button>
+
+            <button type="button" onclick="setMood('calm')" aria-label="Calm">
+              <svg class="mood-icon" viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="12" cy="12" r="9"></circle>
+                <path d="M8 14h8M8 9h.01M16 9h.01"></path>
+              </svg>
+            </button>
+
+            <button type="button" onclick="setMood('good')" aria-label="Good">
+              <svg class="mood-icon" viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="12" cy="12" r="9"></circle>
+                <path d="M8 13c1.2 1.7 2.5 2.5 4 2.5s2.8-.8 4-2.5M8 9h.01M16 9h.01"></path>
+              </svg>
+            </button>
+
+            <button type="button" onclick="setMood('great')" aria-label="Great">
+              <svg class="mood-icon" viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="12" cy="12" r="9"></circle>
+                <path d="M7.5 12.5c1.4 2.3 2.9 3.3 4.5 3.3s3.1-1 4.5-3.3M8 9h.01M16 9h.01"></path>
+              </svg>
+            </button>
+          </div>
+
+          <textarea
+            id="journalInput"
+            class="journal-input"
+            rows="6"
+            maxlength="5000"
+            placeholder="Journal entry…"
+          ></textarea>
+
+          <button type="button" class="journal-btn" onclick="saveJournal()">
+            Save Entry
           </button>
 
-          <button type="button" onclick="setMood('calm')" aria-label="Calm">
-            <svg class="mood-icon" viewBox="0 0 24 24" aria-hidden="true">
-              <circle cx="12" cy="12" r="9"></circle>
-              <path d="M8 14h8M8 9h.01M16 9h.01"></path>
+          <button
+            type="button"
+            class="journal-calendar-btn"
+            onclick="openJournalCalendar()"
+          >
+            <svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <rect x="3" y="4" width="18" height="17" rx="2"></rect>
+              <line x1="16" y1="2" x2="16" y2="6"></line>
+              <line x1="8" y1="2" x2="8" y2="6"></line>
+              <line x1="3" y1="10" x2="21" y2="10"></line>
             </svg>
-          </button>
-
-          <button type="button" onclick="setMood('good')" aria-label="Good">
-            <svg class="mood-icon" viewBox="0 0 24 24" aria-hidden="true">
-              <circle cx="12" cy="12" r="9"></circle>
-              <path d="M8 13c1.2 1.7 2.5 2.5 4 2.5s2.8-.8 4-2.5M8 9h.01M16 9h.01"></path>
-            </svg>
-          </button>
-
-          <button type="button" onclick="setMood('great')" aria-label="Great">
-            <svg class="mood-icon" viewBox="0 0 24 24" aria-hidden="true">
-              <circle cx="12" cy="12" r="9"></circle>
-              <path d="M7.5 12.5c1.4 2.3 2.9 3.3 4.5 3.3s3.1-1 4.5-3.3M8 9h.01M16 9h.01"></path>
-            </svg>
+            Calendar
           </button>
         </div>
-
-        <textarea
-          id="journalInput"
-          class="journal-input"
-          rows="6"
-          maxlength="5000"
-          placeholder="Journal entry…"
-        ></textarea>
-
-        <button type="button" class="journal-btn" onclick="saveJournal()">
-          Save Entry
-        </button>
-
-        <button
-          type="button"
-          class="journal-calendar-btn"
-          onclick="openJournalCalendar()"
-        >
-          <svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true">
-            <rect x="3" y="4" width="18" height="17" rx="2"></rect>
-            <line x1="16" y1="2" x2="16" y2="6"></line>
-            <line x1="8" y1="2" x2="8" y2="6"></line>
-            <line x1="3" y1="10" x2="21" y2="10"></line>
-          </svg>
-          Calendar
-        </button>
       </div>
 
       <div class="journal-entries-section">
