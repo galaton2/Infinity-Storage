@@ -83,6 +83,7 @@
   .item-title{font-weight:700;font-size:14px;}
   .item-sub{font-size:11px;color:var(--text-dim);font-family:var(--font-mono);margin-top:2px;}
   .item-action{flex:0 0 auto;display:flex;flex-direction:column;gap:5px;align-items:flex-end;}
+  .item-action{flex:0 0 auto;display:flex;flex-direction:column;gap:5px;align-items:flex-end;max-width:42%;}
   .pips{display:flex;gap:3px;margin-top:5px;}
   .pips i{width:9px;height:9px;border-radius:2px;background:#33383e;}
   .pips i.on{background:var(--toxic);}
@@ -143,11 +144,13 @@
   .lu-cards{display:flex;flex-direction:column;gap:10px;width:min(420px,94vw);margin-top:14px;}
   .lu-card{display:flex;align-items:center;gap:14px;padding:13px 14px;border-radius:12px;border:1px solid var(--line);
     background:linear-gradient(180deg,#23272c,#1a1d21);cursor:pointer;transition:transform .08s,border-color .15s;}
+  .lu-card>div{min-width:0;}
   .lu-card:hover{border-color:var(--toxic);transform:translateX(4px);box-shadow:0 7px 20px #0007;}
   .lu-card:active{transform:scale(.97);}
   .lu-card .lu-ic{width:44px;height:44px;padding:9px;border-radius:10px;background:#0009;border:1px solid var(--line);}
   .lu-title{font-weight:800;font-size:15px;letter-spacing:.5px;}
   .lu-desc{font-size:12px;color:var(--text-dim);margin-top:3px;font-family:var(--font-mono);}
+  .lu-desc{font-size:12px;color:var(--text-dim);margin-top:3px;font-family:var(--font-mono);overflow-wrap:anywhere;}
 
   #toasts{position:absolute;top:calc(64px + var(--sat));left:50%;transform:translateX(-50%);z-index:60;
     display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none;}
@@ -161,7 +164,7 @@
     color:#fff;background:#101215dc;border:1px solid var(--cyan);border-radius:999px;padding:8px 14px;font:bold 12px var(--font-mono);letter-spacing:1px;transition:.35s;white-space:nowrap;}
   .map-alert.show{opacity:1;transform:translate(-50%,0);}
   @media (max-width:420px){ .logo{font-size:34px;} .menu-card{margin-top:12px;padding:16px 14px;} .shop-grid{max-height:48vh;} .hud .top{gap:6px;padding:8px;} .lvl-wrap{min-width:52px;} .xp-bar{width:52px;} .hud .scoreline{font-size:10px;} .hud .scoreline b{font-size:14px;} .pausebtn{width:36px;height:36px;} .banner{max-width:90vw;font-size:20px;} }
-  @media (max-width:420px){ .logo{font-size:34px;} .menu-card{margin-top:12px;padding:16px 14px;} .shop-grid{max-height:48vh;} .hud .top{gap:6px;padding:8px 52px 8px 8px;} .hp-wrap{min-width:0;} .lvl-wrap{min-width:48px;} .xp-bar{width:48px;} .hud .scoreline{font-size:9px;line-height:1.45;white-space:nowrap;} .hud .scoreline b{font-size:13px;} .pausebtn{width:40px;height:40px;} .banner{max-width:90vw;font-size:20px;} }
+  @media (max-width:420px){ .logo{font-size:34px;} .menu-card{margin-top:12px;padding:16px 14px;} .shop-grid{max-height:48vh;} .item-card{gap:8px;padding:9px;} .item-icon{width:38px;height:38px;} .item-action .btn{font-size:10px;padding:7px 8px;white-space:nowrap;} .hud .top{gap:6px;padding:8px 52px 8px 8px;} .hp-wrap{min-width:0;} .lvl-wrap{min-width:48px;} .xp-bar{width:48px;} .hud .scoreline{font-size:9px;line-height:1.45;white-space:nowrap;} .hud .scoreline b{font-size:13px;} .pausebtn{width:40px;height:40px;} .banner{max-width:90vw;font-size:20px;} }
 </style>
 </head>
 <body>
@@ -311,6 +314,7 @@ const ICONS = {
 /* ======================= Слой Yandex SDK ======================= */
 let ysdk=null, ysdkPlayer=null, ysdkReady=false;
 let lastInterstitial=0;
+let lastInterstitial=0, rewardedPending=false;
 const INTERSTITIAL_COOLDOWN=60000;
 
 async function initYSDK(){
@@ -365,6 +369,14 @@ function showInterstitial(force){
   }
 }
 function showRewarded(onReward){
+  if (rewardedPending){ toast('Награда уже загружается…',false); return; }
+  rewardedPending=true;
+  let rewarded=false;
+  const giveReward=()=>{
+    if (rewarded) return;
+    rewarded=true; onReward();
+  };
+  const finish=()=>{ rewardedPending=false; setGamePaused(false); };
   if (ysdk&&ysdk.adv){
     setGamePaused(true);
     try{
@@ -372,10 +384,15 @@ function showRewarded(onReward){
         onRewarded:()=>{ onReward(); },
         onClose:()=>{ setGamePaused(false); },
         onError:()=>{ setGamePaused(false); toast('Реклама недоступна, попробуйте позже',false); }
+        onRewarded:giveReward,
+        onClose:finish,
+        onError:()=>{ finish(); toast('Реклама недоступна, попробуйте позже',false); }
       }});
     }catch(e){ setGamePaused(false); toast('Реклама недоступна',false); }
+    }catch(e){ finish(); toast('Реклама недоступна',false); }
   } else {
     setTimeout(()=>{ onReward(); },400); // локальное тестирование без SDK
+    setTimeout(()=>{ giveReward(); rewardedPending=false; },400); // локальное тестирование без SDK
   }
 }
 
@@ -1382,6 +1399,11 @@ function exitRun(){
   showScreen('menu');refreshCoinBadges();
 }
 
+function returnToMenuFromOver(){
+  state='menu'; setGamePaused(false); levelupOpen=false; keys={};
+  hud.classList.add('hidden'); showScreen('menu'); refreshCoinBadges(); gpStop();
+}
+
 /* ======================= UI ======================= */
 function refreshCoinBadges(){
   $('coinsMenu').textContent=SAVE.coins;
@@ -1397,6 +1419,7 @@ function togglePause(){
 $('btnPlay').onclick=()=>{ Audio_.click(); startRun(); };
 $('btnGarage').onclick=()=>{ Audio_.click(); showScreen('garage'); renderShop('weapon'); };
 $('garageClose').onclick=()=>{ Audio_.click(); showScreen('menu'); };
+$('garageClose').onclick=()=>{ Audio_.click(); showScreen('menu'); refreshCoinBadges(); };
 $('btnChest').onclick=()=>{
   Audio_.click();
   showRewarded(()=>{
@@ -1419,6 +1442,7 @@ $('btnSoundPause').onclick=()=>{ SAVE.soundOn=!SAVE.soundOn;Audio_.setOn(SAVE.so
 
 $('btnRetry').onclick=()=>{ Audio_.click(); startRun(); };
 $('btnToMenu2').onclick=()=>{ Audio_.click(); state='menu';showScreen('menu');refreshCoinBadges(); };
+$('btnToMenu2').onclick=()=>{ Audio_.click(); returnToMenuFromOver(); };
 $('btnRevive').onclick=()=>{ Audio_.click(); showRewarded(()=>doRevive()); };
 $('btnDouble').onclick=()=>{
   if (doubledThisRun) return;
